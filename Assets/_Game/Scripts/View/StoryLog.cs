@@ -6,18 +6,24 @@ namespace KadakChai
 {
     public enum CardStyle { Story, Header, Event, Good, Bad, Note }
 
-    /// <summary>The scrolling story log in the bottom half (Capybara Go style). Cards fade in and auto-scroll.</summary>
-    public class StoryLog : MonoBehaviour
+    /// <summary>
+    /// The story log, shown as chat bubbles in the phone's Messages app. Story and events arrive on the left,
+    /// your wins on the right, notes and day headers in the middle. Bubbles fade in and auto-scroll.
+    /// </summary>
+    public class StoryLog : MonoBehaviour, UnityEngine.EventSystems.IBeginDragHandler
     {
+        bool stickToBottom = true; // follow new messages until the player drags to read older ones
         const int MaxCards = 40;
 
         ScrollRect scroll;
         RectTransform content;
+        public event System.Action Added;
 
-        public static StoryLog Build(RectTransform phone)
+        /// <summary>Fills the given container (the Messages app page).</summary>
+        public static StoryLog Build(RectTransform parent)
         {
-            var frame = UiKit.Panel(phone, "Log", new Color(0, 0, 0, 0.25f), rounded: true);
-            frame.rectTransform.Place(24, 1078, 1032, 634);
+            var frame = UiKit.Panel(parent, "Log", new Color(0, 0, 0, 0.18f), rounded: true);
+            frame.rectTransform.Fill();
             var log = frame.gameObject.AddComponent<StoryLog>();
 
             var viewport = UiKit.Make("Viewport", frame.transform);
@@ -55,23 +61,39 @@ namespace KadakChai
 
             Color bg = style switch
             {
-                CardStyle.Event => UiKit.Lavender,
-                CardStyle.Good => UiKit.Mint,
+                CardStyle.Event => UiKit.Hex("#FFF3C4"),
+                CardStyle.Good => UiKit.Hex("#DCF8C6"),   // "sent" bubble
                 CardStyle.Bad => UiKit.Blush,
-                CardStyle.Header or CardStyle.Note => Color.clear,
+                CardStyle.Header => new Color(0, 0, 0, 0.45f),
+                CardStyle.Note => Color.clear,
                 _ => UiKit.Cream,
             };
-            var card = UiKit.Panel(content, "Card", bg, rounded: true);
-            var pad = style == CardStyle.Header || style == CardStyle.Note ? 4 : 22;
+            // A row positions the bubble: left (incoming), right (your wins) or centred (headers, notes).
+            var row = UiKit.Make("Row", content);
+            var rowLayout = row.gameObject.AddComponent<HorizontalLayoutGroup>();
+            rowLayout.childControlHeight = true; rowLayout.childControlWidth = true;
+            rowLayout.childForceExpandHeight = false; rowLayout.childForceExpandWidth = true;
+            rowLayout.padding = style switch
+            {
+                CardStyle.Good => new RectOffset(110, 6, 0, 0),
+                CardStyle.Header => new RectOffset(150, 150, 0, 0),
+                CardStyle.Note => new RectOffset(30, 30, 0, 0),
+                _ => new RectOffset(6, 110, 0, 0),
+            };
+
+            var card = UiKit.Panel(row, "Card", bg, rounded: true);
+            var pad = style == CardStyle.Note ? 2 : style == CardStyle.Header ? 8 : 18;
             var layout = card.gameObject.AddComponent<VerticalLayoutGroup>();
-            layout.padding = new RectOffset(pad + 6, pad + 6, pad, pad);
+            layout.padding = new RectOffset(pad + 8, pad + 8, pad, pad);
             layout.childControlHeight = true; layout.childControlWidth = true;
             layout.childForceExpandHeight = false;
 
-            int size = style switch { CardStyle.Header => 36, CardStyle.Note => 30, _ => 38 }; // sized for phones
-            Color color = style switch { CardStyle.Header => Color.white, CardStyle.Note => new Color(1, 1, 1, 0.8f), _ => UiKit.Ink };
-            var label = UiKit.Label(card.transform, "Text", UiKit.Rich(text), size, color, TextAnchor.UpperLeft,
+            int size = style switch { CardStyle.Header => 28, CardStyle.Note => 28, _ => 34 }; // sized for phones
+            Color color = style switch { CardStyle.Header => Color.white, CardStyle.Note => new Color(1, 1, 1, 0.85f), _ => UiKit.Ink };
+            var anchor = style == CardStyle.Header || style == CardStyle.Note ? TextAnchor.UpperCenter : TextAnchor.UpperLeft;
+            var label = UiKit.Label(card.transform, "Text", UiKit.Rich(text), size, color, anchor,
                                     style == CardStyle.Header ? FontStyle.Bold : FontStyle.Normal);
+            if (style == CardStyle.Note) UiKit.Outline(label, new Color(0, 0, 0, 0.5f), 2);
             label.lineSpacing = 1.1f;
             if (style != CardStyle.Header && style != CardStyle.Note)
             {
@@ -80,24 +102,41 @@ namespace KadakChai
             }
 
             while (content.childCount > MaxCards) DestroyImmediate(content.GetChild(0).gameObject);
-            StartCoroutine(FadeInAndScroll(card.gameObject.AddComponent<CanvasGroup>()));
+            if (isActiveAndEnabled) StartCoroutine(FadeIn(row.gameObject.AddComponent<CanvasGroup>()));
+            stickToBottom = true;
+            Added?.Invoke();
         }
 
-        IEnumerator FadeInAndScroll(CanvasGroup g)
+        /// <summary>Jump to the newest message (when the Messages app is reopened).</summary>
+        public void ScrollToEnd()
+        {
+            if (!isActiveAndEnabled) return;
+            stickToBottom = true;
+            Canvas.ForceUpdateCanvases();
+            scroll.verticalNormalizedPosition = 0;
+        }
+
+        IEnumerator FadeIn(CanvasGroup g)
         {
             g.alpha = 0;
-            yield return null; // let layout run
-            Canvas.ForceUpdateCanvases();
-            float start = scroll.verticalNormalizedPosition;
             for (float t = 0; t < 1; t += Time.deltaTime * 4f)
             {
                 if (g == null) yield break;
                 g.alpha = t;
-                scroll.verticalNormalizedPosition = Mathf.Lerp(start, 0, t);
                 yield return null;
             }
             if (g != null) g.alpha = 1;
+        }
+
+        public void OnBeginDrag(UnityEngine.EventSystems.PointerEventData e) => stickToBottom = false;
+
+        void LateUpdate()
+        {
+            // Typewriter text grows bubbles every frame; keep the newest line in view (no fighting coroutines).
+            if (!stickToBottom || content == null) return;
+            Canvas.ForceUpdateCanvases();
             scroll.verticalNormalizedPosition = 0;
+            scroll.velocity = Vector2.zero;
         }
     }
 }

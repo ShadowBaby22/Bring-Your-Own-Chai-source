@@ -218,6 +218,57 @@ def gear():
 
 zones = {'dilli': india_gate, 'gurugram': beer, 'noida': katta, 'daftar': stamp_file}
 
+def chili():
+    s = path('M 70 70 Q 40 140 90 196 Q 140 240 206 226 Q 150 210 128 168 Q 110 128 118 84 Z', '#e53935')
+    s += path('M 84 92 Q 74 140 100 176', 'none', line=False, stroke='#ff8a80', stroke_width='10', opacity='0.8')
+    s += path('M 70 70 Q 82 44 112 48 Q 124 60 118 84 Q 96 66 70 70 Z', '#43a047') + path('M 100 50 Q 96 28 114 16', 'none', stroke='#2e7d32', stroke_width='10')
+    return s
+
+def scooty():
+    """Delivery Wale Bhaiya's scooty with the JhatPat box, running late."""
+    s = circle(64, 196, 30, '#37474f') + circle(64, 196, 12, '#b0bec5') + circle(196, 196, 30, '#37474f') + circle(196, 196, 12, '#b0bec5')
+    s += path('M 40 170 Q 60 130 112 132 L 150 132 L 170 104 L 186 104 L 196 168 Q 196 182 182 182 L 96 182 Q 80 162 40 170 Z', '#ffca28')
+    s += line(172, 104, 190, 70, 8) + line(178, 70, 206, 70, 8)                                   # handlebar
+    s += rect(24, 64, 82, 70, 8, '#FFD23F') + path('M 70 76 L 54 100 L 66 100 L 58 122 L 80 94 L 68 94 Z', '#e8590c', stroke_width='4')  # JhatPat box
+    s += circle(136, 84, 24, '#d9a066') + path('M 112 82 Q 112 52 136 52 Q 162 52 162 82 Z', '#e53935')  # bhaiya + helmet
+    s += path('M 120 106 Q 136 98 152 106 L 160 140 L 116 140 Z', '#43a047')
+    s += ''.join(line(10, y, 30, y, 6, '#90a4ae') for y in (150, 170, 190))                       # speed lines
+    s += text(214, 46, '2 min', 26, '#e53935', rot=-8)
+    return s
+
+# ------------------------------------------------------------------ bitterChai phone app icons (glossy dark squares, bitterSweet style)
+def app_base(inner):
+    return ('<defs><linearGradient id="gl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a5056"/><stop offset="1" stop-color="#1c1f22"/></linearGradient></defs>'
+            + rect(18, 18, 220, 220, 48, 'url(#gl2)', stroke_width='8') + inner
+            + path('M 30 66 Q 30 30 66 30 L 190 30 Q 226 30 226 66 L 226 104 Q 128 130 30 104 Z', '#ffffff', line=False, opacity='0.13'))
+
+def app_messages():
+    return app_base(path('M 60 82 Q 60 60 84 60 L 172 60 Q 196 60 196 82 L 196 142 Q 196 164 172 164 L 112 164 L 76 196 L 84 164 Q 60 164 60 142 Z', '#66bb6a')
+                    + ''.join(circle(x, 112, 10, '#ffffff', line=False) for x in (96, 128, 160)))
+
+def app_jhatpat():
+    return app_base(path('M 70 98 L 186 98 L 176 206 L 80 206 Z', '#FFD23F') + path('M 98 98 Q 98 58 128 58 Q 158 58 158 98', 'none', stroke=OUT, stroke_width='10')
+                    + path('M 136 112 L 106 160 L 128 160 L 116 196 L 152 142 L 130 142 Z', '#e8590c', stroke_width='5'))
+
+def app_skills():
+    return app_base(ellipse(128, 202, 60, 14, '#6d4c41') + circle(128, 124, 64, '#7e57c2')
+                    + circle(108, 104, 18, '#ffffff', line=False, opacity='0.45') + path('M 128 92 l 8 20 l 22 2 l -17 14 l 6 21 l -19 -12 l -19 12 l 6 -21 l -17 -14 l 22 -2 Z', '#ffe082', stroke_width='4'))
+
+def app_profile():
+    return app_base(rect(54, 70, 148, 118, 14, '#eceff1') + rect(54, 70, 148, 26, 14, '#26a69a') + circle(98, 136, 24, '#f2a65a')
+                    + path('M 70 186 Q 98 150 126 186 Z', '#2bb3a3', stroke_width='5') + line(140, 124, 186, 124, 7, '#90a4ae') + line(140, 148, 178, 148, 7, '#90a4ae'))
+
+def app_map():
+    return app_base(path('M 52 76 L 100 60 L 156 80 L 204 64 L 204 182 L 156 198 L 100 178 L 52 194 Z', '#fff3c4')
+                    + line(100, 60, 100, 178, 5) + line(156, 80, 156, 198, 5)
+                    + path('M 70 150 Q 100 120 128 140 Q 150 156 184 110', 'none', stroke='#e8590c', stroke_width='7', stroke_dasharray='4 12')
+                    + path('M 184 86 Q 200 86 200 102 Q 200 116 184 134 Q 168 116 168 102 Q 168 86 184 86 Z', '#e53935', stroke_width='5'))
+
+def app_settings():
+    return app_base(g(gear(), sx=0.62, sy=0.62))
+
+phone_apps = {'messages': app_messages, 'jhatpat': app_jhatpat, 'skills': app_skills, 'profile': app_profile, 'map': app_map, 'settings': app_settings}
+
 # ------------------------------------------------------------------ the NCR map (1000x1000)
 def ncr_map():
     W = H = 1000
@@ -283,5 +334,9 @@ for k, fn in shots.items():
 for k, fn in zones.items():
     open(os.path.join(out, f'zone_{k}.svg'), 'w').write(sticker(fn()))
 open(os.path.join(out, 'gear.svg'), 'w').write(sticker(gear()))
+open(os.path.join(out, 'chili.svg'), 'w').write(sticker(chili()))
+open(os.path.join(out, 'scooty.svg'), 'w').write(sticker(scooty()))
+for k, fn in phone_apps.items():
+    open(os.path.join(out, f'app_{k}.svg'), 'w').write(sticker(fn()))
 open(os.path.join(out, 'map.svg'), 'w').write(ncr_map())
 print(len(items) + 1 + len(shots), 'icons + map')

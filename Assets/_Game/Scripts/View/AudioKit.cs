@@ -102,6 +102,7 @@ namespace KadakChai
 
         public static void Music(string name)
         {
+            if (name == null) { if (music != null) music.Stop(); return; } // silence (game over)
             var c = Clip("Audio/Music/" + name);
             if (c == null) return;
             Ensure();

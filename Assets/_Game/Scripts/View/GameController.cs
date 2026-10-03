@@ -15,9 +15,11 @@ namespace KadakChai
     public class GameController : MonoBehaviour
     {
         RectTransform phone;
-        Text dayText, aqiText, statsText;
+        Text dayText, aqiText;
         Image aqiBox, zoneIcon;
-        RectTransform chips;
+        Text theekaText;
+        readonly Image[] chilies = new Image[GameData.MaxSpice];
+        PhoneView phoneView;
         BattleView battle;
         StoryLog log;
         VNPlayer vn;
@@ -90,7 +92,21 @@ namespace KadakChai
             zoneIcon.raycastTarget = false;
             zoneIcon.rectTransform.Place(18, 8, 88, 88);
             dayText = UiKit.Label(phone, "Day", "", 38, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
-            dayText.rectTransform.Place(116, 8, 664, 88);
+            dayText.rectTransform.Place(116, 8, 450, 88);
+
+            // Theeka meter: Balatro-style ante, 1/8 to 8/8. Each level makes enemies hit harder.
+            var theeka = UiKit.Panel(phone, "Theeka", new Color(0, 0, 0, 0.35f), rounded: true);
+            theeka.rectTransform.Place(566, 10, 216, 84);
+            theekaText = UiKit.Label(theeka.transform, "T", "", 24, UiKit.Hex("#FF8A65"), TextAnchor.UpperCenter, FontStyle.Bold);
+            theekaText.rectTransform.Place(0, 2, 216, 34, 216, 84);
+            for (int i = 0; i < chilies.Length; i++)
+            {
+                chilies[i] = UiKit.Panel(theeka.transform, "Chili" + i, Color.white);
+                chilies[i].sprite = Art.UI("chili");
+                chilies[i].preserveAspect = true;
+                chilies[i].raycastTarget = false;
+                chilies[i].rectTransform.Place(8 + i * 25, 36, 26, 42, 216, 84);
+            }
             dayText.lineSpacing = 0.85f;
             aqiBox = UiKit.Panel(phone, "Aqi", UiKit.Orange, rounded: true);
             aqiBox.rectTransform.Place(790, 12, 266, 80);
@@ -100,15 +116,10 @@ namespace KadakChai
 
             battle = BattleView.Build(phone);
 
-            // Stats + skill chips
-            statsText = UiKit.Label(phone, "Stats", "", 32, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
-            statsText.rectTransform.Place(30, 926, 1020, 60);
-            chips = UiKit.Make("Chips", phone).Place(30, 990, 1020, 76);
-            var ch = chips.gameObject.AddComponent<HorizontalLayoutGroup>();
-            ch.spacing = 10; ch.childForceExpandWidth = false; ch.childControlWidth = true; ch.childControlHeight = true;
-            ch.childAlignment = TextAnchor.MiddleLeft;
-
-            log = StoryLog.Build(phone);
+            // The hero's phone (bottom half): status bar, stats, apps; the story log lives in its Messages app.
+            phoneView = PhoneView.Build(phone);
+            phoneView.OpenShop = () => clicked = 2;
+            log = phoneView.Log;
 
             // Bottom buttons
             mainButton = UiKit.Button(phone, "Main", "", UiKit.Green, 48, () => clicked = 0);
@@ -142,7 +153,7 @@ namespace KadakChai
             title.rectTransform.Place(40, 420, 1000, 300);
             title.gameObject.AddComponent<TextFx>().wave = 6f;
             UiKit.Outline(title, Color.black, 5);
-            var sub = UiKit.Label(p.transform, "Sub", "One 11-month lease. 11 days. One stamp.\n<i>Everything is temporary.</i>", 44, Color.white);
+            var sub = UiKit.Label(p.transform, "Sub", "Bablu. 11 days. One stamp. No Bachelors.\n<i>Everything is temporary.</i>", 44, Color.white);
             sub.rectTransform.Place(60, 740, 960, 200);
             var metro = UiKit.Label(p.transform, "Metro", "\"Agla station: Temporary. Darwaze baayi taraf khulenge.\"", 32, new Color(1, 1, 1, 0.6f));
             metro.rectTransform.Place(60, 1000, 960, 120);
@@ -167,6 +178,8 @@ namespace KadakChai
         IEnumerator RunLoop()
         {
             run = new Run(System.Environment.TickCount);
+            phoneView.Bind(run);
+            phoneView.ShowApp("messages");
             var oldStamp = phone.Find("Stamp");
             if (oldStamp != null) Destroy(oldStamp.gameObject);
             log.Clear();
@@ -176,6 +189,7 @@ namespace KadakChai
             battle.SetZone(run.Day.zone, 0);
             battle.SetAqi(run.S.aqi);
             battle.ShowParty(run.S);
+            battle.ReviveHero(run.S);
             battle.SetTicker(GameData.RandomCard("news_", run.Rng)?.text ?? "");
 
             int startDay = StartDay();
@@ -204,6 +218,7 @@ namespace KadakChai
             while (true)
             {
                 yield return PlayDay();
+                if (run.Dead) { yield return GameOver(); yield break; }
 
                 bool lastDay = run.DayNumber >= run.TotalDays;
                 if (lastDay) { run.EndDay(); break; }
@@ -233,12 +248,18 @@ namespace KadakChai
         IEnumerator PlayDay()
         {
             bool stageChanged = run.BeginDay();
+            phoneView.NewDay();
             var stage = Aqi.StageFor(run.S.aqi);
-            battle.SetZone(run.Day.zone, run.DayInZone);
+            battle.SetZone(string.IsNullOrEmpty(run.Day.bg) ? run.Day.zone : run.Day.bg, run.DayInZone);
             battle.SetAqi(run.S.aqi);
             RefreshHud();
 
-            log.Add($"Day {run.DayNumber} of {run.TotalDays}  ·  {GameData.ZoneName(run.Day.zone)}", CardStyle.Header);
+            log.Add($"Day {run.DayNumber} of {run.TotalDays}  ·  {GameData.ZoneName(run.Day.zone)}  ·  Theeka {run.Spice}/8", CardStyle.Header);
+            if (run.DayNumber > 1 && run.Spice > GameData.Days[run.S.dayIndex - 1].spice)
+            {
+                AudioKit.Sfx("boom", 0.6f);
+                battle.Banner($"*THEEKA {run.Spice}/8: {GameData.SpiceName(run.Spice).ToUpper()}*  Enemies hit harder.");
+            }
             if (run.Day.rent > 0)
             {
                 AudioKit.Sfx("coin");
@@ -261,7 +282,7 @@ namespace KadakChai
                 while (true)
                 {
                     yield return WaitMain(label, run.Kind == DayKind.Boss ? UiKit.Red : UiKit.Green);
-                    AudioKit.Music("battle");
+                    AudioKit.Music(run.S.hp < run.S.maxHp * 0.5f ? "techno" : "battle");
                     var result = run.Fight();
                     yield return battle.Play(result);
                     AudioKit.Music("day");
@@ -284,13 +305,23 @@ namespace KadakChai
                         break;
                     }
 
+                    if (result.revived)
+                    {
+                        // Health Insurance: one revive at 50% HP, then the same fight again.
+                        AudioKit.Sfx("heal");
+                        log.Add(CardText("revive"), CardStyle.Good);
+                        battle.Banner("*Health Insurance claimed!* Back at 50% HP.");
+                        RefreshHud();
+                        yield return battle.ResetForRetry(run.S, enemies);
+                        label = "Fight again";
+                        continue;
+                    }
+                    // Dead. The run is over.
+                    AudioKit.Music(null);
                     AudioKit.Sfx("lose");
-                    var lose = GameData.RandomCard(result.loseReason == "time" ? "timeout_" : "lose_", run.Rng);
-                    log.Add(lose?.text, CardStyle.Bad);
-                    run.RetryDay();
+                    log.Add(CardText("lose_"), CardStyle.Bad);
                     RefreshHud();
-                    yield return battle.ResetForRetry(run.S, enemies);
-                    label = "Come Tomorrow (retry)";
+                    yield break;
                 }
             }
             else
@@ -404,6 +435,41 @@ namespace KadakChai
             yield return new WaitForSeconds(1.5f);
         }
 
+        /// <summary>Bablu is dead: the lease is terminated and the run starts over from Day 1.</summary>
+        IEnumerator GameOver()
+        {
+            HideButtons();
+            yield return new WaitForSeconds(0.8f);
+            AudioKit.Sfx("stamp");
+            var p = UiKit.Panel(phone, "GameOver", new Color(0.05f, 0, 0, 0.88f));
+            p.rectTransform.Fill();
+            var stamp = UiKit.Panel(p.transform, "Stamp", new Color(0.75f, 0.06f, 0.06f, 0.95f), rounded: true);
+            stamp.rectTransform.Place(90, 300, 900, 300);
+            stamp.rectTransform.localRotation = Quaternion.Euler(0, 0, -8);
+            var st = UiKit.Label(stamp.transform, "T", "LEASE\nTERMINATED", 100, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            st.rectTransform.Fill(10);
+            UiKit.Outline(st, new Color(0.3f, 0, 0, 0.8f), 5);
+            for (float k = 0; k < 1; k += Time.deltaTime * 5f) { stamp.rectTransform.localScale = Vector3.one * Mathf.Lerp(3f, 1f, k); yield return null; }
+            stamp.rectTransform.localScale = Vector3.one;
+            battle.Shake(20, 0.4f);
+
+            var s = run.S;
+            string body = $"*{GameData.HeroName}* died on *Day {run.DayNumber}* ({GameData.ZoneName(run.Day.zone)}), Theeka {run.Spice}/8.\n" +
+                          $"Killed by *{run.Killer}*.\n\n" +
+                          $"Level {s.level}  ·  ₹{s.earned} earned  ·  {s.skills.Count} skill{(s.skills.Count == 1 ? "" : "s")} on lease\n\n" +
+                          UiKit.Rich(CardText("gameover_"));
+            var t = UiKit.Label(p.transform, "Body", UiKit.Rich(body), 40, Color.white, TextAnchor.UpperCenter);
+            t.rectTransform.Place(80, 680, 920, 700);
+            t.lineSpacing = 1.2f;
+
+            bool again = false;
+            UiKit.Button(p.transform, "TryAgain", "Sign a New Lease (Day 1)", UiKit.Green, 46, () => again = true)
+                .GetComponent<RectTransform>().Place(140, 1500, 800, 160);
+            while (!again) yield return null;
+            Destroy(p.gameObject);
+            StartCoroutine(RunLoop());
+        }
+
         void ShowCredits()
         {
             var p = UiKit.Panel(phone, "Credits", new Color(0, 0, 0, 0.85f));
@@ -477,36 +543,14 @@ namespace KadakChai
             zoneIcon.sprite = zi;
             zoneIcon.enabled = zi != null;
             aqiText.text = $"AQI {s.aqi}\n<size=22>{Aqi.StageName(stage)}</size>";
+            int spice = run.Finished ? GameData.MaxSpice : run.Spice;
+            theekaText.text = $"THEEKA {spice}/8";
+            for (int i = 0; i < chilies.Length; i++) chilies[i].color = i < spice ? Color.white : new Color(0.25f, 0.25f, 0.3f, 0.7f);
             var (r, g, b) = Aqi.Color(stage);
             aqiBox.color = new Color(r, g, b);
-            string toll = s.tollDays > 0 ? "<color=#FF6E6E>" : "";
-            string end = s.tollDays > 0 ? "</color>" : "";
-            statsText.text = $"Lv {s.level}  EXP {s.xp}/{s.XpToNext}  HP {s.hp}/{s.maxHp}  {toll}ATK {s.AtkTotal}  DEF {s.DefTotal}{end}  <color=#FFD23F>₹{s.rupees}</color>";
-
-            foreach (Transform c in chips) Destroy(c.gameObject);
-            if (s.weapon != null) Chip($"{s.weapon.data.name} <b>{s.weapon.fightsLeft}f</b>", s.weapon.IsLastFight ? UiKit.Red : UiKit.Hex(s.Ranged ? "#1E88E5" : "#C62828"));
-            if (s.armour != null) Chip($"{s.armour.data.name} <b>{s.armour.fightsLeft}f</b>", s.armour.IsLastFight ? UiKit.Red : UiKit.Hex("#546E7A"));
-            if (s.fastags > 0) Chip(s.fastags > 1 ? $"FASTag x{s.fastags}" : "FASTag", UiKit.Hex("#00897B"));
-            if (s.tollDays > 0) Chip($"Toll Tax <b>{s.tollDays}d</b>", UiKit.Hex("#B71C1C"));
-            if (s.skills.Count == 0 && chips.childCount == 0)
-            {
-                var none = UiKit.Label(chips, "None", "No skills. Everything is temporary.", 26, new Color(1, 1, 1, 0.5f), TextAnchor.MiddleLeft);
-                none.gameObject.AddComponent<LayoutElement>().preferredWidth = 1000;
-            }
-            foreach (var o in s.skills) Chip($"{o.data.shortName} <b>{o.daysLeft}d</b>", o.IsLastDay ? UiKit.Red : new Color(1, 1, 1, 0.15f));
+            phoneView.Refresh();
             battle.RefreshHero(s);
             battle.SetHeld(s);
-        }
-
-        void Chip(string text, Color color)
-        {
-            var chip = UiKit.Panel(chips, "Chip", color, rounded: true);
-            var lg = chip.gameObject.AddComponent<HorizontalLayoutGroup>();
-            lg.padding = new RectOffset(16, 16, 6, 6);
-            lg.childControlWidth = true; lg.childControlHeight = true;
-            lg.childForceExpandWidth = false; lg.childForceExpandHeight = false; // otherwise chips stretch to fill the row
-            var t = UiKit.Label(chip.transform, "T", text, 25, Color.white);
-            t.horizontalOverflow = HorizontalWrapMode.Overflow;
         }
 
         // ============================================================== Buttons
@@ -533,7 +577,11 @@ namespace KadakChai
                 shopButton.SetText($"JhatPat\n<size=30>₹{run.S.rupees}</size>");
                 shopButton.gameObject.SetActive(true);
                 clicked = -1;
+                phoneView.ShopReady = true;
+                phoneView.Refresh();
                 while (clicked < 0) yield return null;
+                phoneView.ShopReady = false;
+                phoneView.Refresh();
                 HideButtons();
                 if (clicked != 2) yield break;
                 yield return ShopView.Open(phone, run, () => { RefreshHud(); battle.ShowParty(run.S); }, (t, st) => log.Add(t, st));

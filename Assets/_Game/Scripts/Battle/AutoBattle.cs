@@ -33,6 +33,9 @@ namespace KadakChai
         public int heroHpAfter;
         public int xpGained;
         public int rupeesGained;
+        public bool revived;                    // lost, but Health Insurance brought Bablu back (fight again)
+        public bool died;                       // lost with no insurance: the run is over
+        public string killer;                   // name of whoever landed the last hit
         public List<ItemData> broken = new();   // gear that broke after this win
         public readonly List<UnitInfo> units = new();
         public readonly List<BattleEvent> events = new();
@@ -44,9 +47,11 @@ namespace KadakChai
     /// </summary>
     public class AutoBattle
     {
-        public const int MaxRounds = 15;
-        public const float RagePerRetry = 0.15f; // each "Come Tomorrow" makes you angrier, so nobody gets stuck
-        public const float TiredPerRetry = 0.08f; // ...and the enemy gets tired of you: -8% HP per retry (floor 50%)
+        public const int MaxRounds = 15;          // after this: AQI 999 sudden death until someone drops
+        public const int HardCap = 40;
+        public const float SuddenDeathPct = 0.12f; // of max HP, everyone, every sudden-death round
+        // Theeka level (Balatro-style ante, 1-8): every level above 1 adds this much to enemy HP and ATK.
+        public const float SpiceHp = 0.08f, SpiceAtk = 0.12f;
         public const float RangedPenalty = 0.8f;  // ranged attacks do 20% less damage
         public const float CloseBonus = 1.25f;    // close attacks do 25% more to ranged targets
         static readonly HashSet<string> Uncles = new() { "scooty_uncle", "auto_bhaiya", "guard", "broker", "babu", "sector_cabbie" };
@@ -61,22 +66,37 @@ namespace KadakChai
         ItemData weapon;
         GrapStage stage;
         bool ignoreAqi;
-        int round, shieldHits, retries;
+        int round, shieldHits, spice;
         float dodge;
 
-        AutoBattle(RunState s, Random rng, int retries) { this.s = s; this.rng = rng; this.retries = retries; }
+        AutoBattle(RunState s, Random rng, int spice) { this.s = s; this.rng = rng; this.spice = Math.Max(1, spice); }
 
-        public static BattleResult Simulate(RunState s, List<CombatantData> enemies, Random rng, int retries = 0) =>
-            new AutoBattle(s, rng, retries).Run(enemies);
+        /// <param name="spice">Theeka level 1-8 of the day: scales enemy HP and ATK.</param>
+        public static BattleResult Simulate(RunState s, List<CombatantData> enemies, Random rng, int spice = 1) =>
+            new AutoBattle(s, rng, spice).Run(enemies);
 
         BattleResult Run(List<CombatantData> enemies)
         {
             Setup(enemies);
 
-            bool heroSkipShown = false, foeSkipShown = false;
-            for (round = 1; round <= MaxRounds; round++)
+            bool heroSkipShown = false, foeSkipShown = false, suddenShown = false;
+            for (round = 1; round <= HardCap; round++)
             {
                 Emit(BattleEventType.Round, amount: round);
+                if (round > MaxRounds)
+                {
+                    // AQI 999: no more stalling. Everyone chokes until someone drops (enemies first).
+                    if (!suddenShown) { suddenShown = true; Shout(null, "AQI 999! Sudden death: everyone chokes on the smog."); }
+                    foreach (var u in foes.Where(f => f.Alive).Append(hero).ToList())
+                    {
+                        int dmg = Math.Max(1, (int)Math.Ceiling(u.maxHp * SuddenDeathPct));
+                        u.hp = Math.Max(0, u.hp - dmg);
+                        Emit(BattleEventType.Hit, null, u, dmg, u.hp, "Smog");
+                        if (u.hp == 0) { if (u == hero) r.killer = "the smog"; OnZeroHp(u); }
+                        if (Decided()) break;
+                    }
+                    if (Decided()) break;
+                }
 
                 bool oddEven = stage == GrapStage.Grap4;
                 bool heroTurn = !(oddEven && !ignoreAqi && round % 2 == 0);
@@ -96,7 +116,7 @@ namespace KadakChai
                 foreach (var u in units) u.TickStatuses();
             }
 
-            r.rounds = Math.Min(round, MaxRounds);
+            r.rounds = Math.Min(round, HardCap);
             r.won = hero.Alive && foes.All(f => !f.Alive);
             r.loseReason = r.won ? null : hero.Alive ? "time" : "hp";
             r.heroHpAfter = hero.hp;
@@ -112,15 +132,15 @@ namespace KadakChai
             weapon = s.weapon?.data;
             float toll = s.tollDays > 0 ? 1f - RunState.TollPenalty : 1f;
             int heroMax = (int)Math.Round(s.maxHp * toll);
-            hero = AddUnit(new Combatant(units.Count, "new_kid", "New Kid", true, false, Math.Min(s.hp, heroMax), heroMax, s.AtkTotal * toll, s.DefTotal * toll));
+            hero = AddUnit(new Combatant(units.Count, "new_kid", GameData.HeroName, true, false, Math.Min(s.hp, heroMax), heroMax, s.AtkTotal * toll, s.DefTotal * toll));
             hero.ranged = s.Ranged;
             if (s.HasAunty && GameData.Combatants.TryGetValue("pinky_aunty", out var ad))
                 aunty = AddUnit(new Combatant(units.Count, ad.id, ad.name, true, true, 1, 1, ad.atk, 0, ad));
-            float tired = Math.Max(0.5f, 1f - retries * TiredPerRetry);
+            float hpMul = 1f + SpiceHp * (spice - 1), atkMul = 1f + SpiceAtk * (spice - 1);
             foreach (var e in enemies)
             {
-                int hp = (int)Math.Round(e.hp * tired);
-                foes.Add(AddUnit(new Combatant(units.Count, e.id, e.name, false, false, hp, hp, e.atk, e.def, e) { ranged = e.Ranged }));
+                int hp = (int)Math.Round(e.hp * hpMul);
+                foes.Add(AddUnit(new Combatant(units.Count, e.id, e.name, false, false, hp, hp, e.atk * atkMul, e.def, e) { ranged = e.Ranged }));
             }
 
             if (s.tollDays > 0) Shout(hero, $"Toll Tax! All stats -{RunState.TollPenalty * 100:0}% ({s.tollDays} day{(s.tollDays > 1 ? "s" : "")} left).");
@@ -143,8 +163,6 @@ namespace KadakChai
                 Shout(b, "Lunch Break! Come back in 2 rounds.");
             }
 
-            if (retries > 0)
-                Shout(hero, $"Attempt #{retries + 1}. You're angrier (+{retries * RagePerRetry * 100:0}% ATK). They're tired of you (-{(1 - tired) * 100:0}% HP).");
 
             foreach (var k in active)
             {
@@ -306,6 +324,16 @@ namespace KadakChai
                     if (f.actions % 2 == 0) { f.Add(new StatusEffect(StatusKind.AtkUp, 99, f.AtkBonus() + 0.15f)); Shout(f, (f.data.quip ?? "Synergy!") + " +15% ATK"); }
                     break;
 
+                case "couple":
+                    // PDA couple: patch each other up; the survivor of a breakup is furious (see OnZeroHp).
+                    var partner = foes.FirstOrDefault(o => o != f && o.Ai == "couple" && o.Alive);
+                    if (partner != null && partner.hp < partner.maxHp * 0.5f && f.actions % 2 == 0)
+                    {
+                        Heal(f, partner, (int)Math.Round(partner.maxHp * 0.2f), f.id == "jaanu" ? "Are you okay, baby?" : "Jaanu, don't die!");
+                        return;
+                    }
+                    break;
+
                 case "ceo":
                     if (f.actions % 2 == 0)
                     {
@@ -339,7 +367,6 @@ namespace KadakChai
                 else if (t.ranged) atk *= CloseBonus;
                 if (sureShot && Uncles.Contains(t.id)) atk *= weapon.power;
             }
-            if (a == hero) atk *= 1f + retries * RagePerRetry;
             if (a == hero && stage == GrapStage.RareGoodDay) atk *= 1.2f;
             if (!a.isPlayerSide && stage == GrapStage.Grap1 && !ignoreAqi) atk *= 1.1f;
 
@@ -349,7 +376,7 @@ namespace KadakChai
 
             t.hp = Math.Max(0, t.hp - dmg);
             Emit(BattleEventType.Hit, a, t, dmg, t.hp, label, big, ranged, proj);
-            if (t.hp == 0) OnZeroHp(t);
+            if (t.hp == 0) { if (t == hero) r.killer = a.name; OnZeroHp(t); }
             return dmg;
         }
 
@@ -364,6 +391,11 @@ namespace KadakChai
                 return;
             }
             Emit(BattleEventType.Death, t, t);
+            if (t.Ai == "couple" && foes.FirstOrDefault(o => o != t && o.Ai == "couple" && o.Alive) is { } ex)
+            {
+                ex.Add(new StatusEffect(StatusKind.AtkUp, 99, 0.5f));
+                Shout(ex, "BREAKUP! Now it's personal. (+50% ATK)");
+            }
         }
 
         void Heal(Combatant a, Combatant t, int amount, string label)

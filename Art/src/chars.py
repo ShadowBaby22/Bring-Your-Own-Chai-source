@@ -315,11 +315,45 @@ def techbro():
     s += text(398, 296, 'in', 34, '#ffffff', mirror=True) + hand(394, 334, skin)
     return s
 
+def jaanu():
+    skin = '#D9A066'
+    s = legs('#5c7fa3', '#ffffff')
+    s += path('M 236 548 L 252 530 L 262 548', 'none', stroke='#dfe8f0', stroke_width='5') + path('M 282 540 L 296 524 L 306 540', 'none', stroke='#dfe8f0', stroke_width='5')  # ripped jeans
+    s += torso('#F48FB1')
+    s += text(262, 446, 'HER', 30, '#ad1457', mirror=True) + text(262, 482, 'JAANU', 30, '#ad1457', mirror=True)
+    s += capsule(178, 400, 160, 486, 42, '#F48FB1') + hand(160, 494, skin)
+    s += head(skin)
+    s += path('M 126 232 Q 112 120 190 96 L 196 50 L 228 92 L 248 34 L 270 88 L 300 40 L 314 92 L 352 58 L 350 106 Q 410 130 402 214 Q 370 150 300 146 Q 230 146 190 156 Q 150 176 148 236 Z', '#2b2024')   # gelled spikes
+    s += line(130, 262, 150, 380, 4, '#ffffff') + circle(130, 258, 9, '#ffffff')            # shared earphone wire
+    s += eyes(skin, lid=10) + brows('smug') + mouth('smirk')
+    s += capsule(352, 400, 400, 376, 42, '#F48FB1') + hand(404, 372, skin)                  # arm across the door
+    s += text(430, 300, 'BRO.', 34, '#e53935', rot=-10, mirror=True)
+    return s
+
+def shona():
+    skin = '#E8B98A'
+    s = path('M 126 230 Q 104 430 160 486 L 372 486 Q 420 410 400 230 Z', '#3e2723')           # long hair behind
+    s += legs('#212121', '#f48fb1', spread=28)
+    s += torso('#F48FB1')
+    s += text(262, 446, 'HIS', 30, '#ad1457', mirror=True) + text(262, 482, 'SHONA', 30, '#ad1457', mirror=True)
+    s += capsule(176, 400, 158, 486, 40, '#F48FB1') + hand(158, 494, skin)
+    s += head(skin)
+    s += path('M 126 252 Q 116 96 262 92 Q 404 94 400 252 Q 384 170 330 146 Q 262 156 214 150 Q 156 170 142 262 Z', '#3e2723')
+    s += path('M 300 96 Q 336 70 372 92 Q 350 108 300 106 Z', '#f06292')                       # bow
+    s += eyes(skin, lid=6, look=10) + line(360, 214, 374, 204, 5) + line(292, 214, 284, 202, 5)
+    s += brows('raised', y=198, w=7)
+    s += ellipse(322, 306, 16, 12, '#ec407a')                                                   # selfie pout
+    s += blush()
+    s += capsule(350, 400, 400, 320, 40, '#F48FB1') + hand(402, 314, skin)
+    s += line(404, 312, 440, 170, 8, '#424242') + rect(416, 116, 54, 90, 10, '#263238') + rect(422, 124, 42, 72, 4, '#ffe082', line=False)  # selfie stick
+    s += path('M 476 140 L 500 124 M 480 166 L 508 166 M 476 190 L 500 206', 'none', stroke='#fff59d', stroke_width='7')                    # flash
+    return s
+
 SWEAT = (path('M 410 150 Q 426 178 410 194 Q 394 178 410 150 Z', '#7fd3ff') +
          path('M 120 170 Q 132 192 120 204 Q 108 192 120 170 Z', '#7fd3ff') +
          line(420, 250, 450, 240, 6) + line(424, 280, 456, 284, 6))  # pain marks
 
-for fn in [new_kid, pinky_aunty, scooty_uncle, auto_bhaiya, south_delhi_girl, broker, monkey, firecracker, guard, ceo, babu, sector_cabbie, techbro]:
+for fn in [new_kid, pinky_aunty, scooty_uncle, auto_bhaiya, south_delhi_girl, broker, monkey, firecracker, guard, ceo, babu, sector_cabbie, techbro, jaanu, shona]:
     C[fn.__name__] = fn()
     HURT = True
     C[fn.__name__ + '_hit'] = fn() + SWEAT

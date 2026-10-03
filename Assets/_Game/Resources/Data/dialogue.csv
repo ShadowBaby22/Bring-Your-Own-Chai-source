@@ -4,7 +4,7 @@ id,text,choice_a,effect_a,result_a,choice_b,effect_b,result_b
 # Event pools: any row whose id starts with a day's "pool" (e.g. ev_dilli_) can appear on that day. Add rows to add variety.
 #
 # --- Run start ---
-intro,"You arrive in Delhi NCR with two suitcases and one *11-month rent agreement*. Here, that means *11 days*. Your mission: get one *stamp* from the Sarkari Daftar before the lease runs out.",,,,,,
+intro,"*Bablu*, 21, from Kanpur. B.Tech third year, four backlogs. His Gurugram internship starts in *11 days*, but every society in NCR says *No Bachelors*. The RWAs want *police verification*, stamped at the *Sarkari Daftar*. One flat. One stamp. 11 days. If Bablu dies, the lease is terminated.",,,,,,
 astro_intro,"An *Astrologer Baba* outside the metro station grabs your hand. ""Your stars are aligned, beta. Temporarily.""",,,,,,
 #
 # --- Fight intros (fight_<enemy id>, picked by the enemy group rolled that day) ---
@@ -22,6 +22,8 @@ fight_firecracker,"A *Firecracker Ban Violator* is launching rockets ""for the c
 fight_firecracker_win,"The guard finally lets you through the gate. You were trying to leave.",,,,,,
 fight_techbro,"Welcome to the *Gurugram Corporate Emirates*. A *LinkedIn Tech Bro* blocks the Cyber Hub entrance. ""Let's take this offline. Also, are you open to work?""",,,,,,
 fight_techbro_win,"He updates his headline to ""Humbled. Learning from failure."" It gets 9k likes. You get endorsed for Violence.",,,,,,
+fight_jaanu,"*Rajiv Chowk*, 6 PM. The doors open and you are *transferred* inside. A *PDA couple* has claimed the only door. Your stop is next.",,,,,,
+fight_jaanu_win,"The couple breaks up mid-fight, gets back together at Mandi House, and posts about it. You make your stop. Barely.",,,,,,
 #
 # --- Fixed day cards ---
 d2,"*Pinky Aunty* from the RWA WhatsApp group corners you at the gate. ""Beta, I will help you. But first forward this to 10 people.""",Forward it,flag:aunty,"*Pinky Aunty* joins you! You are now in 14 new WhatsApp groups.",Leave her on read,flag:aunty;hp:-10%,"She joins anyway, and tells the whole society you are ""very rude"". *Pinky Aunty* joins you!"
@@ -31,7 +33,7 @@ d8,"The *Startup CEO* blocks your path in a fleece vest. ""We're disrupting the 
 d8_win,"His *runway* hits zero. ""We're excited to announce the end of our incredible journey."" He posts about it on LinkedIn. It gets 40k likes.",,,,,,
 ev_daftar_chai,"A *chai tapri* outside the Daftar. *Delivery Wale Bhaiya* calls: ""Sir, 2 minute mein pahunch raha hoon."" He said that on Day 1.",Sip it slowly,heal:100%,"Kadak chai. Full HP. For one moment, everything is fine.",Gulp it down,heal:50%;atk:+4,"You burn your tongue. Now you are furious, which helps."
 d11,"The *Babu*, Keeper of the Stamp, looks up. ""Original + 3 photocopies + self-attested + attested by gazetted officer + your soul.""",,,,,,
-d11_win,"THUNK. The *stamp* lands. It reads: *VALID FOR 11 MONTHS*. Your lease ended this morning.",,,,,,
+d11_win,"THUNK. The *stamp* lands: *POLICE VERIFICATION, VALID FOR 11 MONTHS*. Bablu is officially a person. For 11 months.",,,,,,
 #
 # --- Dilli event pool (day 3) ---
 ev_dilli_maamu,"A *barricade* blocks the road. *Maamu* stands next to it. ""Road closed temporarily, sir."" ""Since when?"" ""2011.""",Take the detour,xp:+30,"The detour has its own detour. You learn a lot about yourself.",Argue with Maamu,atk:+3;rs:-100,"He issues you a *₹100 challan* for arguing. You leave angrier, and somehow stronger."
@@ -59,9 +61,14 @@ win_1,"Victory! The enemy files a complaint with the RWA.",,,,,,
 win_2,"Victory! You celebrate with a samosa. It is also temporary.",,,,,,
 win_3,"Victory! Somewhere, a pressure horn plays in your honour.",,,,,,
 win_4,"Victory! The crowd disperses the way Delhi crowds do: slowly, and towards you.",,,,,,
-lose_1,"You collapse on the footpath. A passing auto refuses to take you. *Come Tomorrow.*",,,,,,
-lose_2,"Defeated. You wake up at full HP and the day starts again. The problem has not been solved. *Come Tomorrow.*",,,,,,
-timeout_1,"Round 15. The lunch break begins and the counter shuts. *Come Tomorrow* (with original documents).",,,,,,
+lose_1,"*Bablu* collapses on the footpath. A passing auto refuses to take him. Not even to AIIMS.",,,,,,
+lose_2,"*Bablu* goes down. Somewhere, Mummy's phone rings three times and stops.",,,,,,
+lose_3,"*Bablu* is defeated. The society WhatsApp group posts "Om Shanti" and moves on to the parking dispute.",,,,,,
+revive,"*Health Insurance* claimed. *Bablu* wakes up in AIIMS at 50% HP. The policy has now expired. Everything is temporary.",,,,,,
+gameover_1,"The landlord has given your room to a ""family"".",,,,,,
+gameover_2,"Your broker has already listed the flat again. Brokerage: one month, non-refundable.",,,,,,
+gameover_3,"Mummy says come back to Kanpur. Papa says nothing, which is worse.",,,,,,
+gameover_4,"The RWA notice board now reads: NO BACHELORS. ESPECIALLY BABLU.",,,,,,
 expire_1,"Your *{skill}* lease has ended. The landlord kept the deposit.",,,,,,
 expire_2,"*{skill}* was only temporary. Like everything here.",,,,,,
 expire_3,"*{skill}* has expired. Renewal requires 3 photocopies and a visit on a weekday.",,,,,,
@@ -80,7 +87,7 @@ news_9,"BREAKING: Odd-even is back. Even numbers urged to stay calm.",,,,,,
 news_10,"BREAKING: RWA WhatsApp group reaches 1,000 'Good Morning' images before 7am. New record.",,,,,,
 #
 # --- Ending ---
-jhatpat_intro,"*JhatPat* is installed on your phone: weapons, chai and a *Mystery Box*, ""delivered in 10 minutes*"". Mummy sent *₹200* pocket money. Shop after any day.",,,,,,
+jhatpat_intro,"*JhatPat* is installed on your phone: weapons, chai and a *Mystery Box*, delivered in 10 minutes (T&C apply). Mummy sent *₹200* pocket money. Tap the JhatPat app after any day.",,,,,,
 rent_day,"*Rent day.* The landlord takes *₹{rs}*. He does not care about the baraat.",,,,,,
 border_dilli_gurugram,"*Sirhaul toll plaza.* Welcome to Gurugram. The toll is 30 seconds long and 40 minutes deep. *Toll Tax: all stats -15% for 2 days.*",,,,,,
 border_gurugram_noida,"*DND Flyway.* It has been toll-free for years. The *Toll Tax* still applies, out of respect. *All stats -15% for 2 days.*",,,,,,

@@ -113,6 +113,33 @@ def loop(bpm, melody, bass, drums, lead='square', lead_vol=0.16):
     L = len(m) * 2  # trim everything to the melody so the loop is seamless
     return mix(m * 2, (b * 2)[:L], (d * (L // max(1, len(d)) + 1))[:L])
 
+def techno():
+    """Delhi techno for low HP: 128 BPM four-on-the-floor, offbeat hats, rolling saw bass, dhol hits, tumbi riff."""
+    bpm = 128; six = 60 / bpm / 4  # sixteenth note
+    bars = 8; steps = bars * 16
+    def kick(): return mix(tone(150, six * 2, 'sine', 1.0, sweep_to=45, decay=0.09), noise(0.01, 0.4, decay=0.004))
+    def hat(): return noise(six, 0.22, decay=0.018)
+    def clap(): return mix(noise(six * 2, 0.45, decay=0.05, lowpass=0.3), noise(0.01, 0.3, decay=0.003))
+    bass_notes = ['C2', 'C2', 'C3', 'C2', 'Eb2', 'C2', 'C3', 'G2'] * 2
+    riff = ['C5', '-', 'Eb5', 'C5', '-', 'G5', 'F5', '-', 'Eb5', '-', 'C5', '-', 'Bb4', 'C5', '-', '-']
+    riff2 = ['G5', '-', 'F5', 'Eb5', '-', 'F5', 'G5', '-', 'Bb5', '-', 'G5', '-', 'F5', 'Eb5', 'C5', '-']
+    track = [0.0] * int(SR * six * steps + SR)
+    def put(samples, step):
+        o = int(SR * six * step)
+        for i, v in enumerate(samples):
+            if o + i < len(track): track[o + i] += v
+    for st in range(steps):
+        beat, sub = divmod(st % 16, 4)
+        if sub == 0: put(kick(), st)                                  # four on the floor
+        if sub == 2: put(hat(), st)                                   # offbeat hat
+        if st % 16 in (4, 12): put(clap(), st)                        # clap on 2 and 4
+        put(tone(note(bass_notes[st % 16]), six, 'saw', 0.22, decay=six * 0.8), st)   # rolling bass
+        if st % 16 in (0, 3, 6, 10) and st >= 32: put(drum_tabla(six * 2), st)        # dhol enters after 2 bars
+        if st >= 64:                                                  # tumbi riff in the second half
+            n = (riff if (st // 16) % 2 == 0 else riff2)[st % 16]
+            if n != '-': put(tone(note(n), six * 1.5, 'square', 0.11, decay=six * 0.7), st)
+    return track[:int(SR * six * steps)]
+
 def music():
     day = loop(96,
                melody=['C5', '-', 'Db5', 'E5', 'F5', '-', 'E5', 'Db5', 'C5', '-', '-', 'G4', 'Ab4', 'B4', 'C5', '-',
@@ -124,12 +151,15 @@ def music():
                           'G4', 'Ab4', 'B4', 'C5', 'Db5', 'E5', 'F5', 'G5', 'Ab5', 'G5', 'F5', 'E5', 'Db5', 'C5', 'B4', 'C5'],
                   bass=['C2', 'C3', 'C2', 'C3', 'F2', 'F3', 'G2', 'G3', 'Ab2', 'Ab3', 'G2', 'G3', 'F2', 'E2', 'Db2', 'C2'],
                   drums=list('DnDnD-nn'), lead='square', lead_vol=0.12)
-    return {'day': day, 'battle': battle}
+    return {'day': day, 'battle': battle, 'techno': techno()}
 
 if __name__ == '__main__':
     root = sys.argv[1]
     os.makedirs(os.path.join(root, 'SFX'), exist_ok=True)
     os.makedirs(os.path.join(root, 'Music'), exist_ok=True)
-    for name, s in sfx().items(): save(os.path.join(root, 'SFX', name + '.wav'), s)
-    for name, s in music().items(): save(os.path.join(root, 'Music', name + '.wav'), s, gain=0.7)
+    only = sys.argv[2] if len(sys.argv) > 2 else None   # e.g. "techno" renders just that music track
+    if only is None:
+        for name, s in sfx().items(): save(os.path.join(root, 'SFX', name + '.wav'), s)
+    for name, s in music().items():
+        if only is None or name == only: save(os.path.join(root, 'Music', name + '.wav'), s, gain=0.7)
     print('done')

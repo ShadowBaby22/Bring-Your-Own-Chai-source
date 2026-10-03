@@ -37,6 +37,7 @@ namespace KadakChai
         public OwnedItem weapon, armour;
         public int fastags;                 // each one skips one Toll Tax
         public int tollDays;                // Toll Tax debuff: all stats -15% while > 0
+        public int insuranceDays;           // Health Insurance: one revive at 50% HP while > 0 (expires)
         public readonly List<ItemData> shop = new();
 
         public const float TollPenalty = 0.15f;
@@ -79,7 +80,10 @@ namespace KadakChai
     {
         public readonly RunState S = new();
         public readonly Random Rng;
-        public int Attempts;     // fights lost on the current day
+        /// <summary>Bablu died with no insurance. The run is over: back to Day 1.</summary>
+        public bool Dead { get; private set; }
+        public string Killer { get; private set; }
+        public const float ReviveHp = 0.5f;
 
         public Run(int seed) { Rng = new Random(seed); }
 
@@ -112,7 +116,6 @@ namespace KadakChai
         /// <summary>Rolls today's AQI. Returns true if the GRAP stage changed (show a headline).</summary>
         public bool BeginDay()
         {
-            Attempts = 0;
             DayStarted = true;
             ResolveDay();
             RentPaid = Math.Min(S.rupees, Day.rent);
@@ -123,6 +126,9 @@ namespace KadakChai
         }
 
         public List<CombatantData> Enemies() => new(todayEnemies);
+
+        /// <summary>Theeka level (1-8) of the current day.</summary>
+        public int Spice => Day.spice > 0 ? Day.spice : Math.Clamp(1 + S.dayIndex * 7 / Math.Max(1, GameData.Days.Count - 1), 1, GameData.MaxSpice);
 
         /// <summary>True between BeginDay and EndDay: today has been played, so "next" means tomorrow.</summary>
         public bool DayStarted { get; private set; }
@@ -164,7 +170,14 @@ namespace KadakChai
         /// <summary>Simulates today's fight. On a win, applies HP and EXP. On a loss, nothing changes (retry).</summary>
         public BattleResult Fight()
         {
-            var result = AutoBattle.Simulate(S, Enemies(), Rng, Attempts);
+            var result = AutoBattle.Simulate(S, Enemies(), Rng, Spice);
+            if (!result.won)
+            {
+                // No free retries. Health Insurance revives once; otherwise Bablu is dead and the run ends.
+                if (S.insuranceDays > 0) { S.insuranceDays = 0; S.hp = Math.Max(1, (int)Math.Round(S.maxHp * ReviveHp)); result.revived = true; }
+                else { S.hp = 0; Dead = true; Killer = result.killer ?? "the city"; result.died = true; }
+                return result;
+            }
             if (result.won)
             {
                 S.hp = Math.Max(1, Math.Min(S.maxHp, result.heroHpAfter));
@@ -174,7 +187,6 @@ namespace KadakChai
                 Earn(result.rupeesGained);
                 result.broken = WearGear();
             }
-            else Attempts++;
             return result;
         }
 
@@ -243,6 +255,10 @@ namespace KadakChai
                     S.fastags++;
                     notes.Add("FASTag ready for the next toll");
                     break;
+                case "insurance":
+                    S.insuranceDays = it.fights;
+                    notes.Add($"Insured for {it.fights} days: one revive at 50% HP");
+                    break;
                 case "consumable":
                     int before = S.hp;
                     S.hp = Math.Min(S.maxHp, S.hp + (int)Math.Round(S.maxHp * it.power));
@@ -293,8 +309,6 @@ namespace KadakChai
             S.hp = S.maxHp;
         }
 
-        /// <summary>"Come Tomorrow": retry the same day at full HP.</summary>
-        public void RetryDay() => S.hp = S.maxHp;
 
         /// <summary>Applies an event choice (0 = A, 1 = B). Returns (result text, change notes).</summary>
         public (string text, List<string> notes) Choose(int option)
@@ -329,6 +343,7 @@ namespace KadakChai
             foreach (var o in S.skills) if (o.daysLeft <= 0) expired.Add(o.data);
             S.skills.RemoveAll(o => o.daysLeft <= 0);
             if (S.tollDays > 0) S.tollDays--;
+            if (S.insuranceDays > 0) S.insuranceDays--;
 
             string from = Day.zone;
             S.dayIndex++;

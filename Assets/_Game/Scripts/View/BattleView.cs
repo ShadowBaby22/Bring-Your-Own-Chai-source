@@ -49,7 +49,7 @@ namespace KadakChai
             v.bgNext = UiKit.Panel(v.bgRoot, "Next", Color.clear);
             v.bgNext.rectTransform.Fill();
 
-            v.smog = UiKit.Panel(v.stage, "Smog", new Color(0.45f, 0.36f, 0.22f, 0));
+            v.smog = UiKit.Panel(v.stage, "Smog", new Color(0.62f, 0.63f, 0.66f, 0));
             v.smog.rectTransform.Fill();
             v.smog.raycastTarget = false;
 
@@ -205,8 +205,8 @@ namespace KadakChai
 
         public void SetAqi(int aqi)
         {
-            float a = Mathf.Clamp01((aqi - 150f) / 850f) * 0.45f;
-            smog.color = new Color(0.45f, 0.36f, 0.22f, a);
+            float a = Mathf.Clamp01((aqi - 120f) / 700f) * 0.55f;
+            smog.color = new Color(0.62f, 0.63f, 0.66f, a); // hazy grey (change log 19:21)
         }
 
         public void SetTicker(string text)
@@ -236,7 +236,7 @@ namespace KadakChai
         public void ShowParty(RunState s)
         {
             if (hero == null)
-                hero = Puppet.Create(stage, "new_kid", "New Kid", "#F2A65A", s.hp, s.maxHp, "HP", true, false);
+                hero = Puppet.Create(stage, "new_kid", GameData.HeroName, "#F2A65A", s.hp, s.maxHp, "HP", true, false);
             hero.Root.Place(150, 330, 250, 330, AW, AH);
             hero.SetHp(s.hp, s.maxHp);
 
@@ -292,6 +292,14 @@ namespace KadakChai
         }
 
         public void RefreshHero(RunState s) => hero?.SetHp(s.hp, s.maxHp);
+
+        /// <summary>New run after a death: the hero gets back up.</summary>
+        public void ReviveHero(RunState s)
+        {
+            if (hero == null) return;
+            StartCoroutine(hero.StandUp(1f));
+            hero.SetHp(s.hp, s.maxHp);
+        }
 
         Image held;
         string heldId;
@@ -359,7 +367,7 @@ namespace KadakChai
                 return rt;
             }
 
-            var leftRt = Side(true, UiKit.Hex("#2BB3A3"), "new_kid", "New Kid", null);
+            var leftRt = Side(true, UiKit.Hex("#2BB3A3"), "new_kid", GameData.HeroName, null);
             string enemyName = list.Count == 1 ? list[0].name : list.Count == 2 ? $"{list[0].name} + 1" : $"{list[0].name} + {list.Count - 1}";
             var rightRt = Side(false, boss ? UiKit.Purple : UiKit.Red, list.Count > 0 ? list[0].id : "", enemyName, boss ? "BOSS" : null);
 
@@ -401,6 +409,7 @@ namespace KadakChai
 
         public IEnumerator Play(BattleResult r)
         {
+            bool techno = false; // switch to Delhi techno once the hero drops below 50% HP (change log 19:21)
             int enemiesLeft = 0;
             foreach (var u in r.units) if (!u.isPlayerSide) enemiesLeft++;
 
@@ -414,11 +423,12 @@ namespace KadakChai
                 switch (e.type)
                 {
                     case BattleEventType.Round:
-                        roundText.text = $"Round {e.amount}/{AutoBattle.MaxRounds}";
+                        roundText.text = e.amount > AutoBattle.MaxRounds ? "<color=#FF5252>SUDDEN DEATH</color>" : $"Round {e.amount}/{AutoBattle.MaxRounds}";
                         yield return Wait(0.15f);
                         break;
 
                     case BattleEventType.Hit:
+                        if (!techno && targetIsHero && e.hpAfter < r.units[0].maxHp * 0.5f) { techno = true; AudioKit.Music("techno"); }
                         if (actor != null && actor != target) yield return Approach(e, actor, target, dir);
                         if (!string.IsNullOrEmpty(e.label) && actor != null) Popup(e.label, actor, new Color(0.7f, 0.95f, 1f), 42, 60);
                         if (target != null)
