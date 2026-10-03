@@ -80,7 +80,7 @@ namespace KadakChai
         public string outro;     // optional: VN scene played after winning / choosing
         public int aqiDelta;     // nudges the daily AQI roll (e.g. Diwali week)
         public int rent;         // rupees the landlord takes at the start of this day
-        public int spice;        // Theeka level 1-8 (Balatro-style ante): scales enemy HP and ATK
+        public int spice;        // Khatra level 1-8 (Balatro-style ante): scales enemy HP and ATK
         public string bg;        // optional background override (e.g. "metro"); default is the zone's
     }
 
@@ -122,7 +122,7 @@ namespace KadakChai
         public static string HeroName => Combatants.TryGetValue("new_kid", out var h) && !string.IsNullOrEmpty(h.name) ? h.name : "Bablu";
 
         public const int MaxSpice = 8;
-        static readonly string[] SpiceNames = { "Phika", "Halka", "Chatpata", "Teekha", "Mirchi", "Lal Mirch", "Bhoot Jolokia", "Dilli Belly" };
+        static readonly string[] SpiceNames = { "Sab Changa", "Thoda Risky", "Sambhal Ke", "Khatra", "Bada Khatra", "Khauf", "Maha Khauf", "Khatam" };
         public static string SpiceName(int level) => SpiceNames[Math.Clamp(level, 1, MaxSpice) - 1];
         public static string ZoneName(string zone) => zone switch
         {

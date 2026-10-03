@@ -135,7 +135,7 @@ namespace KadakChai
 
         public List<CombatantData> Enemies() => new(todayEnemies);
 
-        /// <summary>Theeka level (1-8) of the current day.</summary>
+        /// <summary>Khatra (danger) level (1-8) of the current day.</summary>
         public int Spice => Day.spice > 0 ? Day.spice : Math.Clamp(1 + S.dayIndex * 7 / Math.Max(1, GameData.Days.Count - 1), 1, GameData.MaxSpice);
 
         /// <summary>True between BeginDay and EndDay: today has been played, so "next" means tomorrow.</summary>

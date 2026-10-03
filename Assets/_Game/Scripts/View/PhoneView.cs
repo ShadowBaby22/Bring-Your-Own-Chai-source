@@ -341,7 +341,8 @@ namespace KadakChai
             // Portrait matches Bablu's real state (change log): hurt face + bruises at low HP, plus his statuses.
             float hpr = s.maxHp > 0 ? (float)s.hp / s.maxHp : 1;
             var face = UiKit.Panel(p, "Face", Color.white);
-            face.sprite = (hpr < 0.33f ? Art.Pose("new_kid", "hit") : null) ?? Art.Character("new_kid").sprite;
+            string who = s.conditions.Contains("shaved") ? "new_kid_shaved" : "new_kid";
+            face.sprite = (hpr < 0.33f ? Art.Pose(who, "hit") : null) ?? Art.Character(who).sprite;
             face.preserveAspect = true;
             face.rectTransform.Place(40, 20, 200, 250, SW, ContentH);
             void Layer(string sprite, bool on)
@@ -351,7 +352,6 @@ namespace KadakChai
                 l.sprite = Art.UI(sprite); l.preserveAspect = true; l.raycastTarget = false; l.rectTransform.Fill();
             }
             Layer(hpr > 0.66f ? null : hpr > 0.33f ? "dmg1" : "dmg2", hpr <= 0.66f);
-            Layer("cond_shaved", s.conditions.Contains("shaved"));
             Layer("cond_confused", s.conditions.Contains("confused"));
             float x = 270;
             Text Stat(float y, string label)
@@ -365,7 +365,7 @@ namespace KadakChai
             Stat(124, $"ATK {s.AtkTotal}  <size=28>({s.atk} base{(s.weapon != null ? $" + {s.weapon.data.atk} {s.weapon.data.name}" : "")})</size>");
             Stat(178, $"DEF {s.DefTotal}  <size=28>({s.def} base{(s.armour != null ? $" + {s.armour.data.def} {s.armour.data.name}" : "")})</size>");
             Stat(232, $"<color=#FFD23F>₹{s.rupees}</color>  <size=28>earned ₹{s.earned}, spent ₹{s.spent}</size>");
-            Stat(286, $"<color=#FF8A65>Theeka {(run.Finished ? 8 : run.Spice)}/8</color>  <size=28>{GameData.SpiceName(run.Finished ? 8 : run.Spice)}</size>");
+            Stat(286, $"<color=#FF8A65>Khatra {(run.Finished ? 8 : run.Spice)}/8</color>  <size=28>{GameData.SpiceName(run.Finished ? 8 : run.Spice)}</size>");
             var foot = UiKit.Label(p, "Foot", s.HasAunty ? "Party: Pinky Aunty (forwards messages every 3 rounds)" : "Party: just you. For now.", 32, new Color(1, 1, 1, 0.8f), TextAnchor.MiddleLeft);
             foot.rectTransform.Place(40, ContentH - 60, SW - 80, 50, SW, ContentH);
         }

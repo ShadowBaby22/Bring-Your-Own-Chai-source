@@ -349,11 +349,33 @@ def shona():
     s += path('M 476 140 L 500 124 M 480 166 L 508 166 M 476 190 L 500 206', 'none', stroke='#fff59d', stroke_width='7')                    # flash
     return s
 
+def new_kid_shaved():
+    """Bablu after the RWA (Pinky Aunty) shaves his head: shiny comic dome, stubble, a band-aid. No hair at all."""
+    skin = '#D9A066'
+    s = legs('#3A5A99', '#f5f5f5')
+    s += path('M 150 372 Q 262 330 374 372 L 360 400 Q 262 372 164 400 Z', '#1f8c80')
+    s += torso('#2BB3A3')
+    s += rect(196, 372, 22, 170, 8, '#5d4037') + rect(306, 372, 22, 170, 8, '#5d4037')
+    s += rect(228, 470, 70, 40, 14, '#24a093')
+    s += capsule(178, 400, 150, 488, 44, '#2BB3A3') + hand(148, 496, skin)
+    s += head(skin)
+    s += ellipse(214, 150, 58, 30, '#ffffff', line=False, opacity='0.55', transform='rotate(-24 214 150)')   # big comic shine
+    s += ellipse(300, 116, 16, 9, '#ffffff', line=False, opacity='0.7', transform='rotate(-10 300 116)')
+    s += ''.join(circle(x, y, 2.6, '#8a6440', line=False, opacity='0.6') for x, y in
+                 [(190, 120), (206, 104), (226, 96), (250, 92), (274, 92), (298, 96), (322, 104), (344, 116), (364, 132), (238, 110), (262, 104), (286, 108), (310, 116), (334, 128)])  # stubble
+    s += f'<g transform="rotate(28 330 150)">' + rect(296, 136, 70, 26, 13, '#f4c79a') + rect(320, 138, 22, 22, 4, '#e8b07e', line=False) + '</g>'  # band-aid
+    s += path('M 404 150 Q 418 176 404 190 Q 390 176 404 150 Z', '#7fd3ff')
+    s += eyes(skin) + brows('worried') + mouth('wavy') + blush()
+    s += capsule(350, 400, 394, 470, 44, '#2BB3A3')
+    s += f'<g transform="rotate(-18 420 452)">' + rect(370, 432, 110, 40, 12, '#fff8e1') + rect(418, 428, 14, 48, 4, '#e53935') + '</g>'
+    s += hand(398, 474, skin)
+    return s
+
 SWEAT = (path('M 410 150 Q 426 178 410 194 Q 394 178 410 150 Z', '#7fd3ff') +
          path('M 120 170 Q 132 192 120 204 Q 108 192 120 170 Z', '#7fd3ff') +
          line(420, 250, 450, 240, 6) + line(424, 280, 456, 284, 6))  # pain marks
 
-for fn in [new_kid, pinky_aunty, scooty_uncle, auto_bhaiya, south_delhi_girl, broker, monkey, firecracker, guard, ceo, babu, sector_cabbie, techbro, jaanu, shona]:
+for fn in [new_kid, pinky_aunty, scooty_uncle, auto_bhaiya, south_delhi_girl, broker, monkey, firecracker, guard, ceo, babu, sector_cabbie, techbro, jaanu, shona, new_kid_shaved]:
     C[fn.__name__] = fn()
     HURT = True
     C[fn.__name__ + '_hit'] = fn() + SWEAT

@@ -30,17 +30,17 @@ namespace KadakChai
         public float BobSpeed { set => bobSpeed = value; }
 
         Sprite normalSprite, hurtSprite;      // the hurt face becomes the idle pose below 33% HP
-        Image condShaved, condConfused;
         RectTransform pills;
 
-        /// <summary>Lasting statuses drawn on the hero: shaved head, confusion stars, and a pill for each.</summary>
+        RectTransform[] stars;
+        bool dizzy, flipping;
+
+        /// <summary>Lasting statuses on the hero: bald sprite (Head Shaved), orbiting dizzy stars (Confused), pills.</summary>
         public void SetConditions(IEnumerable<string> ids)
         {
             var set = new HashSet<string>(ids);
-            if (condShaved == null)
+            if (pills == null)
             {
-                condShaved = Overlay("cond_shaved");
-                condConfused = Overlay("cond_confused");
                 pills = UiKit.Make("Pills", Root);
                 pills.anchorMin = pills.anchorMax = new Vector2(0.5f, 1);
                 pills.pivot = new Vector2(0.5f, 0);
@@ -50,8 +50,33 @@ namespace KadakChai
                 hl.spacing = 6; hl.childAlignment = TextAnchor.MiddleCenter;
                 hl.childControlWidth = hl.childControlHeight = true; hl.childForceExpandWidth = hl.childForceExpandHeight = false;
             }
-            if (condShaved != null) condShaved.enabled = set.Contains("shaved");
-            if (condConfused != null) condConfused.enabled = set.Contains("confused");
+            // Head Shaved swaps the whole sprite (a real bald Bablu, not a cap).
+            bool bald = set.Contains("shaved") && Art.HasCharacter(Id + "_shaved");
+            var n = bald ? Art.Character(Id + "_shaved").sprite : Art.Character(Id).sprite;
+            var h = bald ? Art.Pose(Id + "_shaved", "hit") : Art.Pose(Id, "hit");
+            if (n != normalSprite)
+            {
+                bool wasHurt = baseSprite == hurtSprite && hurtSprite != null;
+                normalSprite = n; hurtSprite = h;
+                baseSprite = wasHurt && h != null ? h : n;
+                if (!busy && !down) image.sprite = baseSprite;
+            }
+            // Confused: three comic stars orbit his head.
+            dizzy = set.Contains("confused");
+            if (dizzy && stars == null && Art.UI("star") != null)
+            {
+                stars = new RectTransform[3];
+                for (int i = 0; i < 3; i++)
+                {
+                    var st = UiKit.Panel(body, "Star" + i, Color.white);
+                    st.sprite = Art.UI("star"); st.preserveAspect = true; st.raycastTarget = false;
+                    st.rectTransform.anchorMin = st.rectTransform.anchorMax = new Vector2(0.5f, 0.88f);
+                    st.rectTransform.sizeDelta = new Vector2(46, 46);
+                    stars[i] = st.rectTransform;
+                }
+            }
+            if (stars != null) foreach (var st in stars) st.gameObject.SetActive(dizzy);
+
             foreach (Transform c in pills) Destroy(c.gameObject);
             foreach (var id in set)
             {
@@ -64,15 +89,15 @@ namespace KadakChai
             }
         }
 
-        Image Overlay(string sprite)
+        /// <summary>Paper Mario-style flip: the paper cutout turns edge-on, changes, and turns back.</summary>
+        public IEnumerator PaperFlip(System.Action atEdge)
         {
-            var sp = Art.UI(sprite);
-            if (sp == null) return null;
-            var img = UiKit.Make(sprite, body).gameObject.AddComponent<Image>();
-            img.sprite = sp; img.preserveAspect = true; img.raycastTarget = false;
-            img.rectTransform.Fill();
-            img.enabled = false;
-            return img;
+            flipping = true;
+            for (float t = 0; t < 1; t += Time.deltaTime * 6f) { squash = new Vector3(Mathf.Cos(t * Mathf.PI / 2), 1.04f, 1); yield return null; }
+            atEdge?.Invoke();
+            for (float t = 0; t < 1; t += Time.deltaTime * 6f) { squash = new Vector3(Mathf.Sin(t * Mathf.PI / 2) * 1.15f, 1.04f, 1); yield return null; }
+            squash = new Vector3(1.15f, 0.9f, 1);
+            flipping = false;
         }
 
         public static Puppet Create(Transform parent, string id, string displayName, string colorHex,
@@ -149,7 +174,14 @@ namespace KadakChai
                 float s = Mathf.Sin(phase * Mathf.PI);
                 body.localScale = new Vector3(Flip * (1f + s * 0.025f) * squash.x, (1f - s * 0.035f) * squash.y, 1f);
             }
-            squash = Vector3.Lerp(squash, Vector3.one, Time.deltaTime * 12f);
+            if (!flipping) squash = Vector3.Lerp(squash, Vector3.one, Time.deltaTime * 12f);
+            if (dizzy && stars != null)
+                for (int i = 0; i < stars.Length; i++)
+                {
+                    float a = Time.time * 3.2f + i * Mathf.PI * 2 / stars.Length;
+                    stars[i].anchoredPosition = new Vector2(Mathf.Cos(a) * 70f, Mathf.Sin(a) * 18f + 10f);
+                    stars[i].localScale = Vector3.one * (0.8f + 0.25f * Mathf.Sin(a));   // nearer = bigger
+                }
 
             if (showHp)
             {

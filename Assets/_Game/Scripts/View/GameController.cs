@@ -17,8 +17,8 @@ namespace KadakChai
         RectTransform phone;
         Text dayText, aqiText;
         Image aqiBox, zoneIcon;
-        Text theekaText;
-        readonly Image[] chilies = new Image[GameData.MaxSpice];
+        Text khatraText;
+        readonly Image[] khatraSigns = new Image[GameData.MaxSpice];
         PhoneView phoneView;
         BattleView battle;
         StoryLog log;
@@ -94,18 +94,18 @@ namespace KadakChai
             dayText = UiKit.Label(phone, "Day", "", 38, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
             dayText.rectTransform.Place(116, 8, 450, 88);
 
-            // Theeka meter: Balatro-style ante, 1/8 to 8/8. Each level makes enemies hit harder.
-            var theeka = UiKit.Panel(phone, "Theeka", new Color(0, 0, 0, 0.35f), rounded: true);
-            theeka.rectTransform.Place(566, 10, 216, 84);
-            theekaText = UiKit.Label(theeka.transform, "T", "", 24, UiKit.Hex("#FF8A65"), TextAnchor.UpperCenter, FontStyle.Bold);
-            theekaText.rectTransform.Place(0, 2, 216, 34, 216, 84);
-            for (int i = 0; i < chilies.Length; i++)
+            // KHATRA meter (danger): Balatro-style ante, 1/8 to 8/8. Each level makes enemies hit harder.
+            var khatra = UiKit.Panel(phone, "Khatra", new Color(0, 0, 0, 0.35f), rounded: true);
+            khatra.rectTransform.Place(566, 10, 216, 84);
+            khatraText = UiKit.Label(khatra.transform, "T", "", 24, UiKit.Hex("#FFD600"), TextAnchor.UpperCenter, FontStyle.Bold);
+            khatraText.rectTransform.Place(0, 2, 216, 34, 216, 84);
+            for (int i = 0; i < khatraSigns.Length; i++)
             {
-                chilies[i] = UiKit.Panel(theeka.transform, "Chili" + i, Color.white);
-                chilies[i].sprite = Art.UI("chili");
-                chilies[i].preserveAspect = true;
-                chilies[i].raycastTarget = false;
-                chilies[i].rectTransform.Place(8 + i * 25, 36, 26, 42, 216, 84);
+                khatraSigns[i] = UiKit.Panel(khatra.transform, "Sign" + i, Color.white);
+                khatraSigns[i].sprite = Art.UI("khatra");
+                khatraSigns[i].preserveAspect = true;
+                khatraSigns[i].raycastTarget = false;
+                khatraSigns[i].rectTransform.Place(6 + i * 25.5f, 38, 28, 40, 216, 84);
             }
             dayText.lineSpacing = 0.85f;
             aqiBox = UiKit.Panel(phone, "Aqi", UiKit.Orange, rounded: true);
@@ -192,6 +192,7 @@ namespace KadakChai
             battle.ReviveHero(run.S);
             battle.SetTicker(GameData.RandomCard("news_", run.Rng)?.text ?? "");
 
+            foreach (var c in DebugStatuses()) run.S.conditions.Add(c); // ?status=shaved,confused (testing)
             int startDay = StartDay();
             if (startDay > 1)
             {
@@ -254,11 +255,11 @@ namespace KadakChai
             battle.SetAqi(run.S.aqi);
             RefreshHud();
 
-            log.Add($"Day {run.DayNumber} of {run.TotalDays}  ·  {GameData.ZoneName(run.Day.zone)}  ·  Theeka {run.Spice}/8", CardStyle.Header);
+            log.Add($"Day {run.DayNumber} of {run.TotalDays}  ·  {GameData.ZoneName(run.Day.zone)}  ·  Khatra {run.Spice}/8", CardStyle.Header);
             if (run.DayNumber > 1 && run.Spice > GameData.Days[run.S.dayIndex - 1].spice)
             {
                 AudioKit.Sfx("boom", 0.6f);
-                battle.Banner($"*THEEKA {run.Spice}/8: {GameData.SpiceName(run.Spice).ToUpper()}*  Enemies hit harder.");
+                battle.Banner($"*KHATRA {run.Spice}/8: {GameData.SpiceName(run.Spice).ToUpper()}*  Enemies hit harder.");
             }
             if (run.RobbedLoss > 0) { AudioKit.Sfx("coin", 0.5f); log.Add($"*Robbed*: ₹{run.RobbedLoss} missing from your wallet this morning. Cure it with *Pudin Hara* at JhatPat.", CardStyle.Bad); }
             if (run.Day.rent > 0)
@@ -571,7 +572,7 @@ namespace KadakChai
             {
                 ($"{GameData.HeroName}'s phone has died.", 46, UiKit.Ink),
                 ($"Day {run.DayNumber} of {run.TotalDays}  ·  {GameData.ZoneName(run.Day.zone)}", 38, UiKit.Hex("#5D4037")),
-                ($"Theeka {run.Spice}/8 ({GameData.SpiceName(run.Spice)})", 38, UiKit.Hex("#E8590C")),
+                ($"Khatra {run.Spice}/8 ({GameData.SpiceName(run.Spice)})", 38, UiKit.Hex("#E8590C")),
                 ($"Killed by <b>{run.Killer}</b>", 44, UiKit.Red),
                 ($"Level {s.level}   ·   ₹{s.earned} earned   ·   {s.skills.Count} skill{(s.skills.Count == 1 ? "" : "s")} on lease", 32, UiKit.Hex("#6D4C41")),
             };
@@ -678,8 +679,8 @@ namespace KadakChai
             zoneIcon.enabled = zi != null;
             aqiText.text = $"AQI {s.aqi}\n<size=22>{Aqi.StageName(stage)}</size>";
             int spice = run.Finished ? GameData.MaxSpice : run.Spice;
-            theekaText.text = $"THEEKA {spice}/8";
-            for (int i = 0; i < chilies.Length; i++) chilies[i].color = i < spice ? Color.white : new Color(0.25f, 0.25f, 0.3f, 0.7f);
+            khatraText.text = $"KHATRA {spice}/8";
+            for (int i = 0; i < khatraSigns.Length; i++) khatraSigns[i].color = i < spice ? Color.white : new Color(0.22f, 0.22f, 0.26f, 0.6f);
             var (r, g, b) = Aqi.Color(stage);
             aqiBox.color = new Color(r, g, b);
             phoneView.Refresh();
@@ -744,6 +745,16 @@ namespace KadakChai
             clicked = -1;
             while (clicked < 0) yield return null;
             HideButtons();
+        }
+
+        /// <summary>Testing: ?status=shaved,confused in the WebGL URL starts the run with those statuses.</summary>
+        static IEnumerable<string> DebugStatuses()
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            var m = System.Text.RegularExpressions.Regex.Match(Application.absoluteURL ?? "", @"[?&]status=([a-z_,]+)");
+            if (m.Success) foreach (var id in m.Groups[1].Value.Split(',')) if (Conditions.All.ContainsKey(id)) yield return id;
+#endif
+            yield break;
         }
 
         int StartDay()

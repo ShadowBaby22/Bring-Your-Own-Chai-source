@@ -73,7 +73,7 @@ namespace KadakChai
             sb.AppendLine($"=== {runs} simulated runs ({(shop ? "shopping" : "never shops")}) ===");
             sb.AppendLine($"CLEARED: {100f * clears / runs:0}%   Laathi drops: {laathis}   Rupees earned avg: {earned.Average():0}");
             sb.AppendLine("Killers: " + string.Join(", ", killers.OrderByDescending(k => k.Value).Select(k => $"{k.Key} {k.Value}")));
-            sb.AppendLine("Day  Type    Theeka  Reached  Died here  (of those reaching)  Revives  HP in  Rounds  Secs");
+            sb.AppendLine("Day  Type    Khatra  Reached  Died here  (of those reaching)  Revives  HP in  Rounds  Secs");
             for (int i = 0; i < days; i++)
             {
                 var day = GameData.Days[i];

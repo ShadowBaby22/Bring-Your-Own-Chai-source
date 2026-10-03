@@ -263,6 +263,24 @@ def cond_confused():
         s += f'<polygon points="{" ".join(pts)}" fill="#ffeb3b" stroke="{OUT}" stroke-width="5" stroke-linejoin="round"/>'
     return s
 
+def khatra():
+    """KHATRA 440 VOLT: the skull-and-lightning danger sign on every Delhi electric pole."""
+    s = path('M 128 18 L 244 222 L 12 222 Z', '#ffd600', stroke_width='10')
+    s += circle(128, 118, 40, '#ffffff') + rect(108, 146, 40, 26, 6, '#ffffff')
+    s += circle(112, 116, 11, OUT, line=False) + circle(144, 116, 11, OUT, line=False) + path('M 128 128 L 120 142 L 136 142 Z', OUT, line=False)
+    s += line(114, 160, 114, 172, 4) + line(128, 160, 128, 172, 4) + line(142, 160, 142, 172, 4)
+    s += path('M 200 120 L 176 168 L 194 168 L 182 206 L 218 150 L 198 150 L 212 120 Z', '#e53935', stroke_width='4')
+    s += text(84, 208, '440V', 26, '#e53935')
+    return s
+
+def star():
+    pts = []
+    for i in range(10):
+        r = 110 if i % 2 == 0 else 48
+        a = math.pi * 2 * i / 10 - math.pi / 2
+        pts.append(f'{128 + r * math.cos(a):.1f},{132 + r * math.sin(a):.1f}')
+    return f'<polygon points="{" ".join(pts)}" fill="#ffeb3b" stroke="{OUT}" stroke-width="12" stroke-linejoin="round"/>'
+
 # ------------------------------------------------------------------ bitterChai phone app icons (glossy dark squares, bitterSweet style)
 def app_base(inner):
     return ('<defs><linearGradient id="gl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a5056"/><stop offset="1" stop-color="#1c1f22"/></linearGradient></defs>'
@@ -406,6 +424,8 @@ for k, fn in zones.items():
 open(os.path.join(out, 'gear.svg'), 'w').write(sticker(gear()))
 open(os.path.join(out, 'chili.svg'), 'w').write(sticker(chili()))
 open(os.path.join(out, 'scooty.svg'), 'w').write(sticker(scooty()))
+open(os.path.join(out, 'khatra.svg'), 'w').write(sticker(khatra()))
+open(os.path.join(out, 'star.svg'), 'w').write(sticker(star()))
 open(os.path.join(out, 'item_pudin_hara.svg'), 'w').write(sticker(pudin_hara()))
 os.makedirs(os.path.join(out, 'overlays'), exist_ok=True)   # 512x640, drawn over the hero sprite
 open(os.path.join(out, 'overlays', 'cond_shaved.svg'), 'w').write(cond_overlay_svg(cond_shaved()))

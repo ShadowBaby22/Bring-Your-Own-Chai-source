@@ -51,7 +51,7 @@ namespace KadakChai
         public const int MaxRounds = 15;          // after this: AQI 999 sudden death until someone drops
         public const int HardCap = 40;
         public const float SuddenDeathPct = 0.12f; // of max HP, everyone, every sudden-death round
-        // Theeka level (Balatro-style ante, 1-8): every level above 1 adds this much to enemy HP and ATK.
+        // Khatra level (Balatro-style ante, 1-8): every level above 1 adds this much to enemy HP and ATK.
         public const float SpiceHp = 0.08f, SpiceAtk = 0.10f;
         public const float RangedPenalty = 0.8f;  // ranged attacks do 20% less damage
         public const float CloseBonus = 1.25f;    // close attacks do 25% more to ranged targets
@@ -73,7 +73,7 @@ namespace KadakChai
 
         AutoBattle(RunState s, Random rng, int spice) { this.s = s; this.rng = rng; this.spice = Math.Max(1, spice); }
 
-        /// <param name="spice">Theeka level 1-8 of the day: scales enemy HP and ATK.</param>
+        /// <param name="spice">Khatra level 1-8 of the day: scales enemy HP and ATK.</param>
         public static BattleResult Simulate(RunState s, List<CombatantData> enemies, Random rng, int spice = 1) =>
             new AutoBattle(s, rng, spice).Run(enemies);
 

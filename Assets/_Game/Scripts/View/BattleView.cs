@@ -432,6 +432,26 @@ namespace KadakChai
             return w.ToUpper();
         }
 
+        /// <summary>Paper Mario-style status card: a white paper sticker with a thick outline and a drop shadow.</summary>
+        void PaperCard(Puppet over, string word, Color color)
+        {
+            var root = UiKit.Make("PaperCard", popups);
+            root.sizeDelta = new Vector2(440, 130);
+            root.anchoredPosition = over.HeadPosition(popups) + new Vector2(0, 110);
+            root.localRotation = Quaternion.Euler(0, 0, Random.Range(-7f, 7f));
+            var shadow = UiKit.Panel(root, "Shadow", new Color(0, 0, 0, 0.35f), rounded: true);
+            shadow.rectTransform.Fill(); shadow.rectTransform.anchoredPosition = new Vector2(10, -10);
+            var paper = UiKit.Panel(root, "Paper", Color.white, rounded: true);
+            paper.rectTransform.Fill();
+            UiKit.Outline(paper, UiKit.Ink, 6);
+            var t = UiKit.Label(root, "Word", word, 56, color, TextAnchor.MiddleCenter, FontStyle.Bold);
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            t.rectTransform.Fill(8);
+            UiKit.Outline(t, UiKit.Ink, 3);
+            t.gameObject.AddComponent<TextFx>().wave = 4f;
+            StartCoroutine(ImpactRoutine(root));
+        }
+
         /// <summary>Comic-book burst with a big word over a puppet: DISHOOM oomph for gimmicks and statuses.</summary>
         void Gimmick(Puppet over, string word, Color color)
         {
@@ -531,9 +551,9 @@ namespace KadakChai
                         {
                             // A lasting status just landed on Bablu: DISHOOM-style word over him (change log).
                             AudioKit.Sfx("boom", 0.7f);
-                            Gimmick(target, e.label, UiKit.Hex("#AB47BC"));
+                            PaperCard(target, e.label, UiKit.Hex("#8E24AA"));
                             liveConditions.Add(StatusIdFromLabel(e.label));
-                            hero?.SetConditions(liveConditions);
+                            if (target == hero) StartCoroutine(hero.PaperFlip(() => hero.SetConditions(liveConditions)));
                             Shake(14, 0.3f);
                             yield return Wait(0.9f);
                             break;
