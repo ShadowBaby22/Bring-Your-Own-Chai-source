@@ -30,4 +30,6 @@ crashlytics-build.properties
 # Tool caches
 /Tools/sim/bin/
 /Tools/sim/obj/
+/Tools/tests/bin/
+/Tools/tests/obj/
 __pycache__/
