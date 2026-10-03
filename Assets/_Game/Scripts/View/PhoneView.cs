@@ -65,12 +65,21 @@ namespace KadakChai
             foreach (var (id, _) in Apps) v.pages[id] = UiKit.Make("App_" + id, v.content);
             foreach (var p in v.pages.Values) p.Fill();
 
-            // Messages: pinned chips row + the story log as chat bubbles
+            // Messages: pinned chips row (swipe it sideways when it overflows) + the story log as chat bubbles
             var msg = v.pages["messages"];
-            v.chips = UiKit.Make("Chips", msg).Place(16, 4, SW - 32, 52, SW, ContentH);
+            var chipView = UiKit.Make("ChipsView", msg).Place(16, 4, SW - 32, 52, SW, ContentH);
+            chipView.gameObject.AddComponent<RectMask2D>();
+            chipView.gameObject.AddComponent<Image>().color = Color.clear;   // catches the swipe
+            v.chips = UiKit.Make("Chips", chipView);
+            v.chips.anchorMin = Vector2.zero; v.chips.anchorMax = new Vector2(0, 1); v.chips.pivot = new Vector2(0, 0.5f);
+            v.chips.sizeDelta = Vector2.zero; v.chips.anchoredPosition = Vector2.zero;
             var ch = v.chips.gameObject.AddComponent<HorizontalLayoutGroup>();
             ch.spacing = 8; ch.childForceExpandWidth = false; ch.childControlWidth = true; ch.childControlHeight = true;
             ch.childAlignment = TextAnchor.MiddleLeft;
+            v.chips.gameObject.AddComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;
+            var chipScroll = chipView.gameObject.AddComponent<ScrollRect>();
+            chipScroll.content = v.chips; chipScroll.viewport = chipView; chipScroll.horizontal = true; chipScroll.vertical = false;
+            chipScroll.movementType = ScrollRect.MovementType.Clamped; chipScroll.scrollSensitivity = 30;
             var logArea = UiKit.Make("LogArea", msg).Place(6, 60, SW - 12, ContentH - 62, SW, ContentH);
             v.Log = StoryLog.Build(logArea);
             v.Log.Added += v.OnLogAdded;
@@ -260,13 +269,15 @@ namespace KadakChai
         void RefreshChips(RunState s)
         {
             foreach (Transform c in chips) Destroy(c.gameObject);
+            chips.anchoredPosition = Vector2.zero;
             if (s.weapon != null) Chip($"{s.weapon.data.name} <b>{s.weapon.fightsLeft}f</b>", s.weapon.IsLastFight ? UiKit.Red : UiKit.Hex(s.Ranged ? "#1E88E5" : "#C62828"));
             if (s.armour != null) Chip($"{s.armour.data.name} <b>{s.armour.fightsLeft}f</b>", s.armour.IsLastFight ? UiKit.Red : UiKit.Hex("#546E7A"));
             if (s.fastags > 0) Chip(s.fastags > 1 ? $"FASTag x{s.fastags}" : "FASTag", UiKit.Hex("#00897B"));
             if (s.tollDays > 0) Chip($"Toll Tax <b>{s.tollDays}d</b>", UiKit.Hex("#B71C1C"));
             if (s.insuranceDays > 0) Chip($"Insured <b>{s.insuranceDays}d</b>", UiKit.Hex("#1565C0"));
             if (s.zombieFights > 0) Chip("Zombie <b>1 fight</b>", UiKit.Hex("#558B2F"));
-            foreach (var c in s.conditions) Chip(Conditions.Name(c), UiKit.Hex("#8E24AA"));
+            if (s.conditions.Count > 2) Chip($"<b>{s.conditions.Count}</b> statuses", UiKit.Hex("#8E24AA")); // full list in the Skills app
+            else foreach (var c in s.conditions) Chip(Conditions.Name(c), UiKit.Hex("#8E24AA"));
             foreach (var o in s.skills) Chip($"{o.data.shortName} <b>{o.daysLeft}d</b>", o.IsLastDay ? UiKit.Red : new Color(1, 1, 1, 0.18f));
             if (chips.childCount == 0)
             {
