@@ -26,14 +26,16 @@ Open the build (staging, or the `kadak-chai-webgl` localhost preview), set a pho
 
 | # | URL | Do | Expect |
 |---|---|---|---|
-| 1 | `/` | Load | Title, "Sign the Agreement", build stamp at the bottom |
+| 1 | `/` | Load | KADAK Chai title: logo pops in, sunburst spins, chai steams, Bablu and the Babu bob, the button pulses; build stamp at the bottom |
 | 2 | `/` | Gear, then Music OFF, then Close | Options panel opens and closes; music stops |
 | 3 | `/` | Sign the Agreement, Skip | Day 1 intro, phone Messages, "Meet the Astrologer" |
 | 4 | `/` | Astrologer | Baba's 3 cards with the countdown; picking one closes it (waiting gives "No blessing") |
-| 5 | `/` | Fight Day 1 | VS card, fight plays, rupees and EXP after; JhatPat shows the **FREE** Mystery Box |
+| 5 | `/` | Fight Day 1 | The **Brew it KADAK!** meter appears; a tap (or 6 s) closes it, the result shows and lands in Messages; then the VS card, the fight, rupees and EXP; JhatPat shows the **FREE** Mystery Box |
+| 5b | `/` | Finish Day 3 | Before Day 4: the boss warning card and a red "Next Day: BOSS" button; the phone HP moves during fights |
 | 6 | `/?day=3` | Fight | Metro background, couple fight, Pinky Aunty fighting beside Bablu |
 | 7 | `/?day=6` | Face the Boss | Lalaji; below half his Profit, the CFO and CTO walk in |
 | 8 | `/?day=9` | Fight | Pinky Aunty betrayal scene; a shave makes Bablu bald |
+| 8b | `/?day=9&status=shaved,confused,robbed,bitten,lost` | Open the Skills app | The list scrolls with "swipe up for more" and never covers the dock; the Messages chips show "5 statuses" |
 | 9 | `/?day=11` | Face the Boss, win | "VALID FOR 11 MONTHS" stamp, ending scene |
 | 10 | `/?day=11&status=bitten,grilled,cringe,shaved,cancelled,confused,lost` | Face the Boss, lose | Amma's Nursing Home scene, green zombie Bablu at full HP, ₹100 less, "Back to Day N"; the retry starts with the zombie still green |
 
@@ -42,5 +44,4 @@ Close the pane when done.
 ## Known issues the checks have shown
 
 - Missing `item_health_insurance.png`: the shop shows a dot for Health Insurance.
-- With many statuses (seen with 7), the status chips on the phone overlap.
 - A player who never opens JhatPat finishes only about a third of runs within 10 faints (the walls are Lalaji, Day 7, Pinky Aunty and the Babu). A faint keeps no progress and costs ₹100.
