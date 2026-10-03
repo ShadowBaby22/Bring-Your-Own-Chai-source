@@ -4,7 +4,7 @@ id,text,choice_a,effect_a,result_a,choice_b,effect_b,result_b
 # Event pools: any row whose id starts with a day's "pool" (e.g. ev_dilli_) can appear on that day. Add rows to add variety.
 #
 # --- Run start ---
-intro,"*Bablu*, 21, from Kanpur. B.Tech third year, four backlogs. His Gurugram internship starts in *11 days*, but every society in NCR says *No Bachelors*. The RWAs want *police verification*, stamped at the *Sarkari Daftar*. One flat. One stamp. 11 days. If he faints, Amma's Nursing Home patches him up, one day back.",,,,,,
+intro,"*Bablu*, 21, from Kanpur. B.Tech third year, four backlogs. His Gurugram internship starts in *11 days*, but every society in NCR says *No Bachelors*. The RWAs (residents' committees) want *police verification*, stamped at the *Sarkari Daftar* (the government office). One flat. One stamp. 11 days. If he faints, Amma's Nursing Home patches him up, one day back.",,,,,,
 astro_intro,"An *Astrologer Baba* outside the metro station grabs your hand. ""Your stars are aligned, beta. Temporarily.""",,,,,,
 #
 # --- Fight intros (fight_<enemy id>, picked by the enemy group rolled that day) ---

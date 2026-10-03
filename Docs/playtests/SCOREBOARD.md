@@ -73,3 +73,29 @@ Averages and the weakest node are filled in after the round.
 - **Unexplained labels:** a status sat on Bablu for days without explanation; the speed button's "2x" read like the next speed. Fixed after the round: a new status gets a banner ("CANCELLED! -15% ATK. Cure: Pudin Hara"), and the button reads "SPEED 2x".
 - **Delights:** the writing (Pinky Aunty's son "in Canada. And never calls."), the theme built into the systems, a clear first minute with the red "Next Day: BOSS" button.
 - **Test caveat:** the browser pane was hidden, so Unity ran throttled and dropped first taps; pacing and timers were not judged.
+
+## Round 4 (build: round 3 fixes)
+
+| Persona | theme | innovation | gameplay | aesthetics | overall | audience | keep playing | recommend | furthest |
+|---|---|---|---|---|---|---|---|---|---|
+| global_juror | 8 | 7 | 5 | 7 | 7 | 7 | yes | yes | Day 3 (boss next) |
+
+**Weakest node: gameplay (5-6 across personas).** The writing travels: "Population: yes. Air quality: also yes.", Pinky Aunty's Canada son, the Gurgaon boats ticker, "Followers 60/60".
+
+### Global juror notes (a juror from outside India)
+- **Lost without context:** the Hindi metro line on the title (the theme joke), KADAK, KHATRA, GRAP, RWA, Sarkari Daftar, AIIMS, Pudin Hara, Laathi, pheeka/theek. Fixed after the round: an English line under the metro joke, "pheeka = weak, theek = okay, KADAK = extra strong" on the meter, a Day 1 explainer for KHATRA and GRAP, and short glosses for backlogs, the Sarkari Daftar, RWAs, AIIMS, Pudin Hara and the Laathi.
+- **Shop copy:** "Pop it" now reads "Keep it", and "Back to the lease" reads "Close JhatPat".
+- **Bugs fixed:** the blank Health Insurance icon (a placeholder card icon until Jaideep's art), and "pheeka" vs "Pheeki chai" now match.
+- **Still open:** Baba's 10-second timer felt short for a second-language reader (the throttled test browser made it worse); 10 seconds was the team's call, so it is unchanged.
+
+## Summary after 4 rounds
+| Criterion | R1 juror (old) | R2 student | R3 juror | R4 global | Latest average (R2-R4) |
+|---|---|---|---|---|---|
+| theme | 8 | 8 | 9 | 8 | 8.3 |
+| innovation | 6 | 7 | 6 | 7 | 6.7 |
+| gameplay | 5 | 6 | 6 | 5 | 5.7 |
+| aesthetics | 7 | 8 | 8 | 7 | 7.7 |
+| overall | 6 | 7 | 7 | 7 | 7.0 |
+| audience | 6 | 7 | 7 | 7 | 7.0 |
+
+**Next levers:** gameplay (more choices during a run, more agency in fights) and innovation (the page pitch). Jaideep's original art and the team's voice barks are the biggest remaining aesthetics levers.

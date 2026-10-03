@@ -232,8 +232,8 @@ namespace KadakChai
             UiKit.Outline(start.targetGraphic, Color.black, 5);
             var startFx = Fx(start); startFx.pulse = 0.035f; startFx.pulseSpeed = 4f;
 
-            var metro = UiKit.Label(p.transform, "Metro", "\"Agla station: Temporary. Darwaze baayi taraf khulenge.\"", 32, new Color(1, 1, 1, 0.75f));
-            metro.rectTransform.Place(60, 1770, 960, 70);
+            var metro = UiKit.Label(p.transform, "Metro", "\"Agla station: Temporary. Darwaze baayi taraf khulenge.\"\n<size=26><i>Next station: Temporary. Doors will open on the left.</i></size>", 30, new Color(1, 1, 1, 0.75f));
+            metro.rectTransform.Place(40, 1762, 1000, 90);
 
             var info = Resources.Load<TextAsset>("build_info");
             var ver = UiKit.Label(p.transform, "Build", info != null ? info.text : "editor", 24, new Color(1, 1, 1, 0.35f));
@@ -282,6 +282,7 @@ namespace KadakChai
                 log.Add(CardText("astro_intro"), CardStyle.Event);
                 yield return SkillPick();
                 log.Add(CardText("jhatpat_intro"), CardStyle.Event);
+                log.Add("*KHATRA* (danger) climbs from 1/8 to 8/8: enemies get tougher every day. The day's *AQI* sets Delhi's *GRAP* smog alert, and each stage bends the fight rules.", CardStyle.Note);
                 run.RestockShop();
                 yield return WaitNext("Start Day 1  >");
             }
@@ -511,7 +512,7 @@ namespace KadakChai
             tick.raycastTarget = false;
             var trt = tick.rectTransform;
             trt.sizeDelta = new Vector2(120, 150);
-            var labels = UiKit.Label(card.transform, "Zones", "<color=#A1887F>pheeka</color>          <color=#B26A2E>theek</color>   <color=#6D3B1F><b>KADAK</b></color>   <color=#B26A2E>theek</color>          <color=#A1887F>pheeka</color>", 30, UiKit.Ink);
+            var labels = UiKit.Label(card.transform, "Zones", "<color=#A1887F>pheeka = weak</color>   ·   <color=#B26A2E>theek = okay</color>   ·   <color=#6D3B1F><b>KADAK = extra strong</b></color>", 30, UiKit.Ink);
             labels.rectTransform.Place(40, 350, 880, 50, 960, 560);
             var result = UiKit.Label(card.transform, "Result", "", 72, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
             result.rectTransform.Place(20, 420, 920, 110, 960, 560);
@@ -533,7 +534,7 @@ namespace KadakChai
             else if (v == 1) battle.Banner("*Theek hai.*  +15% ATK for 2 rounds");
             log.Add(v == 2 ? "You brewed *KADAK chai*: *+40% ATK* for the first 3 rounds." :
                     v == 1 ? "*Theek-thaak* chai: *+15% ATK* for the first 2 rounds. Aim for the dark middle." :
-                    tapped ? "*Pheeki chai*. No boost this fight. Tap when the glass is in the dark middle." :
+                    tapped ? "*Pheeka* (weak) brew. No boost this fight. Tap when the glass is in the dark middle." :
                              "The chai got cold. No boost this fight.", v == 2 ? CardStyle.Good : CardStyle.Note);
             yield return new WaitForSecondsRealtime(1.3f);
             Destroy(overlay.gameObject);

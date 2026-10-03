@@ -112,7 +112,7 @@ namespace KadakChai
             list = UiKit.Make("List", screen);
             list.Place(0, 336, PW, PH - 336, PW, PH);
 
-            var close = UiKit.Button(root, "ShopClose", "Back to the lease", UiKit.Orange, 46, () => { if (!busy) open = false; });
+            var close = UiKit.Button(root, "ShopClose", "Close JhatPat", UiKit.Orange, 46, () => { if (!busy) open = false; });
             close.GetComponent<RectTransform>().Place(240, 1736, 600, 150);
 
             Refresh();
@@ -311,7 +311,7 @@ namespace KadakChai
                 "armour" => run.S.armour != null ? $"Wear (drop {run.S.armour.data.name})" : "Wear",
                 "consumable" => "Drink it",
                 "pass" => "Keep it",
-                _ => "Pop it",
+                _ => "Keep it",
             };
             var keepBtn = UiKit.Button(root, "BoxKeep", keep, UiKit.Green, 38, () => choice = 0);
             int value = run.SellValue(it);
