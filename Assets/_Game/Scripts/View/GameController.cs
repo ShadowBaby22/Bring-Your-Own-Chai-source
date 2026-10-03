@@ -379,6 +379,11 @@ namespace KadakChai
                     battle.HeroHp = null;
                     foreach (var c in result.inflicted)
                         log.Add($"*{GameData.HeroName}* is now *{Conditions.Name(c)}*: {Conditions.All[c].desc} It lasts until you drink *Pudin Hara* (JhatPat).", CardStyle.Bad);
+                    if (result.inflicted.Count > 0)
+                    {
+                        var c0 = result.inflicted[0];
+                        battle.Banner($"*{Conditions.Name(c0).ToUpper()}!*  {Conditions.All[c0].desc.Split('.')[0]}. Cure: Pudin Hara");
+                    }
                     AudioKit.Music("day");
 
                     if (result.won)
@@ -427,7 +432,7 @@ namespace KadakChai
                     yield return WaitChoice(card.choiceA, card.choiceB);
                     var (text, notes) = run.Choose(clicked);
                     log.Add(text, CardStyle.Good);
-                    if (notes.Count > 0) log.Add(string.Join("   ·   ", notes), CardStyle.Note);
+                    if (notes.Count > 0) { log.Add(string.Join("   ·   ", notes), CardStyle.Note); battle.Banner(string.Join("  ·  ", notes)); }
                     battle.ShowParty(run.S);
                     battle.SetAqi(run.S.aqi);
                 }
@@ -482,11 +487,11 @@ namespace KadakChai
             UiKit.Outline(card, Color.black, 5);
             var head = UiKit.Label(card.transform, "Head", "Brew it <color=#6D3B1F>KADAK!</color>", 64, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
             head.rectTransform.Place(20, 24, 920, 90, 960, 560);
-            var sub = UiKit.Label(card.transform, "Sub", "Tap anywhere when the glass hits the dark middle", 34, UiKit.Ink);
-            sub.rectTransform.Place(20, 112, 920, 60, 960, 560);
+            var sub = UiKit.Label(card.transform, "Sub", "Tap when the glass hits the dark middle\n<b>KADAK = +40% ATK</b> for 3 rounds  ·  theek = +15% for 2", 30, UiKit.Ink);
+            sub.rectTransform.Place(20, 108, 920, 96, 960, 560);
 
             var bar = UiKit.Panel(card.transform, "Bar", UiKit.Hex("#F3E1B9"), rounded: true);
-            bar.rectTransform.Place(70, 220, 820, 110, 960, 560);
+            bar.rectTransform.Place(70, 228, 820, 110, 960, 560);
             bar.raycastTarget = false;
             UiKit.Outline(bar, Color.black, 4);
             Image Zone(string name, float half, Color c)

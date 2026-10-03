@@ -57,3 +57,19 @@ Averages and the weakest node are filled in after the round.
 - **To check on a real phone:** Skip >> on the Broker's outro ignored two taps (likely the test browser's synthetic clicks).
 - **Still open:** fights feel slow at 2x for an impatient player.
 - **Delights:** the NCR writing ("Meter se nahi jayenge", "Leave her on read" still lets Pinky Aunty join), the Broker's Deposit bar and "temporary address proof", the faster start.
+
+## Round 3 (build: round 2 fixes)
+
+| Persona | theme | innovation | gameplay | aesthetics | overall | audience | keep playing | recommend | furthest |
+|---|---|---|---|---|---|---|---|---|---|
+| juror | 9 | 6 | 6 | 8 | 7 | 7 | no | yes | Day 4 (beat the Broker) |
+
+**Same juror, round 1 to round 3:** theme 8 to 9, gameplay 5 to 6, aesthetics 7 to 8, overall 6 to 7, audience 6 to 7; innovation flat at 6.
+**Weakest nodes: innovation and gameplay (6).** Innovation is mostly a pitch problem now ("a known auto-battler formula"): the IndieConnect page should lead with what is new (a faint rolls the day back as a zombie; the phone is the whole world; the AQI changes the rules; brew your chai before each fight).
+
+### Juror notes (round 3)
+- **Meter:** clear zones and big result words, but it didn't say what KADAK gives before the tap. Fixed after the round: the card now says "KADAK = +40% ATK for 3 rounds, theek = +15% for 2".
+- **Key results hid in the log:** the Day 2 event's -13 HP and Pinky Aunty joining were only seen after scrolling. Fixed after the round: event results also show as a banner over the street.
+- **Unexplained labels:** a status sat on Bablu for days without explanation; the speed button's "2x" read like the next speed. Fixed after the round: a new status gets a banner ("CANCELLED! -15% ATK. Cure: Pudin Hara"), and the button reads "SPEED 2x".
+- **Delights:** the writing (Pinky Aunty's son "in Canada. And never calls."), the theme built into the systems, a clear first minute with the red "Next Day: BOSS" button.
+- **Test caveat:** the browser pane was hidden, so Unity ran throttled and dropped first taps; pacing and timers were not judged.

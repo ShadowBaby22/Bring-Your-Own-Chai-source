@@ -104,7 +104,8 @@ namespace KadakChai
         void ApplySpeed()
         {
             speed = BasePace * Speeds[speedIndex];
-            speedText.text = Speeds[speedIndex].ToString("0.##") + "x";
+            speedText.text = "<size=20>SPEED</size>\n" + Speeds[speedIndex].ToString("0.##") + "x";
+            speedText.lineSpacing = 0.8f;
         }
 
         // ============================================================ juice primitives
