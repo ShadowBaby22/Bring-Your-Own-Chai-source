@@ -478,6 +478,13 @@ static class Tests
             Eq(1, r.S.faints, "faints"); Eq(1, r.S.zombieFights, "zombie fights");
             Check(!r.Fainted && !r.DayStarted, "still fainted / day still started");
         });
+        Test("the Vaidya's jadi-booti cures every status at the nursing home", () =>
+        {
+            var r = new Run(1);
+            r.S.conditions.UnionWith(new[] { "shaved", "robbed" });  // already sick that morning
+            r.BeginDay(); Weaken(r.S); r.Fight(); r.WakeAtNursingHome();
+            Eq(0, r.S.conditions.Count, "statuses after the nursing home");
+        });
         Test("a Day 1 faint restarts Day 1", () =>
         {
             var r = RunOn(0); Weaken(r.S);
@@ -530,6 +537,39 @@ static class Tests
                 int undeaths = res.events.Count(e => e.type == BattleEventType.Revive && e.target == HeroIndex(res));
                 Eq(1, undeaths, $"un-deaths (seed {seed})");
             }
+        });
+        Test("Amma's blessing: each faint makes enemies 10% weaker, down to 60%", () =>
+        {
+            var r = RunOn(0);
+            Eq(1f, r.MercyScale, "scale before any faint");
+            float[] want = { 0.9f, 0.8f, 0.7f, 0.6f, 0.6f };
+            foreach (var w in want)
+            {
+                Weaken(r.S); r.Fight(); r.WakeAtNursingHome(); r.BeginDay();
+                Check(Math.Abs(r.MercyScale - w) < 0.001f, $"after {r.S.faints} faints: scale {r.MercyScale}, want {w}");
+            }
+            Eq(40, r.MercyPercent, "percent shown at the floor");
+        });
+        Test("Amma's blessing weakens the enemies Bablu actually fights", () =>
+        {
+            int d = DayIndexOf(x => EnemyIds(x).Contains("ceo"));
+            int Hp(int mercy) { var r = new Run(5); r.DebugSkipTo(d + 1); r.S.mercy = mercy; return r.Fight().units.First(u => u.id == "ceo").maxHp; }
+            Check(Hp(2) < Hp(0), $"Lalaji HP with 2 faints {Hp(2)} vs none {Hp(0)}");
+        });
+        Test("Amma's blessing survives the rollback and ends once Bablu gets past the wall", () =>
+        {
+            var r = new Run(4);
+            r.BeginDay(); r.EndDay();                  // Day 1
+            r.BeginDay(); r.EndDay();                  // Day 2
+            r.BeginDay(); Weaken(r.S); r.Fight();      // faint on Day 3 (the wall)
+            r.WakeAtNursingHome();                     // back to Day 2
+            Eq(1, r.S.mercy, "mercy after the faint");
+            Eq(2, r.S.furthestDay, "wall (Day 3 index)");
+            r.BeginDay(); r.EndDay();                  // replay Day 2: still before the wall
+            Eq(1, r.S.mercy, "mercy on the way back to the wall");
+            r.BeginDay(); r.EndDay();                  // get past Day 3
+            Eq(0, r.S.mercy, "mercy after passing the wall");
+            Eq(1f, r.MercyScale, "scale after passing the wall");
         });
         Test("the zombie retry is easier than the first try (Day 9, 300 seeds)", () =>
         {
@@ -638,6 +678,10 @@ static class Tests
         Test("every run reaches the stamp (the nursing home has no dead ends)", () => Eq(100f, st.FinishedPct, "finished %"));
         Test("clean win rate (no faints) stays in the 30-60% band (target ~40%)", () => Between(30, 60, st.CleanWinPct, "clean win %"));
         Test("at most 1.5 faints per run on average", () => Between(0, 1.5, st.FaintsPerRun, "faints per run"));
+        Test("no wall: no day floors more than 35% of visits", () =>
+        {
+            for (int i = 0; i < st.deaths.Length; i++) Between(0, 35, st.FaintPct(i), $"Day {i + 1} faint %");
+        });
         Test("judge-friendly opening: Days 1-4 each faint under 15% per visit", () =>
         {
             for (int i = 0; i < 4; i++) Between(0, 15, st.FaintPct(i), $"Day {i + 1} faint %");
@@ -647,7 +691,8 @@ static class Tests
 
         var lazy = new SimStats();
         RunSimulator.Simulate(200, 1, false, lazy);
-        Warn("a player who never opens JhatPat finishes within 10 faints", () =>
+        Console.WriteLine($"        200 never-shop runs: finished within 10 faints {lazy.FinishedPct:0}%, clean win {lazy.CleanWinPct:0}%, {lazy.FaintsPerRun:0.0} faints/run");
+        Test("a player who never opens JhatPat finishes within 10 faints", () =>
             Check(lazy.FinishedPct >= 95, $"only {lazy.FinishedPct:0}% finish; faint % per day: " +
                   string.Join(" ", Enumerable.Range(0, lazy.deaths.Length).Where(i => lazy.FaintPct(i) >= 10).Select(i => $"D{i + 1}:{lazy.FaintPct(i):0}"))));
     }

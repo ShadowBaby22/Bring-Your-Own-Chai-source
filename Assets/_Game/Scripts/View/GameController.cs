@@ -625,7 +625,8 @@ namespace KadakChai
             yield return vn.Play(GameData.Scene("nursing_home"));
             AudioKit.Sfx("heal");
             AudioKit.Music("day");
-            log.Add($"Knocked out by *{killer}*. *{GameData.HeroName}* wakes up at *Amma's Nursing Home*. Amma's bill: *₹{Run.NursingHomeBill}*. The sadhu's jadi-booti makes him a *Zombie* for the next fight.", CardStyle.Bad);
+            log.Add($"Knocked out by *{killer}*. *{GameData.HeroName}* wakes up at *Amma's Nursing Home*. Amma's bill: *₹{Run.NursingHomeBill}*. The Vaidya's jadi-booti cures every status and makes him a *Zombie* for the next fight.", CardStyle.Bad);
+            log.Add($"*Amma's blessing:* enemies are *{run.MercyPercent}% weaker* until {GameData.HeroName} gets past Day {run.S.furthestDay + 1}. \"Kha le beta, phir ladna.\"", CardStyle.Good);
             battle.ClearEnemies();
             battle.ReviveHero(run.S);
             battle.ShowParty(run.S);

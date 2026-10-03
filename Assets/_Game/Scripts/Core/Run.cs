@@ -43,6 +43,8 @@ namespace KadakChai
         public bool freeBoxUsed;            // JhatPat welcome offer: the first Mystery Box is free
         public int zombieFights;            // Jadi-Booti Zombie buff after Amma's Nursing Home (next fight)
         public int faints;                  // times Bablu woke up at Amma's Nursing Home
+        public int mercy;                   // Amma's blessing: faints since Bablu last got past his wall (enemies -10% each)
+        public int furthestDay;             // furthest day index reached this run (the wall is the day he fainted on)
 
         /// <summary>Copy of the whole run state (taken every morning, restored after a faint).</summary>
         public RunState Clone()
@@ -64,6 +66,7 @@ namespace KadakChai
             fastags = o.fastags; tollDays = o.tollDays; insuranceDays = o.insuranceDays;
             conditions.Clear(); conditions.UnionWith(o.conditions);
             companion = o.companion; freeBoxUsed = o.freeBoxUsed; zombieFights = o.zombieFights; faints = o.faints;
+            mercy = o.mercy; furthestDay = o.furthestDay;
             shop.Clear(); shop.AddRange(o.shop);
         }
 
@@ -118,6 +121,10 @@ namespace KadakChai
         public bool Fainted { get; private set; }
         public const int NursingHomeBill = 100;
         public const float ZombieAtk = 1.3f, ZombieDef = 0.8f, ZombieLifesteal = 0.2f;
+        /// <summary>Amma's blessing: each faint makes enemies 10% weaker (down to 60%) until Bablu gets past the day he fainted on.</summary>
+        public const float MercyStep = 0.10f, MercyFloor = 0.6f;
+        public float MercyScale => Math.Max(MercyFloor, 1f - MercyStep * S.mercy);
+        public int MercyPercent => (int)Math.Round((1f - MercyScale) * 100);
         readonly Dictionary<int, RunState> mornings = new();   // state at the start of each day
         public string Killer { get; private set; }
         public const float ReviveHp = 0.5f;
@@ -219,7 +226,7 @@ namespace KadakChai
         /// <summary>Simulates today's fight. On a win, applies HP and EXP. On a loss, nothing changes (retry).</summary>
         public BattleResult Fight()
         {
-            var result = AutoBattle.Simulate(S, Enemies(), Rng, Spice, Day.enemyScale > 0 ? Day.enemyScale : 1f);
+            var result = AutoBattle.Simulate(S, Enemies(), Rng, Spice, (Day.enemyScale > 0 ? Day.enemyScale : 1f) * MercyScale);
             foreach (var c in result.inflicted) S.conditions.Add(c);
             if (!result.won)
             {
@@ -411,16 +418,18 @@ namespace KadakChai
 
         /// <summary>
         /// After a faint: wake at Amma's Nursing Home. Back to the morning of the previous day (or today on Day 1)
-        /// with what Bablu had then, minus Amma's bill, plus the sadhu's Jadi-Booti Zombie buff for the next fight.
+        /// with what Bablu had then, minus Amma's bill, plus the sadhu's Jadi-Booti Zombie buff for the next fight
+        /// and Amma's blessing (enemies weaker until he gets past the day he fainted on).
         /// </summary>
         public void WakeAtNursingHome()
         {
-            int faints = S.faints + 1;
+            int faints = S.faints + 1, mercy = S.mercy + 1, furthest = Math.Max(S.furthestDay, S.dayIndex);
             int back = Math.Max(0, S.dayIndex - 1);
             if (!mornings.TryGetValue(back, out var m)) mornings.TryGetValue(S.dayIndex, out m);
             if (m != null) S.CopyFrom(m);
-            S.faints = faints;
+            S.faints = faints; S.mercy = mercy; S.furthestDay = furthest;
             S.hp = S.maxHp;
+            S.conditions.Clear();   // the Vaidya's jadi-booti cures every lasting status
             S.rupees -= Math.Min(S.rupees, NursingHomeBill);
             S.zombieFights = 1;
             Fainted = false; DayStarted = false;
@@ -454,6 +463,7 @@ namespace KadakChai
 
             string from = Day.zone;
             S.dayIndex++;
+            if (S.dayIndex > S.furthestDay) { S.furthestDay = S.dayIndex; S.mercy = 0; } // past the wall: Amma's blessing ends
             DayStarted = false;
             Border = null; UsedFastag = false; LeftCompanion = null;
             if (!Finished && Day.zone != from)
