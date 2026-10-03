@@ -1,0 +1,95 @@
+id,text,choice_a,effect_a,result_a,choice_b,effect_b,result_b
+# Rows starting with # are ignored. Wrap a word in *asterisks* to highlight it in orange. {skill} is replaced with a skill name.
+# Effects: hp / heal (number or %), maxhp, atk, def, xp, aqi, flag:<name>, skill:<id or random>. Separate with ;
+# Event pools: any row whose id starts with a day's "pool" (e.g. ev_dilli_) can appear on that day. Add rows to add variety.
+#
+# --- Run start ---
+intro,"You arrive in Delhi NCR with two suitcases and one *11-month rent agreement*. Here, that means *11 days*. Your mission: get one *stamp* from the Sarkari Daftar before the lease runs out.",,,,,,
+astro_intro,"An *Astrologer Baba* outside the metro station grabs your hand. ""Your stars are aligned, beta. Temporarily.""",,,,,,
+#
+# --- Fight intros (fight_<enemy id>, picked by the enemy group rolled that day) ---
+fight_scooty_uncle,"A *Wrong-Side Scooty Uncle* is driving straight at you. On the footpath. Against traffic. Honking at *you*.",,,,,,
+fight_scooty_uncle_win,"He reverses into oncoming traffic, unbothered. Nobody is surprised.",,,,,,
+fight_auto_bhaiya,"An *auto bhaiya* pulls up, looks you up and down, and says the four most powerful words in Delhi: *Meter se nahi jayenge.*",,,,,,
+fight_auto_bhaiya_win,"He agrees to go ""by meter"". The meter has been broken since 2004.",,,,,,
+fight_south_delhi_girl,"A *South Delhi Girl* has blocked the footpath for a boomerang. ""Like, literally, can you move? This is *content*.""",,,,,,
+fight_south_delhi_girl_win,"She posts your fight with the caption ""humble beginnings"". It gets 2.3k likes. You get none.",,,,,,
+fight_monkey,"Welcome to the *Noida Free Trade Zone*. A *Monkey Gang* guards the expressway exit. One of them is wearing someone's office ID card.",,,,,,
+fight_monkey_win,"The monkeys retreat to a balcony with your sunglasses. They will be back. They always come back.",,,,,,
+fight_sector_cabbie,"Your cab driver is lost in the *sector maze*. Somehow it's your fault. ""Sir, aapne *63* bola tha!""",,,,,,
+fight_sector_cabbie_win,"You reach your destination. It was *Sector 62* all along. Or was it?",,,,,,
+fight_firecracker,"A *Firecracker Ban Violator* is launching rockets ""for the culture"". The *Society Guard* wants to know: ""Kahan jaana hai?""",,,,,,
+fight_firecracker_win,"The guard finally lets you through the gate. You were trying to leave.",,,,,,
+fight_techbro,"Welcome to the *Gurugram Corporate Emirates*. A *LinkedIn Tech Bro* blocks the Cyber Hub entrance. ""Let's take this offline. Also, are you open to work?""",,,,,,
+fight_techbro_win,"He updates his headline to ""Humbled. Learning from failure."" It gets 9k likes. You get endorsed for Violence.",,,,,,
+#
+# --- Fixed day cards ---
+d2,"*Pinky Aunty* from the RWA WhatsApp group corners you at the gate. ""Beta, I will help you. But first forward this to 10 people.""",Forward it,flag:aunty,"*Pinky Aunty* joins you! You are now in 14 new WhatsApp groups.",Leave her on read,flag:aunty;hp:-10%,"She joins anyway, and tells the whole society you are ""very rude"". *Pinky Aunty* joins you!"
+d4,"The *Broker* appears. ""Sir, small matter only. One month brokerage, one month deposit, one month *documentation charges*.""",,,,,,
+d4_win,"The Broker drops his phone. He was on a call with another tenant the whole time. He hands you a *temporary address proof*.",,,,,,
+d8,"The *Startup CEO* blocks your path in a fleece vest. ""We're disrupting the concept of walking. Our Series A closes tonight.""",,,,,,
+d8_win,"His *runway* hits zero. ""We're excited to announce the end of our incredible journey."" He posts about it on LinkedIn. It gets 40k likes.",,,,,,
+ev_daftar_chai,"A *chai tapri* outside the Daftar. *Delivery Wale Bhaiya* calls: ""Sir, 2 minute mein pahunch raha hoon."" He said that on Day 1.",Sip it slowly,heal:100%,"Kadak chai. Full HP. For one moment, everything is fine.",Gulp it down,heal:50%;atk:+4,"You burn your tongue. Now you are furious, which helps."
+d11,"The *Babu*, Keeper of the Stamp, looks up. ""Original + 3 photocopies + self-attested + attested by gazetted officer + your soul.""",,,,,,
+d11_win,"THUNK. The *stamp* lands. It reads: *VALID FOR 11 MONTHS*. Your lease ended this morning.",,,,,,
+#
+# --- Dilli event pool (day 3) ---
+ev_dilli_maamu,"A *barricade* blocks the road. *Maamu* stands next to it. ""Road closed temporarily, sir."" ""Since when?"" ""2011.""",Take the detour,xp:+30,"The detour has its own detour. You learn a lot about yourself.",Argue with Maamu,atk:+3;rs:-100,"He issues you a *₹100 challan* for arguing. You leave angrier, and somehow stronger."
+ev_dilli_sarojini,"*Sarojini Nagar*. A shopkeeper holds up a t-shirt. ""Last price, 500."" The tag says 50. The shirt says ""Gucii"".",Haggle like a local,skill:haggling;rs:-80,"You walk away. He chases you for two lanes. 80 rupees. You have learnt *Haggling*.",Pay 500,maxhp:+15;rs:-500,"You overpaid, but the shopkeeper blesses you and your future children. +Max HP."
+ev_dilli_rajiv_chowk,"*Rajiv Chowk* metro, 6pm. The doors open. You do not get on the train. You are *transferred* onto it.",Go with the flow,xp:+30,"You get off at a station you've never heard of. Character development.",Fight for a seat,atk:+3;hp:-10%,"You win a seat. An uncle gives you a look that will haunt you."
+ev_dilli_chole,"A *chole bhature* stall at 11am. Each bhatura is the size of your head. Your doctor is on speed dial.",Order a full plate,maxhp:+20;hp:-10%,"You can't move for 20 minutes, but your body adapts. +Max HP.","Half plate, less oil",heal:30%,"The stall owner is offended. You feel light and healthy, and slightly ashamed."
+ev_dilli_gk_party,"A house party in *GK-2*. Someone asks ""So what do you *do*?"" before asking your name.",Say 'I'm in tech',xp:+25;rs:+100,"Someone hires you as a consultant on the spot. +₹100. Everyone nods. Nobody asks a follow-up question. You blend in perfectly.",Say 'I'm new in town',def:+3,"Gasps. Someone offers you a kombucha out of pity. Shame is a kind of armour."
+ev_dilli_hkv,"*Hauz Khas Village*. Every café has the same fairy lights and a guy with a guitar playing Wonderwall.",Request a Bollywood song,atk:+3,"He plays it. The crowd turns on you, then joins in. You feel like a hero.",Leave quietly,heal:25%,"You escape before the second chorus. Some battles are not worth fighting."
+#
+# --- Noida event pool (day 6) ---
+ev_noida_baraat,"A *baraat* has blocked all six lanes of the expressway. The band has been playing the same song for 40 minutes.",Join the dance,atk:+5;hp:-15%,"You dance like nobody is watching. Everybody is watching. Your legs are stronger now.",Wait it out,xp:+30,"It takes three hours. But you are wiser, and you now know all the words."
+ev_noida_dnd,"The *DND Flyway*. It's been toll-free for years, but every car still slows down at the old toll booth. Out of respect.",Floor it,atk:+4;hp:-10%,"You blast through. Twelve people honk at you for breaking tradition.",Slow down too,def:+3,"You slow down. You don't know why. You are becoming one of them."
+ev_noida_sectors,"You need *Sector 62*. Google says left. A local uncle says right. The sign says *Sector 63, also 62*.",Trust Google,xp:+30,"You arrive at *Sector 16*. It's fine. Everything here is ""nearby"".",Trust the uncle,atk:+3,"He walks you there himself, and tells you his son's JEE rank. Twice."
+ev_noida_sector18,"*Sector 18* market. A mall, a metro station, and a parking lot that hasn't had a free spot since 2009.",Circle for parking,xp:+20,"Forty minutes later you find a spot. In Sector 19.",Park 'just for 2 minutes',atk:+4;rs:-100,"You get towed. ₹100 to get it back. You chase the tow truck anyway. Excellent cardio."
+ev_noida_extension,"A *Noida Extension* builder grabs your arm. ""Flat, sir. Possession in 6 months. Guaranteed."" The brochure is from 2014.",Book a flat,def:+5;rs:-150,"₹150 token amount. Possession date: *2031*. But the brochure is very glossy. You feel invested.",Run,heal:25%,"You escape. He shouts the EMI amount after you. It echoes."
+ev_noida_filmcity,"A shoot at *Noida Film City*. The director needs an extra who looks ""confused and new to the city"". You are perfect.",Take the role,xp:+25;rs:+150,"They pay you ₹150. Your face is on screen for 0.4 seconds. Your mother tells everyone.",Ask for a speaking part,atk:+3,"Your line: ""Bhaiya, yeh Sector 62 hai?"" They print it in one take."
+#
+# --- Daftar event pool (day 10) ---
+ev_daftar_photocopy,"The *photocopy shop* outside the Daftar. The Babu wants ""original plus copies"". Of what? Nobody knows.",Bring 3 photocopies,def:+6,"Self-attested, stapled, laminated. You feel bureaucratically armoured.",Bring the original,atk:+6,"You hold the only original. The power is intoxicating."
+ev_daftar_token,"The *token machine* prints number *847*. The screen says ""Now serving: 12"".",Wait patiently,heal:100%,"You take a nap on the bench. Full HP. Now serving: 13.",Find a 'contact',atk:+6;rs:-100,"₹100 for chai-paani. A peon takes you to the front for ""chai-paani"". You feel powerful, and a little guilty."
+ev_daftar_forms,"You need *Form 16-B*, which needs *Form 16-A*, which is only issued after you submit *Form 16-B*.",Fill both at once,xp:+30,"You have broken the loop. Somewhere, a clerk feels a disturbance.",Laminate everything,def:+5,"Nothing is solved, but everything is waterproof now."
+#
+# --- Generic pools (picked at random by prefix) ---
+win_1,"Victory! The enemy files a complaint with the RWA.",,,,,,
+win_2,"Victory! You celebrate with a samosa. It is also temporary.",,,,,,
+win_3,"Victory! Somewhere, a pressure horn plays in your honour.",,,,,,
+win_4,"Victory! The crowd disperses the way Delhi crowds do: slowly, and towards you.",,,,,,
+lose_1,"You collapse on the footpath. A passing auto refuses to take you. *Come Tomorrow.*",,,,,,
+lose_2,"Defeated. You wake up at full HP and the day starts again. The problem has not been solved. *Come Tomorrow.*",,,,,,
+timeout_1,"Round 15. The lunch break begins and the counter shuts. *Come Tomorrow* (with original documents).",,,,,,
+expire_1,"Your *{skill}* lease has ended. The landlord kept the deposit.",,,,,,
+expire_2,"*{skill}* was only temporary. Like everything here.",,,,,,
+expire_3,"*{skill}* has expired. Renewal requires 3 photocopies and a visit on a weekday.",,,,,,
+baba_1,"*Astrologer Baba* reappears. ""Your stars are aligned... for a few days. Choose.""",,,,,,
+baba_2,"*Astrologer Baba*: ""Mercury is in retrograde, beta. Pick quickly.""",,,,,,
+baba_3,"*Astrologer Baba* accepts UPI now. ""Choose one blessing. Terms and conditions apply.""",,,,,,
+news_1,"BREAKING: Noida renames Sector 62 to Sector 62-A to reduce confusion. Confusion increases.",,,,,,
+news_2,"BREAKING: Man finds parking in Lajpat Nagar on first try. Declared a national holiday.",,,,,,
+news_3,"BREAKING: Delhi Metro adds announcement asking passengers not to sit on the floor, in 12 languages.",,,,,,
+news_4,"BREAKING: South Delhi café introduces a 'minimalist' menu. It is a blank page. Rs 900.",,,,,,
+news_5,"BREAKING: Gurgaon receives 10 minutes of rain. Residents switch to boats.",,,,,,
+news_6,"BREAKING: Flyover completed on schedule. Experts investigate.",,,,,,
+news_7,"BREAKING: Auto driver agrees to go by meter. Meter files police complaint.",,,,,,
+news_8,"BREAKING: Rare Good Day spotted. Residents suspicious, refuse to go outside.",,,,,,
+news_9,"BREAKING: Odd-even is back. Even numbers urged to stay calm.",,,,,,
+news_10,"BREAKING: RWA WhatsApp group reaches 1,000 'Good Morning' images before 7am. New record.",,,,,,
+#
+# --- Ending ---
+jhatpat_intro,"*JhatPat* is installed on your phone: weapons, chai and a *Mystery Box*, ""delivered in 10 minutes*"". Mummy sent *₹200* pocket money. Shop after any day.",,,,,,
+rent_day,"*Rent day.* The landlord takes *₹{rs}*. He does not care about the baraat.",,,,,,
+border_dilli_gurugram,"*Sirhaul toll plaza.* Welcome to Gurugram. The toll is 30 seconds long and 40 minutes deep. *Toll Tax: all stats -15% for 2 days.*",,,,,,
+border_gurugram_noida,"*DND Flyway.* It has been toll-free for years. The *Toll Tax* still applies, out of respect. *All stats -15% for 2 days.*",,,,,,
+border_noida_daftar,"*Delhi border.* An MCD man with a receipt book appears from nowhere. *Toll Tax: all stats -15% for 2 days.*",,,,,,
+border_fastag,"Your *FASTag* beeps. The boom barrier opens. For one moment, you understand what it feels like to be rich. *No Toll Tax.*",,,,,,
+delivery_end,"*Delivery Wale Bhaiya* finally arrives. ""Sir, your order."" You placed it 11 months ago.",,,,,,
+credits,"e-CHALLAN No. 2026/TEMP/11
+Offence: Making a whole game in one weekend
+Made by: Siddharth Gupta, Dhivesh, Jaideep and Amolika
+Made in: Unity, in 48 hours, for the EVERYTHING IS TEMPORARY jam
+Fine: Please rate the game
+Status: Temporary",,,,,,

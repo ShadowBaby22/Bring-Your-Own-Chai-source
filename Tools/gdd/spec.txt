@@ -1,0 +1,54 @@
+TITLE|Bring Your Own Chai
+P|Live GDD for GRAP Stage 4, our game for the Everything Is Temporary jam. This tab is the source of truth: edit it directly and keep it current. Dhivesh's edit notes and reference images are in the Edits tab.
+H1|Status and links
+B|**Play the current build:** https://shadowbaby22.github.io/Bring-Your-Own-Chai/ (phone or desktop, tap once for sound)
+B|**Deadline:** Sunday 4 October, 18:00 IST. We aim to submit on itch.io by 16:30 to leave a buffer.
+B|**Team:** Siddharth Gupta, Dhivesh and Amolika. Add your role next to your name.
+H1|The game
+P|You have an 11-month rent agreement in Delhi NCR. In this game that means 11 days to get one stamp from the Sarkari Daftar. Each day is one event: a fight, a choice, a chai break or a boss. Fights play out on their own, like Capybara Go. Your decisions happen between fights: which skills to take, how to answer events, and what to buy with your rupees.
+P|Everything you own is temporary. Skills expire after a few days, weapons break after a few fights, the shop's stock changes every day, and the AQI of the day bends the rules of each fight.
+P|Tone: an affectionate roast of NCR situations and archetypes. No real politicians, religions or communities.
+H1|Core loop
+B|A day card appears in the story log and the player taps the main button.
+B|**Fight days:** an auto-battle plays out (10 to 25 seconds), then a victory card, EXP and rupees.
+B|**Event days:** a joke card with two choices that change stats, rupees or skills.
+B|**After each day:** the player can open the shop on their phone before tapping Next Day.
+B|**Level ups:** Astrologer Baba offers three skills. Each skill comes with a lease of a few days.
+B|**Losing:** "Come Tomorrow" restarts the day at full HP with a small attack bonus, so every run can reach the ending.
+H1|Combat: close vs ranged
+P|Every attack is either close or ranged. The hero's normal attack takes its type from the equipped weapon. With no weapon, the hero fights at close range with a backpack swing. Every enemy has a fixed type.
+B|**Close:** hits the front enemy only, and does 25% extra damage to ranged targets because they can't fight up close.
+B|**Ranged:** fires one free shot before Round 1, can target any enemy (it aims at the weakest), and does 20% less damage.
+B|**Same rules for enemies:** a ranged hero opens strong and picks off weak enemies, but takes 25% extra damage from close enemies.
+B|**Skills:** Astrologer Baba's skills have no type for now.
+P|Enemy types:
+B|**Close:** Wrong-Side Scooty Uncle, Auto Bhaiya, Monkey Gang, Society Guard, The Broker.
+B|**Ranged:** South Delhi Girl (iced coffee), Firecracker Ban Violator (rockets), Lost Cab Driver (honking), The Startup CEO (pitch decks), The Babu (rubber stamps).
+H1|Weapons and the JhatPat shop
+P|The shop is an app on the hero's phone called JhatPat, "delivered in 10 minutes*". It opens after every day. Each day it stocks three random items plus Cutting Chai, and the stock changes the next day. The hero holds one weapon and one piece of armour, and buying a new one replaces the old one. Delivery Wale Bhaiya brings every order and, for once, arrives on time.
+P|The full catalogue:
+TABLE|[["Item", "Type", "Price", "Effect", "Lasts"], ["Cricket Bat", "Close", "₹350", "+6 ATK. 20% chance of a Cover Drive that hits for 200%.", "4 fights"], ["Badminton Racket", "Close", "₹300", "+3 ATK. Attacks twice per turn at 60% damage each.", "3 fights"], ["Cork Ball", "Ranged", "₹250", "+4 ATK. The opening shot is a Yorker: 150% damage and a 25% chance to stun for a round.", "3 fights (balls go over the neighbour's wall)"], ["Chappal", "Ranged", "₹100", "+2 ATK. Never misses, even in GRAP 2 smog. 30% extra damage against uncles.", "2 fights"], ["Hockey Stick", "Close", "₹400", "+5 ATK. 15% chance to stun.", "4 fights"], ["Steel Tiffin (armour)", "None", "₹200", "+5 DEF.", "3 fights"], ["Cutting Chai", "None", "₹60", "Heals 40% HP right away.", "One use"]]
+P|When a weapon's fights run out it breaks with a card ("Your Cricket Bat's lease has ended. The neighbour wants it back.") and the hero goes back to the backpack swing.
+H1|Rupees
+P|Rupees are the shop currency, shown as ₹ in the stats bar and on the phone.
+TABLE|[["Source", "Rupees"], ["Starting pocket money", "+₹200"], ["Normal fight win", "+₹60 to ₹150, depending on the enemies"], ["Boss win", "+₹300"], ["Event choices", "Some pay or cost rupees. Sarojini Nagar: haggle a shirt down to ₹80 or pay ₹500."], ["Rent day (Day 6)", "-₹150. The landlord does not care about the baraat."], ["Losing a fight", "No change. You keep your rupees."]]
+P|Target: about ₹1,500 earned per run. That buys one good weapon before the Broker on Day 4 and a second before the CEO on Day 8, with a few chais in between.
+H1|Phone UI
+P|From the Edits tab: the bottom half of the screen becomes the hero's phone, modelled on the bitterSweet phone in Dhivesh's reference image.
+B|**Status bar:** day and in-game time, signal bars that drop as the AQI rises, and a battery that shows the hero's HP.
+B|**Home screen apps:** Messages (the story log as chat bubbles), JhatPat (the shop), Skills (active leases and days left), Profile (Lv, HP, ATK, DEF and rupees), Map (the 11-day track) and Settings (Sound FX and Music).
+B|**Notifications:** badge counts on Messages and JhatPat when something new arrives.
+B|**Main button:** Fight, Next Day and the event choices stay below the phone, always one tap away.
+H1|The 11 days
+TABLE|[["Day", "Zone", "Type", "What happens"], ["1", "Dilli", "Fight", "Scooty Uncle, Auto Bhaiya or South Delhi Girl"], ["2", "Dilli", "Event", "Pinky Aunty joins the party"], ["3", "Dilli", "Event", "Random Dilli card (Sarojini, Rajiv Chowk, chole bhature and more)"], ["4", "Dilli", "Boss", "The Broker"], ["5", "Noida", "Fight", "Monkey Gang or Lost Cab Driver"], ["6", "Noida", "Event", "Random Noida card, plus rent day"], ["7", "Noida", "Fight", "Firecracker Ban Violator or Lost Cab Driver, with the Society Guard"], ["8", "Noida", "Boss", "The Startup CEO"], ["9", "Daftar", "Chai break", "Heal at the tapri. Delivery Wale Bhaiya is still 2 minutes away."], ["10", "Daftar", "Event", "Random Daftar card (photocopies, token machine, Form 16-B)"], ["11", "Daftar", "Final boss", "The Babu, Keeper of the Stamp"]]
+H1|Already built
+B|Auto-battle with VS cards, hit-stop, screen shake, comic impact numbers and a slow-motion final KO.
+B|12 sticker-style characters with hit poses and damage states, and 3 backgrounds.
+B|Visual-novel scenes with portraits for the bosses, Pinky Aunty and the ending.
+B|City event pools for Dilli, Noida and the Daftar, so no two runs are the same.
+B|Chiptune sound effects and music, with Sound FX and Music switches in Options.
+B|A mobile web build at the link above.
+H1|Tasks
+TABLE|[["Task", "Owner", "Status"], ["Rupees: earning, rent day, balance on screen", "Siddharth (with Claude)", "In progress"], ["JhatPat shop app and daily stock", "Siddharth (with Claude)", "In progress"], ["Close vs ranged combat and weapon effects", "Siddharth (with Claude)", "In progress"], ["Phone UI redesign (Edits tab)", "Siddharth (with Claude)", "To do"], ["Weapon icons and in-hand sprites", "Open", "To do"], ["Playtest a full run on a phone and list problems below", "Open", "To do"], ["Itch.io page: cover, screenshots, GIF, description", "Open", "To do"], ["More event cards and jokes", "Open", "To do"]]
+H1|Change log
+B|**Sat 3 Oct:** added the JhatPat shop, rupees, weapons, close vs ranged combat and the phone UI plan.

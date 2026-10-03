@@ -1,0 +1,33 @@
+# Unity generated
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+
+# Builds (the web build is published separately to the Bring-Your-Own-Chai Pages repo)
+/[Bb]uild/
+/[Bb]uilds/
+
+# IDE / OS
+*.csproj
+*.sln
+*.slnx
+*.suo
+*.user
+*.pidb
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+/.vscode/
+.DS_Store
+sysinfo.txt
+crashlytics-build.properties
+
+# Tool caches
+/Tools/sim/bin/
+/Tools/sim/obj/
+__pycache__/

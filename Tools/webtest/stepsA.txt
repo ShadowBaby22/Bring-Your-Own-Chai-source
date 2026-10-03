@@ -1,0 +1,35 @@
+# title -> intro -> skill -> shop -> mystery box -> day 1 fight
+wait 25
+shot a01_title
+click 540 1485
+wait 3
+click 955 235
+wait 2
+shot a02_after_intro
+click 540 1811
+wait 3
+shot a03_skill
+click 540 685
+wait 2
+shot a04_wait_next
+click 195 1811
+wait 2
+shot a05_shop
+click 854 584
+wait 3.5
+shot a06_box
+click 420 1475
+wait 1.5
+shot a07_shop_after
+click 540 1811
+wait 1.5
+click 715 1811
+wait 5
+shot a08_day1
+click 540 1811
+wait 4
+shot a09_fight
+wait 8
+shot a10_fight_later
+wait 10
+shot a11_after

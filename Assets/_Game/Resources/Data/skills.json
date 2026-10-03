@@ -1,0 +1,14 @@
+{
+  "skills": [
+    { "id": "pressure_horn", "name": "Pressure Horn", "shortName": "Horn", "desc": "30% chance: an extra hit for 150% damage.", "lease": 3, "kind": "extra_hit", "chance": 0.30, "power": 1.5, "every": 0, "backfire": 0, "sfx": "honk" },
+    { "id": "anti_smog_gun", "name": "Anti-Smog Gun", "shortName": "Smog Gun", "desc": "25% chance: spray every enemy for 80% damage.", "lease": 3, "kind": "aoe", "chance": 0.25, "power": 0.8, "every": 0, "backfire": 0, "sfx": "spray" },
+    { "id": "duct_tape", "name": "Duct-Tape Fix", "shortName": "Duct Tape", "desc": "Every 4 rounds: heal 20% of max HP.", "lease": 4, "kind": "heal_every", "chance": 1.0, "power": 0.2, "every": 4, "backfire": 0, "sfx": "slap" },
+    { "id": "papa_ka_naam", "name": "\"Do You Know Who My Father Is?\"", "shortName": "Papa Ka Naam", "desc": "15% chance: a 300% hit. 20% of the time it backfires.", "lease": 2, "kind": "big_hit", "chance": 0.15, "power": 3.0, "every": 0, "backfire": 0.2, "sfx": "boom" },
+    { "id": "kadak_chai", "name": "Kadak Chai", "shortName": "Chai", "desc": "+25% ATK for the first 3 rounds of every fight.", "lease": 3, "kind": "start_buff", "chance": 0, "power": 0.25, "every": 3, "backfire": 0 },
+    { "id": "n95_mask", "name": "N95 Mask", "shortName": "N95", "desc": "Ignore all AQI penalties.", "lease": 4, "kind": "ignore_aqi", "chance": 0, "power": 0, "every": 0, "backfire": 0 },
+    { "id": "jugaad_shield", "name": "Jugaad Shield", "shortName": "Shield", "desc": "The first 3 hits each fight do half damage.", "lease": 3, "kind": "half_damage", "chance": 0, "power": 0.5, "every": 3, "backfire": 0 },
+    { "id": "wrong_side", "name": "Wrong-Side Shortcut", "shortName": "Wrong-Side", "desc": "15% chance to dodge attacks.", "lease": 3, "kind": "dodge", "chance": 0.15, "power": 0, "every": 0, "backfire": 0 },
+    { "id": "forward_msg", "name": "Forward This Message", "shortName": "Forward", "desc": "20% chance: the enemy is confused and skips a turn.", "lease": 3, "kind": "confuse", "chance": 0.20, "power": 0, "every": 0, "backfire": 0, "sfx": "ping" },
+    { "id": "haggling", "name": "Haggling", "shortName": "Haggle", "desc": "20% chance: steal 10% of the enemy's ATK.", "lease": 3, "kind": "steal_atk", "chance": 0.20, "power": 0.1, "every": 0, "backfire": 0, "sfx": "coin" }
+  ]
+}

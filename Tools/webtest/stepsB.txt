@@ -1,0 +1,30 @@
+# ?day=4: broker fight (retry if lost) -> next day -> border map
+wait 25
+click 540 1485
+wait 3
+click 955 235
+wait 4
+shot b01_day4
+click 540 1811
+wait 30
+shot b02_after_fight
+click 540 1811
+wait 30
+shot b03_retry
+click 540 1811
+wait 30
+shot b04_retry2
+click 955 235
+wait 2
+click 540 685
+wait 2
+shot b05_wait_next
+click 715 1811
+wait 3
+shot b06_map_walk
+wait 4
+shot b07_map_toll
+wait 2
+click 540 1811
+wait 4
+shot b08_gurugram
