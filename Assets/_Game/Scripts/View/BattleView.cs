@@ -17,6 +17,8 @@ namespace KadakChai
         Image bg, bgNext, smog, flash;
         Text roundText, speedText;
         Puppet hero, aunty;   // aunty = the current zone companion's puppet (any companion)
+        /// <summary>Bablu's HP after each hit or heal during playback (the phone header follows it live).</summary>
+        public System.Action<int> HeroHp;
         readonly List<Puppet> enemies = new();
         string zone;
         // "1x" plays at 0.65 of the original pace (playtest: original felt too fast). The speed button cycles
@@ -506,6 +508,7 @@ namespace KadakChai
                         {
                             target.Hit(speed, e.big);
                             target.SetHp(e.hpAfter);
+                            if (targetIsHero) HeroHp?.Invoke(e.hpAfter);
                             var at = target.PointIn(popups, 0.5f, 0.5f);
                             Fx.Burst(this, popups, at, e.big ? new Color(1f, 0.85f, 0.2f) : Color.white, e.big ? 16 : 7, e.big ? 900 : 550, e.big ? 26 : 18, 0.45f);
                             ImpactNumber(target, e.amount, e.big, targetIsHero);
@@ -533,6 +536,7 @@ namespace KadakChai
 
                     case BattleEventType.Heal:
                         target?.SetHp(e.hpAfter);
+                        if (targetIsHero) HeroHp?.Invoke(e.hpAfter);
                         if (target != null)
                         {
                             Popup("+" + e.amount, target, new Color(0.45f, 1f, 0.5f), 52);
@@ -607,6 +611,7 @@ namespace KadakChai
 
                     case BattleEventType.Revive:
                         target?.SetHp(e.hpAfter);
+                        if (targetIsHero) HeroHp?.Invoke(e.hpAfter);
                         Flash(new Color(1f, 0.9f, 0.3f, 0.5f), 0.3f);
                         Shake(16, 0.4f);
                         if (target != null) yield return target.StandUp(speed);

@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -294,7 +295,15 @@ namespace KadakChai
                 if (lastDay) { run.EndDay(); break; }
 
                 run.RestockShop();
-                yield return WaitNext("Next Day  >");
+                var tomorrow = GameData.Days[run.S.dayIndex + 1];
+                if (tomorrow.type == "boss")
+                {
+                    var names = (tomorrow.enemies ?? new string[0]).Select(id => GameData.Combatants.TryGetValue(id, out var c) ? c.name : id);
+                    log.Add($"*Tomorrow: BOSS FIGHT* with *{string.Join(", ", names)}*. Heal up and gear up at *JhatPat* now: there is no shop between you and the boss.", CardStyle.Bad);
+                    phoneView.ShowApp("messages");
+                    yield return WaitNext("Next Day: BOSS  >", UiKit.Red);
+                }
+                else yield return WaitNext("Next Day  >");
                 var expired = run.EndDay();
                 foreach (var s in expired)
                 {
@@ -320,6 +329,7 @@ namespace KadakChai
         {
             bool stageChanged = run.BeginDay();
             phoneView.NewDay();
+            phoneView.ShowApp("messages");   // the day's story lands in Messages; don't hide it behind another app
             var stage = Aqi.StageFor(run.S.aqi);
             battle.SetZone(string.IsNullOrEmpty(run.Day.bg) ? run.Day.zone : run.Day.bg, run.DayInZone);
             battle.SetAqi(run.S.aqi);
@@ -362,7 +372,9 @@ namespace KadakChai
                     yield return WaitMain(label, run.Kind == DayKind.Boss ? UiKit.Red : UiKit.Green);
                     AudioKit.Music(run.S.hp < run.S.maxHp * 0.5f ? "techno" : "battle");
                     var result = run.Fight();
+                    battle.HeroHp = phoneView.ShowLiveHp;
                     yield return battle.Play(result);
+                    battle.HeroHp = null;
                     foreach (var c in result.inflicted)
                         log.Add($"*{GameData.HeroName}* is now *{Conditions.Name(c)}*: {Conditions.All[c].desc} It lasts until you drink *Pudin Hara* (JhatPat).", CardStyle.Bad);
                     AudioKit.Music("day");
@@ -429,6 +441,7 @@ namespace KadakChai
                 log.Add($"Level up! You are now Lv {run.S.level - n + 1}.", CardStyle.Note);
                 log.Add(CardText("baba_"), CardStyle.Event);
                 RefreshHud();
+                yield return new WaitForSecondsRealtime(1.2f);   // let the level-up banner and confetti finish
                 yield return SkillPick();
             }
             battle.RefreshHero(run.S);
@@ -505,6 +518,9 @@ namespace KadakChai
                 rt.localScale = Vector3.one;
                 AudioKit.Sfx("card", 0.6f);
             }
+            // A beat to read the cards before Baba's patience starts running out.
+            timerText.text = "Baba is reading your palm...";
+            for (float g = 0; g < 1.5f && picked < 0; g += Time.unscaledDeltaTime) yield return null;
             float left = Patience;
             int lastTick = -1;
             while (picked < 0 && left > 0)
@@ -802,13 +818,13 @@ namespace KadakChai
         }
 
         /// <summary>Main button plus the JhatPat button beside it. Opening the shop doesn't advance the day.</summary>
-        IEnumerator WaitNext(string label)
+        IEnumerator WaitNext(string label, Color? color = null)
         {
             while (true)
             {
                 HideButtons();
                 mainButton.SetText(label);
-                mainButton.targetGraphic.color = UiKit.Green;
+                mainButton.targetGraphic.color = color ?? UiKit.Green;
                 mainButton.GetComponent<RectTransform>().Place(380, 1736, 670, 150);
                 mainButton.gameObject.SetActive(true);
                 shopButton.SetText($"JhatPat\n<size=30>₹{run.S.rupees}</size>");

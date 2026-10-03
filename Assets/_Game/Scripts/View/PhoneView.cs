@@ -223,6 +223,19 @@ namespace KadakChai
             clock.text = $"{minutes / 60:00}:{minutes % 60:00}";
         }
 
+        /// <summary>During a fight: show Bablu's live HP in the header without touching the run state.</summary>
+        public void ShowLiveHp(int hp)
+        {
+            if (run == null) return;
+            var s = run.S;
+            float f = s.maxHp > 0 ? (float)hp / s.maxHp : 0;
+            batteryFill.rectTransform.anchorMax = new Vector2(Mathf.Max(0.05f, f), 1);
+            batteryFill.color = f > 0.5f ? UiKit.Hex("#66BB6A") : f > 0.25f ? UiKit.Hex("#FFCA28") : UiKit.Red;
+            string toll = s.tollDays > 0 ? "<color=#FF8A80>" : "";
+            string end = s.tollDays > 0 ? "</color>" : "";
+            statsLine.text = $"Lv {s.level}   HP {Mathf.Max(0, hp)}/{s.maxHp}   {toll}ATK {s.AtkTotal}   DEF {s.DefTotal}{end}";
+        }
+
         public void Refresh()
         {
             if (run == null) return;
