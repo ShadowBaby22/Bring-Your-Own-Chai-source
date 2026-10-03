@@ -69,13 +69,14 @@ namespace KadakChai
         GrapStage stage;
         bool ignoreAqi;
         int round, shieldHits, spice;
+        float scale = 1f;   // per-day enemy multiplier (days.json enemyScale)
         float dodge;
 
         AutoBattle(RunState s, Random rng, int spice) { this.s = s; this.rng = rng; this.spice = Math.Max(1, spice); }
 
         /// <param name="spice">Khatra level 1-8 of the day: scales enemy HP and ATK.</param>
-        public static BattleResult Simulate(RunState s, List<CombatantData> enemies, Random rng, int spice = 1) =>
-            new AutoBattle(s, rng, spice).Run(enemies);
+        public static BattleResult Simulate(RunState s, List<CombatantData> enemies, Random rng, int spice = 1, float scale = 1f) =>
+            new AutoBattle(s, rng, spice) { scale = scale }.Run(enemies);
 
         BattleResult Run(List<CombatantData> enemies)
         {
@@ -148,7 +149,7 @@ namespace KadakChai
             hero.ranged = s.Ranged;
             if (s.HasCompanion && GameData.Combatants.TryGetValue(s.companion, out var ad))
                 pet = AddUnit(new Combatant(units.Count, ad.id, ad.name, true, true, 1, 1, ad.atk, 0, ad));
-            float hpMul = 1f + SpiceHp * (spice - 1), atkMul = 1f + SpiceAtk * (spice - 1);
+            float hpMul = (1f + SpiceHp * (spice - 1)) * scale, atkMul = (1f + SpiceAtk * (spice - 1)) * scale;
             foreach (var e in enemies)
             {
                 int hp = (int)Math.Round(e.hp * hpMul);

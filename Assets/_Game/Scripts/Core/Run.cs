@@ -40,6 +40,7 @@ namespace KadakChai
         public int insuranceDays;           // Health Insurance: one revive at 50% HP while > 0 (expires)
         public readonly HashSet<string> conditions = new(); // lasting statuses (Conditions.cs) until Pudin Hara
         public readonly List<ItemData> shop = new();
+        public bool freeBoxUsed;            // JhatPat welcome offer: the first Mystery Box is free
 
         public const float TollPenalty = 0.15f;
         public const int TollDays = 2;
@@ -186,7 +187,7 @@ namespace KadakChai
         /// <summary>Simulates today's fight. On a win, applies HP and EXP. On a loss, nothing changes (retry).</summary>
         public BattleResult Fight()
         {
-            var result = AutoBattle.Simulate(S, Enemies(), Rng, Spice);
+            var result = AutoBattle.Simulate(S, Enemies(), Rng, Spice, Day.enemyScale > 0 ? Day.enemyScale : 1f);
             foreach (var c in result.inflicted) S.conditions.Add(c);
             if (!result.won)
             {
@@ -295,11 +296,16 @@ namespace KadakChai
         /// <summary>Mystery Box: pay, then draw one item by boxWeight. The item is NOT applied yet: the player decides.</summary>
         public ItemData OpenBox()
         {
-            if (!CanAfford(GameData.BoxPrice)) return null;
-            S.rupees -= GameData.BoxPrice;
-            S.spent += GameData.BoxPrice;
+            int price = BoxPrice;
+            if (!CanAfford(price)) return null;
+            S.rupees -= price;
+            S.spent += price;
+            S.freeBoxUsed = true;
             return DrawBox(Rng);
         }
+
+        /// <summary>₹0 for the first box (welcome offer), ₹200 after.</summary>
+        public int BoxPrice => S.freeBoxUsed ? GameData.BoxPrice : 0;
 
         public static ItemData DrawBox(Random rng)
         {

@@ -108,7 +108,7 @@ namespace KadakChai
             var tag = s.shop.FirstOrDefault(i => i.slot == "pass");
             if (tag != null && s.fastags == 0 && run.CanAfford(tag.price + 150)) run.Buy(tag);
 
-            while (run.CanAfford(GameData.BoxPrice + 60))
+            while (run.CanAfford(run.BoxPrice + 60))
             {
                 var it = run.OpenBox();
                 if (it.id == "laathi") laathis++;
