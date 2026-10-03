@@ -35,7 +35,6 @@ Target before submission: every criterion at 7 or higher, and an audience score 
 | Persona | theme | innovation | gameplay | aesthetics | overall | audience | keep playing | recommend | furthest |
 |---|---|---|---|---|---|---|---|---|---|
 | juror | 8 | 6 | 5 | 7 | 6 | 6 | no | yes | Day 4 (beat the Broker) |
-| ncr_student | | | | | | | | | |
 
 Averages and the weakest node are filled in after the round.
 
@@ -43,3 +42,18 @@ Averages and the weakest node are filled in after the round.
 - **Frictions:** the hook is slow: about 10 intro text beats (60-75 seconds) before the first input, and the first real choice comes at about 1:20. Fights are watch-only and low-stakes, and event choices don't hint at what they do. Baba's 10-second timer starts during the victory confetti (it lost the Day 1 blessing). Nothing warns that tomorrow is a boss before the shop closes. The phone stayed on the Map, hiding the boss intro.
 - **Delights:** the writing ("Valid for 11 months, sir. Like everything."); HP bars renamed per enemy (Followers, Love, Deposit); a shipped-mobile-game feel (phone as HUD, Mystery Box pull, VS splash, speed toggle).
 - **Bug:** the phone header's HP doesn't update during a fight (it stayed at 85/144 while Bablu's bar went to 45).
+
+## Round 2 (build: KADAK Chai title, Kadak opener, juror fixes)
+
+| Persona | theme | innovation | gameplay | aesthetics | overall | audience | keep playing | recommend | furthest |
+|---|---|---|---|---|---|---|---|---|---|
+| ncr_student | 8 | 7 | 6 | 8 | 7 | 7 | yes | yes | Day 4 (beat the Broker) |
+
+**Weakest node: gameplay (6).** The round 1 fixes landed: the intro is faster, the boss warning is clear, the phone HP is live, and the title "looks shipped".
+
+### NCR student notes
+- **The meter is the best new idea, but you can't see its payoff:** nothing showed what was brewed after the tap. Fixed after the round: the result stays up longer, a banner shows for theek too, and a line goes into Messages.
+- **Baba felt rigged:** 2 of 3 blessings fizzled, and the post-boss offer repeated Day 1's exact cards. Fixed after the round: never two duds in a row (overall 80/12/8), and never the same offer twice in a row.
+- **To check on a real phone:** Skip >> on the Broker's outro ignored two taps (likely the test browser's synthetic clicks).
+- **Still open:** fights feel slow at 2x for an impatient player.
+- **Delights:** the NCR writing ("Meter se nahi jayenge", "Leave her on read" still lets Pinky Aunty join), the Broker's Deposit bar and "temporary address proof", the faster start.

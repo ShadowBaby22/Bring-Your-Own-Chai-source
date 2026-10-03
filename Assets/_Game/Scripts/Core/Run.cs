@@ -45,6 +45,8 @@ namespace KadakChai
         public int faints;                  // times Bablu woke up at Amma's Nursing Home
         public int mercy;                   // Amma's blessing: faints since Bablu last got past his wall (enemies -10% each)
         public int furthestDay;             // furthest day index reached this run (the wall is the day he fainted on)
+        public bool blessingFailed;         // the last blessing fizzled or backfired: the next one always works (pity)
+        public readonly List<string> lastOffer = new(); // Baba never repeats the exact same cards back to back
 
         /// <summary>Copy of the whole run state (taken every morning, restored after a faint).</summary>
         public RunState Clone()
@@ -66,7 +68,8 @@ namespace KadakChai
             fastags = o.fastags; tollDays = o.tollDays; insuranceDays = o.insuranceDays;
             conditions.Clear(); conditions.UnionWith(o.conditions);
             companion = o.companion; freeBoxUsed = o.freeBoxUsed; zombieFights = o.zombieFights; faints = o.faints;
-            mercy = o.mercy; furthestDay = o.furthestDay;
+            mercy = o.mercy; furthestDay = o.furthestDay; blessingFailed = o.blessingFailed;
+            lastOffer.Clear(); lastOffer.AddRange(o.lastOffer);
             shop.Clear(); shop.AddRange(o.shop);
         }
 
@@ -91,6 +94,8 @@ namespace KadakChai
         public List<SkillData> OfferSkills(int n, Random rng)
         {
             var pool = GameData.Skills.Values.Where(s => skills.All(o => o.data.id != s.id)).ToList();
+            var fresh = pool.Where(s => !lastOffer.Contains(s.id)).ToList();
+            if (fresh.Count >= n) pool = fresh;   // don't show the same cards as last time when there's enough else
             var offer = new List<SkillData>();
             while (offer.Count < n && pool.Count > 0)
             {
@@ -98,6 +103,7 @@ namespace KadakChai
                 offer.Add(pool[i]);
                 pool.RemoveAt(i);
             }
+            lastOffer.Clear(); lastOffer.AddRange(offer.Select(o => o.id));
             return offer;
         }
     }
@@ -402,10 +408,13 @@ namespace KadakChai
         public const int Dakshina = 50;
 
         /// <summary>The player picked a blessing. 75% it works, 15% it fizzles, 10% it backfires
-        /// (lose 15% max HP, never fatal, and ₹50 dakshina).</summary>
+        /// (lose 15% max HP, never fatal, and ₹50 dakshina). After a dud the next one always works,
+        /// so overall it is 80/12/8 and never two duds in a row.</summary>
         public Blessing TakeBlessing(SkillData skill)
         {
             double r = Rng.NextDouble();
+            if (S.blessingFailed) r = 1;   // pity: never two duds in a row
+            S.blessingFailed = r < FizzleChance + BackfireChance;
             if (r < FizzleChance) return Blessing.Fizzled;
             if (r < FizzleChance + BackfireChance)
             {

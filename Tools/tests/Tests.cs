@@ -393,7 +393,7 @@ static class Tests
             var expired = r.EndDay();
             Check(expired.Any(s => s.id == sk.id) && r.S.skills.All(o => o.data.id != sk.id), "skill outlived its lease");
         });
-        Test("Baba's blessings: ~75% work, ~15% fizzle, ~10% backfire, never fatal", () =>
+        Test("Baba's blessings: ~80% work, ~12% fizzle, ~8% backfire (pity after a dud), never fatal", () =>
         {
             var r = new Run(9);
             var sk = GameData.Skills.Values.First();
@@ -407,9 +407,33 @@ static class Tests
                 Check(r.S.hp >= 1, "a backfire killed Bablu");
                 Check(r.S.rupees >= 0, "dakshina made rupees negative");
             }
-            Between(73, 77, 100.0 * counts.GetValueOrDefault(Blessing.Granted) / n, "granted %");
-            Between(13, 17, 100.0 * counts.GetValueOrDefault(Blessing.Fizzled) / n, "fizzled %");
-            Between(8, 12, 100.0 * counts.GetValueOrDefault(Blessing.Backfired) / n, "backfired %");
+            Between(78, 82, 100.0 * counts.GetValueOrDefault(Blessing.Granted) / n, "granted %");
+            Between(10, 14, 100.0 * counts.GetValueOrDefault(Blessing.Fizzled) / n, "fizzled %");
+            Between(6, 10, 100.0 * counts.GetValueOrDefault(Blessing.Backfired) / n, "backfired %");
+        });
+        Test("never two duds in a row from Baba", () =>
+        {
+            var r = new Run(11);
+            var sk = GameData.Skills.Values.First();
+            bool lastDud = false;
+            for (int i = 0; i < 5000; i++)
+            {
+                bool dud = r.TakeBlessing(sk) != Blessing.Granted;
+                Check(!(dud && lastDud), $"two duds in a row at try {i}");
+                lastDud = dud;
+            }
+        });
+        Test("Baba never offers the exact same cards twice in a row", () =>
+        {
+            var r = new Run(12);
+            var rng = new Random(3);
+            var last = new HashSet<string>();
+            for (int i = 0; i < 500; i++)
+            {
+                var offer = r.S.OfferSkills(3, rng).Select(x => x.id).ToHashSet();
+                Check(!offer.SetEquals(last), $"offer {i} repeated: {string.Join(",", offer)}");
+                last = offer;
+            }
         });
         Test("RunState.Clone is a deep copy", () =>
         {

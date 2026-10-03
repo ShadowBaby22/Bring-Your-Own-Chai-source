@@ -525,7 +525,12 @@ namespace KadakChai
             result.text = v == 2 ? "<color=#6D3B1F>KADAK!</color>" : v == 1 ? "<color=#B26A2E>Theek hai.</color>" : tapped ? "<color=#8D6E63>Pheeka...</color>" : "<color=#8D6E63>Chai got cold.</color>";
             AudioKit.Sfx(v == 2 ? "levelup" : v == 1 ? "coin" : "click", 0.8f);
             if (v == 2) { battle.Celebrate(); battle.Banner("*KADAK!*  +40% ATK for 3 rounds"); }
-            yield return new WaitForSecondsRealtime(0.8f);
+            else if (v == 1) battle.Banner("*Theek hai.*  +15% ATK for 2 rounds");
+            log.Add(v == 2 ? "You brewed *KADAK chai*: *+40% ATK* for the first 3 rounds." :
+                    v == 1 ? "*Theek-thaak* chai: *+15% ATK* for the first 2 rounds. Aim for the dark middle." :
+                    tapped ? "*Pheeki chai*. No boost this fight. Tap when the glass is in the dark middle." :
+                             "The chai got cold. No boost this fight.", v == 2 ? CardStyle.Good : CardStyle.Note);
+            yield return new WaitForSecondsRealtime(1.3f);
             Destroy(overlay.gameObject);
             done(v);
         }
