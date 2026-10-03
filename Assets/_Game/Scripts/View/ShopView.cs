@@ -293,6 +293,7 @@ namespace KadakChai
                 icon.rectTransform.localScale = Vector3.one * s;
                 yield return null;
             }
+            icon.rectTransform.localScale = Vector3.one; // a slow frame can end the loop early (seen in the browser pane)
             Destroy(flash.gameObject);
             if (ultra) log("JhatPat Mystery Box: *ULTRA RARE Laathi!* The whole society WhatsApp group is talking about it.", CardStyle.Good);
 
