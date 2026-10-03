@@ -318,44 +318,69 @@ namespace KadakChai
             return p;
         }
 
-        Text Row(RectTransform page, float y, string text, int size = 36, Color? color = null, TextAnchor anchor = TextAnchor.MiddleLeft)
+        Text Row(RectTransform page, float y, string text, int size = 36, Color? color = null, TextAnchor anchor = TextAnchor.MiddleLeft, float ph = ContentH)
         {
             var t = UiKit.Label(page, "Row", UiKit.Rich(text), size, color ?? Color.white, anchor);
-            t.rectTransform.Place(30, y, SW - 60, size + 18, SW, ContentH);
+            t.rectTransform.Place(30, y, SW - 60, size + 18, SW, ph);
             UiKit.Outline(t, new Color(0, 0, 0, 0.45f), 2);
             return t;
         }
 
-        void Card(RectTransform page, float y, float h, Color color)
+        void Card(RectTransform page, float y, float h, Color color, float ph = ContentH)
         {
             var c = UiKit.Panel(page, "Card", color, rounded: true);
-            c.rectTransform.Place(20, y, SW - 40, h, SW, ContentH);
+            c.rectTransform.Place(20, y, SW - 40, h, SW, ph);
             c.transform.SetAsFirstSibling();
         }
 
         void BuildSkills(RunState s)
         {
             var p = ClearPage("skills");
-            float y = 6;
-            void Item(string head, string sub, bool warn)
-            {
-                Card(p, y, 104, warn ? new Color(0.8f, 0.15f, 0.15f, 0.55f) : new Color(0, 0, 0, 0.35f));
-                Row(p, y + 4, head, 38);
-                var t = Row(p, y + 52, sub, 30, new Color(1, 1, 1, 0.85f));
-                t.rectTransform.Place(30, y + 52, SW - 60, 46, SW, ContentH);
-                y += 112;
-            }
-            if (s.weapon != null) Item($"<b>{s.weapon.data.name}</b>  ·  {s.weapon.fightsLeft} fight{(s.weapon.fightsLeft > 1 ? "s" : "")} left", s.weapon.data.desc, s.weapon.IsLastFight);
-            if (s.armour != null) Item($"<b>{s.armour.data.name}</b>  ·  {s.armour.fightsLeft} fights left", s.armour.data.desc, s.armour.IsLastFight);
-            foreach (var o in s.skills) Item($"<b>{o.data.name}</b>  ·  lease: {o.daysLeft} day{(o.daysLeft > 1 ? "s" : "")}", o.data.desc, o.IsLastDay);
+            var items = new List<(string head, string sub, bool warn)>();
+            if (s.weapon != null) items.Add(($"<b>{s.weapon.data.name}</b>  ·  {s.weapon.fightsLeft} fight{(s.weapon.fightsLeft > 1 ? "s" : "")} left", s.weapon.data.desc, s.weapon.IsLastFight));
+            if (s.armour != null) items.Add(($"<b>{s.armour.data.name}</b>  ·  {s.armour.fightsLeft} fights left", s.armour.data.desc, s.armour.IsLastFight));
+            foreach (var o in s.skills) items.Add(($"<b>{o.data.name}</b>  ·  lease: {o.daysLeft} day{(o.daysLeft > 1 ? "s" : "")}", o.data.desc, o.IsLastDay));
             foreach (var c in s.conditions)
-                Item($"<b>{Conditions.Name(c)}</b>  ·  until cured", Conditions.All[c].desc + " Cure: Pudin Hara at JhatPat.", true);
-            if (s.insuranceDays > 0) Item($"<b>Health Insurance</b>  ·  {s.insuranceDays} day{(s.insuranceDays > 1 ? "s" : "")} left", "If Bablu dies, AIIMS revives him once at 50% HP.", s.insuranceDays == 1);
-            if (s.tollDays > 0) Item($"<b>Toll Tax</b>  ·  {s.tollDays} day{(s.tollDays > 1 ? "s" : "")} left", "All stats -15%. A FASTag skips the next one.", true);
-            if (y < 10)
+                items.Add(($"<b>{Conditions.Name(c)}</b>  ·  until cured", Conditions.All[c].desc + " Cure: Pudin Hara at JhatPat.", true));
+            if (s.insuranceDays > 0) items.Add(($"<b>Health Insurance</b>  ·  {s.insuranceDays} day{(s.insuranceDays > 1 ? "s" : "")} left", "If Bablu dies, AIIMS revives him once at 50% HP.", s.insuranceDays == 1));
+            if (s.tollDays > 0) items.Add(($"<b>Toll Tax</b>  ·  {s.tollDays} day{(s.tollDays > 1 ? "s" : "")} left", "All stats -15%. A FASTag skips the next one.", true));
+
+            // The list can outgrow the screen (gear + leases + statuses + toll), so it scrolls inside the page
+            // instead of running over the dock (feedback log, 04 Oct 03:06).
+            const float RowH = 112;
+            float listH = Mathf.Max(ContentH, 6 + items.Count * RowH);
+            var view = UiKit.Make("SkillsView", p);
+            view.Fill();
+            view.gameObject.AddComponent<RectMask2D>();
+            view.gameObject.AddComponent<Image>().color = Color.clear;   // catches the swipe
+            var list = UiKit.Make("List", view);
+            list.anchorMin = new Vector2(0, 1); list.anchorMax = new Vector2(1, 1); list.pivot = new Vector2(0.5f, 1);
+            float unit = p.rect.height > 1 ? p.rect.height / ContentH : 1f;   // local units per reference pixel
+            list.sizeDelta = new Vector2(0, listH * unit);
+            list.anchoredPosition = Vector2.zero;
+            var sr = view.gameObject.AddComponent<ScrollRect>();
+            sr.content = list; sr.viewport = view; sr.horizontal = false; sr.vertical = true;
+            sr.movementType = ScrollRect.MovementType.Clamped; sr.scrollSensitivity = 30;
+
+            float y = 6;
+            foreach (var (head, sub, warn) in items)
+            {
+                Card(list, y, 104, warn ? new Color(0.8f, 0.15f, 0.15f, 0.55f) : new Color(0, 0, 0, 0.35f), listH);
+                Row(list, y + 4, head, 38, ph: listH);
+                var t = Row(list, y + 52, sub, 30, new Color(1, 1, 1, 0.85f), ph: listH);
+                t.rectTransform.Place(30, y + 52, SW - 60, 46, SW, listH);
+                y += RowH;
+            }
+            if (items.Count == 0)
             {
                 var t = Row(p, 90, "No skills yet.\n<size=34>Astrologer Baba hands them out when Bablu levels up. Every skill has a lease.</size>", 46, null, TextAnchor.MiddleCenter);
                 t.rectTransform.Place(40, 60, SW - 80, 300, SW, ContentH);
+            }
+            if (listH > ContentH)
+            {
+                var more = UiKit.Label(p, "More", "swipe up for more", 26, new Color(1, 1, 1, 0.8f), TextAnchor.MiddleRight, FontStyle.Bold);
+                more.rectTransform.Place(SW - 330, ContentH - 40, 300, 36, SW, ContentH);
+                UiKit.Outline(more, Color.black, 2);
             }
         }
 
