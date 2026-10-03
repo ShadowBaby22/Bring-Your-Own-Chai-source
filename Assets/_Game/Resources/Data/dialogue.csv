@@ -22,6 +22,8 @@ fight_firecracker,"A *Firecracker Ban Violator* is launching rockets ""for the c
 fight_firecracker_win,"The guard finally lets you through the gate. You were trying to leave.",,,,,,
 fight_techbro,"Welcome to the *Gurugram Corporate Emirates*. A *LinkedIn Tech Bro* blocks the Cyber Hub entrance. ""Let's take this offline. Also, are you open to work?""",,,,,,
 fight_techbro_win,"He updates his headline to ""Humbled. Learning from failure."" It gets 9k likes. You get endorsed for Violence.",,,,,,
+fight_jaanu,"*Rajiv Chowk*, 6 PM. The doors open and you are *transferred* inside. A *PDA couple* has claimed the only door. Your stop is next.",,,,,,
+fight_jaanu_win,"The couple breaks up mid-fight, gets back together at Mandi House, and posts about it. You make your stop. Barely.",,,,,,
 #
 # --- Fixed day cards ---
 d2,"*Pinky Aunty* from the RWA WhatsApp group corners you at the gate. ""Beta, I will help you. But first forward this to 10 people.""",Forward it,flag:aunty,"*Pinky Aunty* joins you! You are now in 14 new WhatsApp groups.",Leave her on read,flag:aunty;hp:-10%,"She joins anyway, and tells the whole society you are ""very rude"". *Pinky Aunty* joins you!"

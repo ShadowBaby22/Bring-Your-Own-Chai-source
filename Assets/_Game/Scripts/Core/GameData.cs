@@ -79,6 +79,7 @@ namespace KadakChai
         public int aqiDelta;     // nudges the daily AQI roll (e.g. Diwali week)
         public int rent;         // rupees the landlord takes at the start of this day
         public int spice;        // Theeka level 1-8 (Balatro-style ante): scales enemy HP and ATK
+        public string bg;        // optional background override (e.g. "metro"); default is the zone's
     }
 
     /// <summary>One line of a visual-novel scene (scenes.csv).</summary>

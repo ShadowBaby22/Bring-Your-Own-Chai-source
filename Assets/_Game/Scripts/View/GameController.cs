@@ -250,7 +250,7 @@ namespace KadakChai
             bool stageChanged = run.BeginDay();
             phoneView.NewDay();
             var stage = Aqi.StageFor(run.S.aqi);
-            battle.SetZone(run.Day.zone, run.DayInZone);
+            battle.SetZone(string.IsNullOrEmpty(run.Day.bg) ? run.Day.zone : run.Day.bg, run.DayInZone);
             battle.SetAqi(run.S.aqi);
             RefreshHud();
 

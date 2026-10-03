@@ -2,7 +2,7 @@
   "days": [
     {"day": 1, "zone": "dilli", "type": "fight", "card": "fight_scooty_uncle", "enemyGroups": ["scooty_uncle", "auto_bhaiya", "south_delhi_girl"], "aqiDelta": 0, "spice": 1},
     {"day": 2, "zone": "dilli", "type": "event", "card": "d2", "scene": "aunty_join", "aqiDelta": 0, "spice": 1},
-    {"day": 3, "zone": "dilli", "type": "event", "pool": "ev_dilli_", "aqiDelta": 0, "spice": 2},
+    {"day": 3, "zone": "dilli", "type": "fight", "card": "fight_jaanu", "enemyGroups": ["jaanu+shona"], "scene": "metro_intro", "bg": "metro", "aqiDelta": 0, "spice": 2},
     {"day": 4, "zone": "dilli", "type": "boss", "card": "d4", "enemies": ["broker"], "scene": "broker_intro", "outro": "broker_outro", "aqiDelta": 0, "spice": 2},
     {"day": 5, "zone": "gurugram", "type": "fight", "card": "fight_techbro", "enemyGroups": ["techbro", "techbro+south_delhi_girl"], "aqiDelta": 0, "spice": 3},
     {"day": 6, "zone": "gurugram", "type": "boss", "card": "d8", "enemies": ["ceo"], "scene": "ceo_intro", "outro": "ceo_outro", "aqiDelta": 0, "spice": 4},

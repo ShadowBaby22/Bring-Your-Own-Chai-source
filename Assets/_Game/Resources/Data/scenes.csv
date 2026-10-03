@@ -18,6 +18,12 @@ aunty_join,new_kid,left,"(turns it off and on again)"
 aunty_join,pinky_aunty,right,"WAH. Genius. Okay, I will help you. You are like my son. Who is in Canada. And never calls."
 aunty_join,pinky_aunty,right,"But first, forward this to 10 people. Sharma ji didn't forward, and now his flat has *seepage*."
 #
+metro_intro,narrator,,"*Rajiv Chowk* metro. 6 PM. Bablu has a flat viewing at 6:30."
+metro_intro,new_kid,left,"Excuse me, my stop is next, can I just—"
+metro_intro,jaanu,right,"*Bro.* Can't you see we're having a *moment*?"
+metro_intro,shona,right,"Babe, he's staring. Babe. *BABE.* Do something."
+metro_intro,narrator,,"The doors are blocked. The viewing is in 30 minutes. There is only one way out."
+#
 broker_intro,broker,right,"Sir! Sir! Welcome welcome. Very nice flat, sir. East-facing. Vastu-compliant. Metro walking distance."
 broker_intro,new_kid,left,"The metro is 4 km away. Also, I am a bachelor."
 broker_intro,broker,right,"No problem, sir! For bachelors, rent is double and brokerage is triple. Walking distance for a fit person."

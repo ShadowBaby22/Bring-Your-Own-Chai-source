@@ -183,8 +183,39 @@ def daftar():
     s += rect(640, 540, 40, 40, '#ffffff', opacity='0.8') + rect(646, 556, 28, 22, '#a1663a', line=False)  # chai glass
     return svg(s)
 
+# ------------------------------------------------------------------ METRO (Rajiv Chowk coach)
+def metro():
+    s = rect(0, 0, W, H, '#dfe3e6', line=False)
+    s += rect(0, 0, W, 70, '#c9ced2', line=False) + line(0, 70, W, 70, 4)
+    s += rect(80, 16, 520, 40, '#111111', rx=6) + text(340, 46, 'Next: RAJIV CHOWK', 24, '#ff7043', family='Courier New, monospace', weight='900')
+    s += rect(660, 14, 600, 44, '#1565c0', rx=6) + text(960, 44, 'BLUE LINE  Dwarka - Noida Electronic City', 20, '#ffffff', family='Arial, sans-serif', weight='700')
+    # windows with the dark tunnel rushing past
+    for x0 in (60, 470, 880):
+        s += rect(x0, 110, 360, 210, '#263238', rx=24) + ''.join(line(x0 + 20 + i * 70, 130, x0 + 60 + i * 70, 300, 6, '#37474f') for i in range(5))
+        s += rect(x0, 110, 360, 210, 'none', rx=24, stroke='#90a4ae', stroke_width='10')
+    # grab handles and rails
+    s += line(0, 92, W, 92, 8, '#9e9e9e')
+    for x0 in range(40, W, 90):
+        s += line(x0, 92, x0, 128, 4, '#9e9e9e') + rect(x0 - 14, 128, 28, 30, '#fafafa', rx=12, stroke_width='4')
+    # signs
+    s += rect(60, 344, 330, 56, '#ffffff', rx=6) + text(225, 380, 'Please do not sit on the floor', 18, '#c62828', family='Arial, sans-serif', weight='700')
+    s += rect(920, 344, 300, 56, '#f8bbd0', rx=6) + text(1070, 380, 'Reserved for Ladies', 22, '#ad1457', family='Arial, sans-serif', weight='700')
+    # sliding door with yellow edge
+    s += rect(560, 330, 200, 250, '#b0bec5') + line(660, 330, 660, 580, 5) + rect(560, 330, 200, 250, 'none', stroke='#fdd835', stroke_width='10')
+    s += rect(586, 360, 60, 120, '#263238', rx=8) + rect(674, 360, 60, 120, '#263238', rx=8)
+    # long seats + poles
+    s += rect(0, 470, 540, 70, '#1e88e5', rx=10) + rect(780, 470, 500, 70, '#1e88e5', rx=10)
+    s += rect(0, 520, 540, 20, '#1565c0', line=False) + rect(780, 520, 500, 20, '#1565c0', line=False)
+    for px in (300, 1040):
+        s += line(px, 70, px, 580, 12, '#bdbdbd') + line(px - 3, 70, px - 3, 580, 3, '#ffffff', opacity='0.7')
+    # floor
+    s += rect(0, 580, W, 250, '#9ea7ad', line=False) + line(0, 580, W, 580, 4)
+    s += ''.join(line(0, 620 + i * 50, W, 620 + i * 50, 2, '#8a9399') for i in range(4))
+    s += rect(560, 580, 200, 18, '#fdd835', line=False)
+    return svg(s)
+
 out = sys.argv[1]
 os.makedirs(out, exist_ok=True)
-for name, fn in [('dilli', dilli), ('gurugram', gurugram), ('noida', noida), ('daftar', daftar)]:
+for name, fn in [('dilli', dilli), ('gurugram', gurugram), ('noida', noida), ('daftar', daftar), ('metro', metro)]:
     open(os.path.join(out, name + '.svg'), 'w').write(fn())
-print('4 backgrounds')
+print('5 backgrounds')

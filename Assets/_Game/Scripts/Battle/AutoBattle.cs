@@ -51,7 +51,7 @@ namespace KadakChai
         public const int HardCap = 40;
         public const float SuddenDeathPct = 0.12f; // of max HP, everyone, every sudden-death round
         // Theeka level (Balatro-style ante, 1-8): every level above 1 adds this much to enemy HP and ATK.
-        public const float SpiceHp = 0.08f, SpiceAtk = 0.10f;
+        public const float SpiceHp = 0.08f, SpiceAtk = 0.12f;
         public const float RangedPenalty = 0.8f;  // ranged attacks do 20% less damage
         public const float CloseBonus = 1.25f;    // close attacks do 25% more to ranged targets
         static readonly HashSet<string> Uncles = new() { "scooty_uncle", "auto_bhaiya", "guard", "broker", "babu", "sector_cabbie" };
@@ -324,6 +324,16 @@ namespace KadakChai
                     if (f.actions % 2 == 0) { f.Add(new StatusEffect(StatusKind.AtkUp, 99, f.AtkBonus() + 0.15f)); Shout(f, (f.data.quip ?? "Synergy!") + " +15% ATK"); }
                     break;
 
+                case "couple":
+                    // PDA couple: patch each other up; the survivor of a breakup is furious (see OnZeroHp).
+                    var partner = foes.FirstOrDefault(o => o != f && o.Ai == "couple" && o.Alive);
+                    if (partner != null && partner.hp < partner.maxHp * 0.5f && f.actions % 2 == 0)
+                    {
+                        Heal(f, partner, (int)Math.Round(partner.maxHp * 0.2f), f.id == "jaanu" ? "Are you okay, baby?" : "Jaanu, don't die!");
+                        return;
+                    }
+                    break;
+
                 case "ceo":
                     if (f.actions % 2 == 0)
                     {
@@ -381,6 +391,11 @@ namespace KadakChai
                 return;
             }
             Emit(BattleEventType.Death, t, t);
+            if (t.Ai == "couple" && foes.FirstOrDefault(o => o != t && o.Ai == "couple" && o.Alive) is { } ex)
+            {
+                ex.Add(new StatusEffect(StatusKind.AtkUp, 99, 0.5f));
+                Shout(ex, "BREAKUP! Now it's personal. (+50% ATK)");
+            }
         }
 
         void Heal(Combatant a, Combatant t, int amount, string label)
