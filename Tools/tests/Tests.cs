@@ -260,7 +260,7 @@ static class Tests
             var l = GameData.Items["laathi"];
             Check(l.boxOnly, "Laathi can be stocked in the shop");
             Eq("ultra", l.rarity, "Laathi rarity");
-            Between(4.5, 5.5, Run.BoxOdds(l), "Laathi box odds %");
+            Between(4.95, 5.05, Run.BoxOdds(l), "Laathi box odds % (the shop and GDD promise 5%)");
         });
         Test("Mystery Box draws match the listed odds (50,000 draws)", () =>
         {
