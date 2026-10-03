@@ -1,0 +1,38 @@
+# phone UI: every dock app, shop from the dock, day 1
+wait 25
+click 540 1485
+wait 3
+click 955 235
+wait 2
+shot p01_intro
+click 540 1811
+wait 3
+click 540 685
+wait 2
+shot p02_wait_next
+click 456 1658
+wait 1
+shot p03_skills
+click 624 1658
+wait 1
+shot p04_profile
+click 792 1658
+wait 1
+shot p05_map
+click 960 1658
+wait 1
+shot p06_settings
+click 120 1658
+wait 1
+shot p07_messages
+click 288 1658
+wait 2
+shot p08_shop_from_dock
+click 540 1811
+wait 1.5
+click 715 1811
+wait 5
+shot p09_day1
+click 540 1811
+wait 12
+shot p10_fight_done
