@@ -18,12 +18,18 @@ A submission is disqualified without a playable build, so attach the web build *
 ## Tagline (one line)
 Eleven days, one police-verification stamp, zero bachelors allowed. In Delhi NCR, everything is temporary.
 
+## What's new here (lead with this; Innovation is our weakest score)
+- **Brew it KADAK.** Every fight opens with one tap: stop the chai glass in the dark middle for a stronger first strike.
+- **Even losing is temporary.** Faint, and you wake at Amma's Nursing Home one day back, as a Jadi-Booti Zombie, and that day gets a little easier each time.
+- **The phone is the whole world.** Story, shop, skills, profile and map all live on Bablu's phone.
+- **The air changes the rules.** The day's AQI sets a GRAP stage; at GRAP 4, odd-even decides who may attack.
+
 ## Description
 Bablu, 21, from Kanpur: B.Tech third year, four backlogs. His Gurugram internship starts in 11 days, the hostel wants his room back, and every society in NCR says **No Bachelors** unless he gets police verification stamped at the Sarkari Daftar.
 
 Fight your way across Dilli, Gurugram and Noida in auto-battles against the city's finest: Wrong-Side Scooty Uncle, a PDA couple on the Rajiv Chowk metro, the Broker, Lalaji the startup-since-1972 CEO and his board of relatives, a monkey gang, Pinky Aunty from the RWA, and finally the Babu, Keeper of the Stamp.
 
-Between fights, everything you own is temporary:
+Every fight starts with one tap: **brew your chai KADAK** for a stronger opening. Between fights, everything you own is temporary:
 - **Skills come on a lease.** Astrologer Baba offers three blessings: pick within 10 seconds, and some are fake.
 - **Weapons break.** A Chappal lasts two fights, a Cricket Bat four. The ultra-rare Laathi is in the Mystery Box (5%).
 - **The AQI bends the rules** of every fight, and at GRAP 4 odd-even rules decide who may attack each round.
