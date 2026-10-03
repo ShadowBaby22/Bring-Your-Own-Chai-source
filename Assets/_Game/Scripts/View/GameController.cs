@@ -153,7 +153,7 @@ namespace KadakChai
             title.rectTransform.Place(40, 420, 1000, 300);
             title.gameObject.AddComponent<TextFx>().wave = 6f;
             UiKit.Outline(title, Color.black, 5);
-            var sub = UiKit.Label(p.transform, "Sub", "One 11-month lease. 11 days. One stamp.\n<i>Everything is temporary.</i>", 44, Color.white);
+            var sub = UiKit.Label(p.transform, "Sub", "Bablu. 11 days. One stamp. No Bachelors.\n<i>Everything is temporary.</i>", 44, Color.white);
             sub.rectTransform.Place(60, 740, 960, 200);
             var metro = UiKit.Label(p.transform, "Metro", "\"Agla station: Temporary. Darwaze baayi taraf khulenge.\"", 32, new Color(1, 1, 1, 0.6f));
             metro.rectTransform.Place(60, 1000, 960, 120);

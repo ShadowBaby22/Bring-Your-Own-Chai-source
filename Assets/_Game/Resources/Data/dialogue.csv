@@ -4,7 +4,7 @@ id,text,choice_a,effect_a,result_a,choice_b,effect_b,result_b
 # Event pools: any row whose id starts with a day's "pool" (e.g. ev_dilli_) can appear on that day. Add rows to add variety.
 #
 # --- Run start ---
-intro,"You arrive in Delhi NCR with two suitcases and one *11-month rent agreement*. Here, that means *11 days*. Your mission: get one *stamp* from the Sarkari Daftar before the lease runs out.",,,,,,
+intro,"*Bablu*, 21, from Kanpur. B.Tech third year, four backlogs. His Gurugram internship starts in *11 days*, but every society in NCR says *No Bachelors*. The RWAs want *police verification*, stamped at the *Sarkari Daftar*. One flat. One stamp. 11 days. If Bablu dies, the lease is terminated.",,,,,,
 astro_intro,"An *Astrologer Baba* outside the metro station grabs your hand. ""Your stars are aligned, beta. Temporarily.""",,,,,,
 #
 # --- Fight intros (fight_<enemy id>, picked by the enemy group rolled that day) ---
@@ -31,7 +31,7 @@ d8,"The *Startup CEO* blocks your path in a fleece vest. ""We're disrupting the 
 d8_win,"His *runway* hits zero. ""We're excited to announce the end of our incredible journey."" He posts about it on LinkedIn. It gets 40k likes.",,,,,,
 ev_daftar_chai,"A *chai tapri* outside the Daftar. *Delivery Wale Bhaiya* calls: ""Sir, 2 minute mein pahunch raha hoon."" He said that on Day 1.",Sip it slowly,heal:100%,"Kadak chai. Full HP. For one moment, everything is fine.",Gulp it down,heal:50%;atk:+4,"You burn your tongue. Now you are furious, which helps."
 d11,"The *Babu*, Keeper of the Stamp, looks up. ""Original + 3 photocopies + self-attested + attested by gazetted officer + your soul.""",,,,,,
-d11_win,"THUNK. The *stamp* lands. It reads: *VALID FOR 11 MONTHS*. Your lease ended this morning.",,,,,,
+d11_win,"THUNK. The *stamp* lands: *POLICE VERIFICATION, VALID FOR 11 MONTHS*. Bablu is officially a person. For 11 months.",,,,,,
 #
 # --- Dilli event pool (day 3) ---
 ev_dilli_maamu,"A *barricade* blocks the road. *Maamu* stands next to it. ""Road closed temporarily, sir."" ""Since when?"" ""2011.""",Take the detour,xp:+30,"The detour has its own detour. You learn a lot about yourself.",Argue with Maamu,atk:+3;rs:-100,"He issues you a *₹100 challan* for arguing. You leave angrier, and somehow stronger."
