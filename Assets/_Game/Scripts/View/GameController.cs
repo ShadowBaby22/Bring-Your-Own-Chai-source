@@ -435,36 +435,95 @@ namespace KadakChai
             yield return new WaitForSeconds(1.5f);
         }
 
-        /// <summary>Bablu is dead: the lease is terminated and the run starts over from Day 1.</summary>
+        /// <summary>
+        /// Bablu is dead. The whole screen goes dark like his phone battery just died (change log: "phone died"),
+        /// then one readable card: who killed him, where, how far he got. Back to Day 1.
+        /// </summary>
         IEnumerator GameOver()
         {
             HideButtons();
             yield return new WaitForSeconds(0.8f);
-            AudioKit.Sfx("stamp");
-            var p = UiKit.Panel(phone, "GameOver", new Color(0.05f, 0, 0, 0.88f));
+
+            // 1. The phone dies: screen collapses to a line, then black.
+            var p = UiKit.Panel(phone, "GameOver", Color.black);
             p.rectTransform.Fill();
-            var stamp = UiKit.Panel(p.transform, "Stamp", new Color(0.75f, 0.06f, 0.06f, 0.95f), rounded: true);
-            stamp.rectTransform.Place(90, 300, 900, 300);
-            stamp.rectTransform.localRotation = Quaternion.Euler(0, 0, -8);
-            var st = UiKit.Label(stamp.transform, "T", "LEASE\nTERMINATED", 100, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            var group = p.gameObject.AddComponent<CanvasGroup>();
+            var line = UiKit.Panel(p.transform, "ScreenOff", Color.white);
+            line.raycastTarget = false;
+            AudioKit.Sfx("expire");
+            for (float k = 0; k < 1; k += Time.deltaTime * 3f)
+            {
+                group.alpha = Mathf.Clamp01(k * 2f);
+                float h = Mathf.Lerp(1920, 6, Mathf.SmoothStep(0, 1, k));
+                line.rectTransform.Place(0, 960 - h / 2, 1080, h);
+                line.color = new Color(1, 1, 1, 1 - k * 0.6f);
+                yield return null;
+            }
+            group.alpha = 1;
+            for (float k = 0; k < 1; k += Time.deltaTime * 4f) { line.rectTransform.Place(540 * k, 957, 1080 * (1 - k), 6); yield return null; }
+            Destroy(line.gameObject);
+
+            // 2. Empty battery, blinking.
+            var batt = UiKit.Panel(p.transform, "Battery", Color.clear);
+            batt.rectTransform.Place(390, 180, 260, 120);
+            UiKit.Outline(batt, new Color(1, 1, 1, 0.85f), 8);
+            var nub = UiKit.Panel(p.transform, "Nub", new Color(1, 1, 1, 0.85f));
+            nub.rectTransform.Place(656, 215, 22, 50);
+            var sliver = UiKit.Panel(batt.transform, "Sliver", UiKit.Red);
+            sliver.rectTransform.Place(14, 14, 26, 92, 260, 120);
+            var pct = UiKit.Label(p.transform, "Pct", "0%", 44, UiKit.Red, TextAnchor.MiddleCenter, FontStyle.Bold);
+            pct.rectTransform.Place(340, 310, 400, 60);
+            for (int i = 0; i < 3; i++)
+            {
+                sliver.enabled = false; yield return new WaitForSeconds(0.18f);
+                sliver.enabled = true; AudioKit.Sfx("blip_lo", 0.6f); yield return new WaitForSeconds(0.22f);
+            }
+
+            // 3. The card.
+            var card = UiKit.Panel(p.transform, "Card", UiKit.Cream, rounded: true);
+            card.rectTransform.Place(70, 420, 940, 1060);
+            UiKit.Outline(card, UiKit.Hex("#5D4037"), 5);
+            const float CW = 940, CH = 1060;
+            var stamp = UiKit.Panel(card.transform, "Stamp", new Color(0.78f, 0.08f, 0.08f, 1f), rounded: true);
+            stamp.rectTransform.Place(110, 40, 720, 190, CW, CH);
+            stamp.rectTransform.localRotation = Quaternion.Euler(0, 0, -4);
+            var st = UiKit.Label(stamp.transform, "T", "LEASE TERMINATED", 72, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
             st.rectTransform.Fill(10);
-            UiKit.Outline(st, new Color(0.3f, 0, 0, 0.8f), 5);
-            for (float k = 0; k < 1; k += Time.deltaTime * 5f) { stamp.rectTransform.localScale = Vector3.one * Mathf.Lerp(3f, 1f, k); yield return null; }
-            stamp.rectTransform.localScale = Vector3.one;
-            battle.Shake(20, 0.4f);
+            UiKit.Outline(st, new Color(0.3f, 0, 0, 0.8f), 4);
 
             var s = run.S;
-            string body = $"*{GameData.HeroName}* died on *Day {run.DayNumber}* ({GameData.ZoneName(run.Day.zone)}), Theeka {run.Spice}/8.\n" +
-                          $"Killed by *{run.Killer}*.\n\n" +
-                          $"Level {s.level}  ·  ₹{s.earned} earned  ·  {s.skills.Count} skill{(s.skills.Count == 1 ? "" : "s")} on lease\n\n" +
-                          UiKit.Rich(CardText("gameover_"));
-            var t = UiKit.Label(p.transform, "Body", UiKit.Rich(body), 40, Color.white, TextAnchor.UpperCenter);
-            t.rectTransform.Place(80, 680, 920, 700);
-            t.lineSpacing = 1.2f;
+            var lines = new (string text, int size, Color color)[]
+            {
+                ($"{GameData.HeroName}'s phone has died.", 46, UiKit.Ink),
+                ($"Day {run.DayNumber} of {run.TotalDays}  ·  {GameData.ZoneName(run.Day.zone)}", 38, UiKit.Hex("#5D4037")),
+                ($"Theeka {run.Spice}/8 ({GameData.SpiceName(run.Spice)})", 38, UiKit.Hex("#E8590C")),
+                ($"Killed by <b>{run.Killer}</b>", 44, UiKit.Red),
+                ($"Level {s.level}   ·   ₹{s.earned} earned   ·   {s.skills.Count} skill{(s.skills.Count == 1 ? "" : "s")} on lease", 32, UiKit.Hex("#6D4C41")),
+            };
+            float y = 270;
+            foreach (var (text, size, color) in lines)
+            {
+                var t = UiKit.Label(card.transform, "Line", text, size, color, TextAnchor.MiddleCenter, size >= 44 ? FontStyle.Bold : FontStyle.Normal);
+                t.rectTransform.Place(40, y, CW - 80, size + 30, CW, CH);
+                y += size + 40;
+            }
+            var quote = UiKit.Label(card.transform, "Quote", "<i>" + UiKit.Rich(CardText("gameover_")) + "</i>", 36, UiKit.Ink, TextAnchor.MiddleCenter);
+            quote.rectTransform.Place(60, y + 10, CW - 120, 160, CW, CH);
+            quote.lineSpacing = 1.15f;
+
+            AudioKit.Sfx("stamp");
+            for (float k = 0; k < 1; k += Time.deltaTime * 4f)
+            {
+                card.rectTransform.anchoredPosition = new Vector2(0, -300 * (1 - k) * (1 - k));
+                stamp.rectTransform.localScale = Vector3.one * Mathf.Lerp(2.2f, 1f, k);
+                yield return null;
+            }
+            card.rectTransform.anchoredPosition = Vector2.zero;
+            stamp.rectTransform.localScale = Vector3.one;
 
             bool again = false;
-            UiKit.Button(p.transform, "TryAgain", "Sign a New Lease (Day 1)", UiKit.Green, 46, () => again = true)
-                .GetComponent<RectTransform>().Place(140, 1500, 800, 160);
+            UiKit.Button(p.transform, "TryAgain", "Charge phone & sign a new lease", UiKit.Green, 44, () => again = true)
+                .GetComponent<RectTransform>().Place(110, 1560, 860, 160);
             while (!again) yield return null;
             Destroy(p.gameObject);
             StartCoroutine(RunLoop());
