@@ -52,16 +52,15 @@ broker_outro,broker,right,"Okay okay! Sir, half brokerage. Final. Okay, quarter.
 broker_outro,new_kid,left,"Is it valid?"
 broker_outro,broker,right,"Valid for 11 months, sir. Like everything."
 #
-ceo_intro,ceo,right,"Bablu! My new intern! Welcome to *Walkr*. We're disrupting walking."
+ceo_intro,ceo,right,"Bablu! My new intern! Welcome to *Lalaji & Sons Pvt. Ltd.* We are a *startup*. Since 1972."
 ceo_intro,new_kid,left,"Sir, about the stipend—"
-ceo_intro,ceo,right,"We pay in *equity*. And exposure. And cold coffee on alternate Fridays."
-ceo_intro,ceo,right,"Your first task: our *culture-fit round*. It's a fight. Strategic, scalable violence."
+ceo_intro,ceo,right,"Stipend? Beta, this is a *family business*. You are family now. Family does not get paid."
+ceo_intro,ceo,right,"First task: our *culture-fit round*. And if you win, I call the *board*. The board is my relatives."
 #
-ceo_outro,ceo,right,"Okay so. Personal news. After an incredible journey, Walkr is *shutting down*."
-ceo_outro,new_kid,left,"My internship hasn't even started. Do I still have it?"
-ceo_outro,ceo,right,"Sure! Unpaid. Remote. From your flat. You do have a flat, right?"
+ceo_outro,ceo,right,"Okay okay! Board meeting adjourned. Bunty, write in the bahi-khata: *intern passed*."
+ceo_outro,new_kid,left,"So do I get paid now?"
+ceo_outro,ceo,right,"Beta, it is an *unpaid* internship. But you can work from your flat. You do have a flat, right?"
 ceo_outro,new_kid,left,"..."
-ceo_outro,ceo,right,"Great talk. I'll post about you on LinkedIn. ""Humbled to have mentored a fighter."""
 #
 babu_intro,babu,right,"Hmm."
 babu_intro,new_kid,left,"Sir, *police verification*. For a rent agreement. Just one stamp."

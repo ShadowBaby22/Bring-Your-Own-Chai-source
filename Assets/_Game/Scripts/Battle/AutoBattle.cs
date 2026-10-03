@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace KadakChai
 {
-    public enum BattleEventType { Round, Hit, Miss, Dodge, Immune, Heal, Stun, Shout, Death, Revive }
+    public enum BattleEventType { Round, Hit, Miss, Dodge, Immune, Heal, Stun, Shout, Death, Revive, Summon }
 
     /// <summary>One beat of a fight. The view replays these with animations; the sim just counts them.</summary>
     public class BattleEvent
@@ -391,13 +391,22 @@ namespace KadakChai
                     break;
 
                 case "ceo":
-                    if (f.actions % 2 == 0)
+                    // Lalaji (change log): a family business "startup". Losing? Call the board: his relatives.
+                    if (!f.b2bMode && f.hp < f.maxHp * 0.5f)
                     {
-                        f.b2bMode = !f.b2bMode;
-                        f.atk = f.data.atk * (f.b2bMode ? 0.6f : 1.5f);
-                        f.def = f.data.def * (f.b2bMode ? 2.5f : 0.6f);
-                        Shout(f, f.b2bMode ? "PIVOT! Now B2B (high DEF)." : "PIVOT! Now B2C (high ATK).");
+                        f.b2bMode = true; // board already called
+                        Shout(f, "Bunty! Pappu! BOARD MEETING!");
+                        foreach (var id in new[] { "cfo_bunty", "cto_pappu" })
+                            if (GameData.Combatants.TryGetValue(id, out var rel))
+                            {
+                                int hp = (int)Math.Round(rel.hp * (1f + SpiceHp * (spice - 1)));
+                                var c = AddUnit(new Combatant(units.Count, rel.id, rel.name, false, false, hp, hp, rel.atk * (1f + SpiceAtk * (spice - 1)), rel.def, rel) { ranged = rel.Ranged });
+                                foes.Add(c);
+                                Emit(BattleEventType.Summon, f, c);
+                            }
+                        return;
                     }
+                    if (f.actions % 4 == 0) { Heal(f, f, (int)Math.Round(f.maxHp * 0.08f), "Bahi-khata! Adjusts the accounts."); return; }
                     break;
             }
             Attack(f, hero, 1f, null, false);

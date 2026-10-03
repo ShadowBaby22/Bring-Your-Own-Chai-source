@@ -119,6 +119,12 @@ namespace KadakChai
 
         public static readonly string[] Zones = { "dilli", "gurugram", "noida", "daftar" };
 
+        /// <summary>Short zone name for tight spaces (the top bar).</summary>
+        public static string ZoneShort(string zone) => zone switch
+        {
+            "dilli" => "Dilli", "gurugram" => "Gurugram", "noida" => "Noida", "daftar" => "Sarkari Daftar", _ => ZoneName(zone),
+        };
+
         /// <summary>The hero's display name (combatants.json "new_kid").</summary>
         public static string HeroName => Combatants.TryGetValue("new_kid", out var h) && !string.IsNullOrEmpty(h.name) ? h.name : "Bablu";
 

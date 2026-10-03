@@ -250,21 +250,6 @@ def guard():
     s += line(370, 560, 450, 330, 18, OUT) + line(370, 560, 450, 330, 10, '#8d6e63')
     return s
 
-def ceo():
-    skin = '#E0AC69'
-    s = legs('#455a64', '#ffffff')
-    s += torso('#64B5F6')
-    s += path('M 168 400 Q 168 362 210 362 L 240 362 L 240 556 L 200 556 Q 168 556 168 520 Z', '#9E9E9E') + path('M 358 400 Q 358 362 316 362 L 286 362 L 286 556 L 326 556 Q 358 556 358 520 Z', '#9E9E9E')
-    s += line(262, 380, 262, 556, 4, '#e0e0e0')
-    s += f'<g transform="rotate(-12 150 470)">' + rect(96, 420, 120, 84, 10, '#cfd8dc') + circle(156, 462, 14, '#ff7043', line=False) + '</g>'   # laptop under arm
-    s += capsule(178, 400, 168, 484, 42, '#9E9E9E') + hand(168, 492, skin)
-    s += head(skin)
-    s += path('M 126 230 Q 116 110 220 90 Q 300 60 380 110 Q 420 150 400 200 Q 360 130 300 140 Q 240 150 200 140 Q 150 160 150 236 Z', '#8d5a3b')
-    s += rect(130, 252, 14, 26, 6, '#ffffff')                                                               # AirPod
-    s += eyes(skin, lid=8) + brows('smug') + mouth('smirk')
-    s += capsule(352, 400, 396, 456, 42, '#64B5F6') + rect(378, 400, 52, 76, 10, '#ffffff') + rect(378, 424, 52, 26, 0, '#8d6e63') + hand(400, 462, skin)
-    return s
-
 def babu():
     skin = '#C68B59'
     s = legs('#5d4037', '#3e2723')
@@ -421,11 +406,60 @@ def rival_student():
     s += capsule(352, 400, 400, 340, 42, '#7B1FA2') + hand(404, 332, skin) + capsule(404, 314, 404, 276, 14, skin)   # finger up: "actually..."
     return s
 
+def ceo():
+    """Lalaji, CEO of Lalaji & Sons Pvt. Ltd. (a startup since 1972): kurta, jacket, ledger, gold chain."""
+    skin = '#D9A066'
+    s = legs('#f5f5f5', '#6d4c41', spread=40)
+    s += torso('#FFF3E0', belly=True)
+    s += path('M 160 420 Q 160 372 204 368 L 230 368 L 236 560 L 186 556 Q 156 540 156 500 Z', '#8D6E63') + path('M 364 420 Q 364 372 320 368 L 294 368 L 288 560 L 338 556 Q 368 540 368 500 Z', '#8D6E63')   # Nehru jacket
+    s += path('M 214 380 Q 262 440 310 380', 'none', stroke='#FFC107', stroke_width='8')                     # gold chain
+    s += capsule(170, 410, 146, 486, 44, '#FFF3E0') + hand(146, 494, skin)
+    s += rect(84, 430, 92, 110, 6, '#c62828') + rect(92, 438, 76, 94, 4, '#ffcdd2', line=False) + line(130, 430, 130, 540, 4, '#7f0000')   # bahi-khata ledger
+    s += head(skin)
+    s += path('M 128 236 Q 120 150 170 128 Q 150 190 152 236 Z', '#424242') + path('M 396 236 Q 404 150 356 128 Q 376 190 374 236 Z', '#424242')   # balding sides
+    s += ellipse(250, 120, 50, 22, '#ffffff', line=False, opacity='0.4', transform='rotate(-15 250 120)')
+    s += circle(274, 246, 30, 'none') + circle(344, 246, 30, 'none') + line(304, 246, 314, 246, 6)          # specs
+    s += eyes(skin, lid=14) + brows('smug') + mustache(318, 290, big=True) + mouth('smirk', y=318)
+    s += capsule(354, 410, 396, 360, 44, '#FFF3E0') + hand(400, 352, skin)
+    s += rect(380, 280, 60, 70, 8, '#37474f') + rect(388, 288, 44, 18, 2, '#a5d6a7', line=False) + ''.join(rect(388 + (i % 3) * 15, 312 + (i // 3) * 12, 11, 8, 2, '#eceff1', line=False) for i in range(6))   # calculator
+    return s
+
+def cfo_bunty():
+    """Bunty, brother-in-law and CFO. Flashy shirt, shades, throws calculators."""
+    skin = '#C68B59'
+    s = legs('#212121', '#795548')
+    s += torso('#E91E63')
+    s += ''.join(circle(200 + (i % 4) * 40, 400 + (i // 4) * 44, 8, '#FFEB3B', line=False) for i in range(16))   # loud print shirt
+    s += path('M 236 368 L 262 420 L 288 368', 'none', stroke='#FFC107', stroke_width='7')
+    s += capsule(178, 400, 160, 486, 42, '#E91E63') + hand(160, 494, skin)
+    s += head(skin)
+    s += path('M 126 230 Q 120 110 262 104 Q 400 110 400 230 Q 380 150 300 140 Q 220 136 170 160 Q 140 190 140 230 Z', '#1b1b1b')
+    s += rect(236, 222, 74, 40, 14, '#212121') + rect(318, 222, 64, 40, 14, '#212121') + line(310, 238, 318, 238, 6)   # shades
+    s += mustache(318, 288) + mouth('grin', y=316)
+    s += capsule(352, 400, 396, 440, 42, '#E91E63') + rect(372, 400, 56, 74, 8, '#37474f') + hand(400, 470, skin)
+    s += text(250, 590, 'CFO', 30, '#E91E63', mirror=True)
+    return s
+
+def cto_pappu():
+    """Pappu, nephew and CTO. 17 years old. Gaming headset, sticker laptop."""
+    skin = '#E0AC69'
+    s = legs('#455a64', '#ffffff')
+    s += torso('#263238')
+    s += text(262, 470, 'CTO', 34, '#00E676', mirror=True)
+    s += capsule(178, 400, 164, 480, 40, '#263238') + hand(164, 488, skin)
+    s += head(skin, r=128)
+    s += path('M 136 230 Q 130 116 262 110 Q 392 116 388 230 Q 360 160 290 156 Q 220 156 180 176 Q 150 200 150 232 Z', '#4e342e')
+    s += path('M 126 236 Q 126 96 262 92 Q 398 96 398 236', 'none', stroke='#00E676', stroke_width='14') + rect(108, 216, 34, 64, 12, '#00E676') + rect(382, 216, 34, 64, 12, '#00E676')  # headset
+    s += eyes(skin, lid=18, look=10) + brows('flat') + mouth('flat', y=312)
+    s += capsule(350, 400, 392, 452, 40, '#263238')
+    s += rect(330, 440, 140, 90, 8, '#b0bec5') + circle(360, 470, 10, '#e53935', line=False) + rect(390, 480, 30, 18, 4, '#7c4dff', line=False) + hand(392, 456, skin)   # sticker laptop
+    return s
+
 SWEAT = (path('M 410 150 Q 426 178 410 194 Q 394 178 410 150 Z', '#7fd3ff') +
          path('M 120 170 Q 132 192 120 204 Q 108 192 120 170 Z', '#7fd3ff') +
          line(420, 250, 450, 240, 6) + line(424, 280, 456, 284, 6))  # pain marks
 
-for fn in [new_kid, pinky_aunty, scooty_uncle, auto_bhaiya, south_delhi_girl, broker, monkey, firecracker, guard, ceo, babu, sector_cabbie, techbro, jaanu, shona, new_kid_shaved, daaru_uncle, sheru, rival_student]:
+for fn in [new_kid, pinky_aunty, scooty_uncle, auto_bhaiya, south_delhi_girl, broker, monkey, firecracker, guard, ceo, babu, sector_cabbie, techbro, jaanu, shona, new_kid_shaved, daaru_uncle, sheru, rival_student, cfo_bunty, cto_pappu]:
     C[fn.__name__] = fn()
     HURT = True
     C[fn.__name__ + '_hit'] = fn() + SWEAT

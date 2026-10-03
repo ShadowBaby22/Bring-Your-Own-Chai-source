@@ -31,8 +31,8 @@ fight_rwa_aunty_win,"Pinky Aunty retreats to draft a 47-paragraph WhatsApp forwa
 d2,"*Pinky Aunty* from the RWA WhatsApp group corners you at the gate. ""Beta, I will help you. But first forward this to 10 people.""",Forward it,flag:aunty,"*Pinky Aunty* joins you! You are now in 14 new WhatsApp groups.",Leave her on read,flag:aunty;hp:-10%,"She joins anyway, and tells the whole society you are ""very rude"". *Pinky Aunty* joins you!"
 d4,"The *Broker* appears. ""Sir, small matter only. One month brokerage, one month deposit, one month *documentation charges*.""",,,,,,
 d4_win,"The Broker drops his phone. He was on a call with another tenant the whole time. He hands you a *temporary address proof*.",,,,,,
-d8,"The *Startup CEO* blocks your path in a fleece vest. ""We're disrupting the concept of walking. Our Series A closes tonight.""",,,,,,
-d8_win,"His *runway* hits zero. ""We're excited to announce the end of our incredible journey."" He posts about it on LinkedIn. It gets 40k likes.",,,,,,
+d8,"*Lalaji*, CEO of *Lalaji & Sons Pvt. Ltd.* (a startup since 1972), blocks your path with his bahi-khata. ""Intern! Culture-fit round. Now.""",,,,,,
+d8_win,"Lalaji shuts the bahi-khata. ""Profit is temporary, beta. Family is forever."" Bunty writes you down as a loss.",,,,,,
 ev_daftar_chai,"A *chai tapri* outside the Daftar. *Delivery Wale Bhaiya* calls: ""Sir, 2 minute mein pahunch raha hoon."" He said that on Day 1.",Sip it slowly,heal:100%,"Kadak chai. Full HP. For one moment, everything is fine.",Gulp it down,heal:50%;atk:+4,"You burn your tongue. Now you are furious, which helps."
 d11,"The *Babu*, Keeper of the Stamp, looks up. ""Original + 3 photocopies + self-attested + attested by gazetted officer + your soul.""",,,,,,
 d11_win,"THUNK. The *stamp* lands: *POLICE VERIFICATION, VALID FOR 11 MONTHS*. Bablu is officially a person. For 11 months.",,,,,,

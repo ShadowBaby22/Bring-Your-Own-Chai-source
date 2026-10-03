@@ -582,6 +582,26 @@ namespace KadakChai
                         }
                         break;
 
+                    case BattleEventType.Summon:
+                        // Lalaji's board meeting: a relative drops into the fight.
+                        if (e.target >= 0 && e.target < r.units.Count)
+                        {
+                            var u = r.units[e.target];
+                            var slot = enemies.Count == 1 ? new Rect(470, 400, 200, 270) : new Rect(900, 420, 170, 240);
+                            var p = Puppet.Create(stage, u.id, u.name, u.color, u.hp, u.maxHp, u.hpLabel, true, true);
+                            p.Root.Place(slot.x, slot.y, slot.width, slot.height, AW, AH);
+                            enemies.Add(p);
+                            popups.SetAsLastSibling(); flash.transform.SetAsLastSibling();
+                            enemiesLeft++;
+                            StartCoroutine(p.DropIn(0f));
+                            StartCoroutine(DustLater(p, 0.35f));
+                            AudioKit.Sfx("whoosh");
+                            Gimmick(p, u.id == "cfo_bunty" ? "CFO!" : "CTO!", UiKit.Hex("#FF7043"));
+                            Shake(12, 0.25f);
+                        }
+                        yield return Wait(0.7f);
+                        break;
+
                     case BattleEventType.Revive:
                         target?.SetHp(e.hpAfter);
                         Flash(new Color(1f, 0.9f, 0.3f, 0.5f), 0.3f);

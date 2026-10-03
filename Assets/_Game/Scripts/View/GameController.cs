@@ -680,7 +680,7 @@ namespace KadakChai
         {
             var s = run.S;
             var stage = Aqi.StageFor(s.aqi);
-            dayText.text = run.Finished ? "Lease complete" : $"{GameData.ZoneName(run.Day.zone)}\n<size=28><color=#FFFFFFAA>Day {run.DayNumber} of {run.TotalDays}</color></size>";
+            dayText.text = run.Finished ? "Lease complete" : $"{GameData.ZoneShort(run.Day.zone)}\n<size=28><color=#FFFFFFAA>Day {run.DayNumber} of {run.TotalDays}</color></size>";
             var zi = run.Finished ? null : Art.UI("zone_" + run.Day.zone);
             zoneIcon.sprite = zi;
             zoneIcon.enabled = zi != null;
