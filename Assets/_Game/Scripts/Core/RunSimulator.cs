@@ -91,6 +91,8 @@ namespace KadakChai
             run.RestockShop();
             if (!enabled) return;
             var s = run.S;
+            var cure = s.shop.FirstOrDefault(i => i.slot == "antidote");
+            if (cure != null && s.conditions.Count > 0 && run.CanAfford(cure.price)) run.Buy(cure);
             var chai = s.shop.FirstOrDefault(i => i.slot == "consumable");
             while (chai != null && s.hp < s.maxHp * 0.6f && run.CanAfford(chai.price)) run.Buy(chai);
 
@@ -111,7 +113,7 @@ namespace KadakChai
                 var it = run.OpenBox();
                 if (it.id == "laathi") laathis++;
                 bool better = it.slot == "weapon" && (s.weapon == null || it.atk > s.weapon.data.atk) ||
-                              it.slot == "armour" && s.armour == null || it.slot == "pass" || it.slot == "consumable" || it.slot == "insurance";
+                              it.slot == "armour" && s.armour == null || it.slot == "pass" || it.slot == "consumable" || it.slot == "insurance" || it.slot == "antidote" && s.conditions.Count > 0;
                 if (better) run.Take(it); else run.Sell(it);
             }
         }

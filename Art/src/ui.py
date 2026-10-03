@@ -236,6 +236,33 @@ def scooty():
     s += text(214, 46, '2 min', 26, '#e53935', rot=-8)
     return s
 
+def pudin_hara():
+    s = path('M 96 70 L 160 70 L 160 96 Q 196 112 196 150 L 196 214 Q 196 232 178 232 L 78 232 Q 60 232 60 214 L 60 150 Q 60 112 96 96 Z', '#66bb6a', opacity='0.95')
+    s += rect(100, 36, 56, 38, 8, '#eceff1') + rect(70, 140, 116, 64, 8, '#ffffff') + text(128, 168, 'PUDIN', 22, '#1b5e20') + text(128, 194, 'HARA', 22, '#1b5e20')
+    s += path('M 176 60 Q 210 40 226 66 Q 206 84 176 60 Z', '#43a047') + path('M 186 92 Q 222 84 230 112 Q 204 120 186 92 Z', '#43a047')
+    return s
+
+def cond_overlay_svg(inner):
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="512" height="640" viewBox="0 0 512 640">{inner}</svg>')
+
+def cond_shaved():
+    # Bald dome over Bablu's hair (the chibi template's head is a circle at 262,232 r138).
+    s = path('M 120 240 Q 108 86 262 80 Q 414 80 406 224 Q 330 196 262 200 Q 190 200 120 240 Z', '#D9A066', stroke_width='8')
+    s += ellipse(220, 130, 46, 22, '#ffffff', line=False, opacity='0.45', transform='rotate(-18 220 130)')
+    s += ''.join(line(x, y, x + 10, y + 4, 4, '#c62828') for x, y in ((300, 120), (330, 150), (196, 170)))   # razor nicks
+    return s
+
+def cond_confused():
+    s = ellipse(262, 70, 120, 26, 'none', line=False, stroke='#ffffff', stroke_width='5', stroke_dasharray='14 10', opacity='0.8')
+    for x, y, r in ((160, 72, 26), (262, 46, 30), (364, 76, 24)):
+        pts = []
+        for i in range(10):
+            rr = r if i % 2 == 0 else r * 0.45
+            a = math.pi * 2 * i / 10 - math.pi / 2
+            pts.append(f'{x + rr * math.cos(a):.1f},{y + rr * math.sin(a):.1f}')
+        s += f'<polygon points="{" ".join(pts)}" fill="#ffeb3b" stroke="{OUT}" stroke-width="5" stroke-linejoin="round"/>'
+    return s
+
 # ------------------------------------------------------------------ bitterChai phone app icons (glossy dark squares, bitterSweet style)
 def app_base(inner):
     return ('<defs><linearGradient id="gl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a5056"/><stop offset="1" stop-color="#1c1f22"/></linearGradient></defs>'
@@ -379,6 +406,10 @@ for k, fn in zones.items():
 open(os.path.join(out, 'gear.svg'), 'w').write(sticker(gear()))
 open(os.path.join(out, 'chili.svg'), 'w').write(sticker(chili()))
 open(os.path.join(out, 'scooty.svg'), 'w').write(sticker(scooty()))
+open(os.path.join(out, 'item_pudin_hara.svg'), 'w').write(sticker(pudin_hara()))
+os.makedirs(os.path.join(out, 'overlays'), exist_ok=True)   # 512x640, drawn over the hero sprite
+open(os.path.join(out, 'overlays', 'cond_shaved.svg'), 'w').write(cond_overlay_svg(cond_shaved()))
+open(os.path.join(out, 'overlays', 'cond_confused.svg'), 'w').write(cond_overlay_svg(cond_confused()))
 for k, fn in skill_icons.items():
     open(os.path.join(out, f'skill_{k}.svg'), 'w').write(sticker(fn()))
 for k, fn in phone_apps.items():

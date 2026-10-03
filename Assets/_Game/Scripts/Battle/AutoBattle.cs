@@ -36,6 +36,7 @@ namespace KadakChai
         public bool revived;                    // lost, but Health Insurance brought Bablu back (fight again)
         public bool died;                       // lost with no insurance: the run is over
         public string killer;                   // name of whoever landed the last hit
+        public List<string> inflicted = new();  // lasting statuses picked up in this fight (Conditions.cs)
         public List<ItemData> broken = new();   // gear that broke after this win
         public readonly List<UnitInfo> units = new();
         public readonly List<BattleEvent> events = new();
@@ -51,7 +52,7 @@ namespace KadakChai
         public const int HardCap = 40;
         public const float SuddenDeathPct = 0.12f; // of max HP, everyone, every sudden-death round
         // Theeka level (Balatro-style ante, 1-8): every level above 1 adds this much to enemy HP and ATK.
-        public const float SpiceHp = 0.08f, SpiceAtk = 0.12f;
+        public const float SpiceHp = 0.08f, SpiceAtk = 0.10f;
         public const float RangedPenalty = 0.8f;  // ranged attacks do 20% less damage
         public const float CloseBonus = 1.25f;    // close attacks do 25% more to ranged targets
         static readonly HashSet<string> Uncles = new() { "scooty_uncle", "auto_bhaiya", "guard", "broker", "babu", "sector_cabbie" };
@@ -64,6 +65,7 @@ namespace KadakChai
         readonly List<SkillData> active = new();
         Combatant hero, aunty;
         ItemData weapon;
+        readonly HashSet<string> cond = new();  // Bablu's statuses: the ones he came in with plus any picked up here
         GrapStage stage;
         bool ignoreAqi;
         int round, shieldHits, spice;
@@ -114,6 +116,16 @@ namespace KadakChai
                 if (Decided()) break;
 
                 foreach (var u in units) u.TickStatuses();
+                if (cond.Count > 0 && hero.Alive)
+                {
+                    // Lasting statuses bleed every round, like Pokémon poison (change log), until Pudin Hara.
+                    int stacks = cond.Count + (cond.Contains("bitten") ? 1 : 0);
+                    int dmg = Math.Max(1, (int)Math.Ceiling(hero.maxHp * Conditions.PoisonPerRound * stacks));
+                    hero.hp = Math.Max(0, hero.hp - dmg);
+                    Emit(BattleEventType.Hit, null, hero, dmg, hero.hp, string.Join(" + ", cond.Select(Conditions.Name)));
+                    if (hero.hp == 0) { r.killer = Conditions.Name(cond.First()); OnZeroHp(hero); }
+                    if (Decided()) break;
+                }
             }
 
             r.rounds = Math.Min(round, HardCap);
@@ -144,6 +156,13 @@ namespace KadakChai
             }
 
             if (s.tollDays > 0) Shout(hero, $"Toll Tax! All stats -{RunState.TollPenalty * 100:0}% ({s.tollDays} day{(s.tollDays > 1 ? "s" : "")} left).");
+            foreach (var c in s.conditions) { cond.Add(c); ApplyCondition(c); }
+            if (cond.Contains("grilled"))
+            {
+                int g = (int)Math.Ceiling(hero.maxHp * Conditions.GrilledHp);
+                hero.hp = Math.Max(1, hero.hp - g);
+                Emit(BattleEventType.Hit, null, hero, g, hero.hp, "Interrogated");
+            }
 
             // Pre-fight gimmicks
             if (foes.Any(f => f.Ai == "firecracker") && stage < GrapStage.Grap4)
@@ -210,6 +229,16 @@ namespace KadakChai
         void HeroAct()
         {
             if (hero.Has(StatusKind.Stunned)) { Emit(BattleEventType.Stun, hero, hero, label: "Stuck explaining where you're going"); return; }
+            if (round == 1 && cond.Contains("limping")) { Emit(BattleEventType.Stun, hero, hero, label: "Tyre Marks! Still limping."); return; }
+            if (cond.Contains("smoked") && Roll(Conditions.SmokedChance)) { Emit(BattleEventType.Stun, hero, hero, label: "*cough cough* Smoked out."); return; }
+            if (cond.Contains("confused") && Roll(Conditions.ConfusedChance))
+            {
+                int self = Math.Max(1, (int)Math.Round(hero.atk * 0.3f));
+                hero.hp = Math.Max(0, hero.hp - self);
+                Emit(BattleEventType.Hit, hero, hero, self, hero.hp, "Confused! Hit yourself.", true);
+                if (hero.hp == 0) { r.killer = "confusion"; OnZeroHp(hero); }
+                return;
+            }
 
             foreach (var k in active)
                 if (k.kind == "heal_every" && k.every > 0 && round % k.every == 0)
@@ -357,6 +386,7 @@ namespace KadakChai
             bool sureShot = a == hero && weapon?.perk == "sure_shot";
             bool aqiApplies = !(a.isPlayerSide && ignoreAqi) && !sureShot;
             if (stage == GrapStage.Grap2 && aqiApplies && Roll(0.15f)) { Emit(BattleEventType.Miss, a, t, label: label, ranged: ranged, proj: proj); return 0; }
+            if (a == hero && cond.Contains("lost") && Roll(Conditions.LostMiss)) { Emit(BattleEventType.Miss, a, t, label: "Lost!", ranged: ranged, proj: proj); return 0; }
             if (t == hero && dodge > 0 && Roll(dodge)) { Emit(BattleEventType.Dodge, a, t, ranged: ranged, proj: proj); return 0; }
             if (t.Has(StatusKind.Invulnerable)) { Emit(BattleEventType.Immune, a, t, label: "LUNCH BREAK", ranged: ranged, proj: proj); return 0; }
 
@@ -377,6 +407,13 @@ namespace KadakChai
             t.hp = Math.Max(0, t.hp - dmg);
             Emit(BattleEventType.Hit, a, t, dmg, t.hp, label, big, ranged, proj);
             if (t.hp == 0) { if (t == hero) r.killer = a.name; OnZeroHp(t); }
+            else if (t == hero && a.data != null && !string.IsNullOrEmpty(a.data.inflicts) && !cond.Contains(a.data.inflicts)
+                     && Roll(a.data.inflictChance > 0 ? a.data.inflictChance : 0.25f))
+            {
+                string c = a.data.inflicts;
+                cond.Add(c); r.inflicted.Add(c); ApplyCondition(c);
+                Emit(BattleEventType.Shout, a, hero, label: Conditions.Name(c).ToUpper() + "!", big: true); // DISHOOM-style status popup
+            }
             return dmg;
         }
 
@@ -400,8 +437,16 @@ namespace KadakChai
 
         void Heal(Combatant a, Combatant t, int amount, string label)
         {
+            if (t == hero && cond.Contains("cringe")) amount = Math.Max(1, (int)(amount * Conditions.CringeHeal));
             t.Heal(amount);
             Emit(BattleEventType.Heal, a, t, amount, t.hp, label);
+        }
+
+        /// <summary>Stat effects of a lasting status, applied when the fight starts or the status lands.</summary>
+        void ApplyCondition(string c)
+        {
+            if (c == "shaved") hero.def *= Conditions.ShavedDef;
+            if (c == "cancelled") hero.atk *= Conditions.CancelledAtk;
         }
 
         void Shout(Combatant a, string text) => Emit(BattleEventType.Shout, a, null, label: text);

@@ -260,6 +260,7 @@ namespace KadakChai
                 AudioKit.Sfx("boom", 0.6f);
                 battle.Banner($"*THEEKA {run.Spice}/8: {GameData.SpiceName(run.Spice).ToUpper()}*  Enemies hit harder.");
             }
+            if (run.RobbedLoss > 0) { AudioKit.Sfx("coin", 0.5f); log.Add($"*Robbed*: ₹{run.RobbedLoss} missing from your wallet this morning. Cure it with *Pudin Hara* at JhatPat.", CardStyle.Bad); }
             if (run.Day.rent > 0)
             {
                 AudioKit.Sfx("coin");
@@ -285,6 +286,8 @@ namespace KadakChai
                     AudioKit.Music(run.S.hp < run.S.maxHp * 0.5f ? "techno" : "battle");
                     var result = run.Fight();
                     yield return battle.Play(result);
+                    foreach (var c in result.inflicted)
+                        log.Add($"*{GameData.HeroName}* is now *{Conditions.Name(c)}*: {Conditions.All[c].desc} It lasts until you drink *Pudin Hara* (JhatPat).", CardStyle.Bad);
                     AudioKit.Music("day");
 
                     if (result.won)
@@ -680,6 +683,7 @@ namespace KadakChai
             var (r, g, b) = Aqi.Color(stage);
             aqiBox.color = new Color(r, g, b);
             phoneView.Refresh();
+            battle.SetConditions(s);
             battle.RefreshHero(s);
             battle.SetHeld(s);
         }

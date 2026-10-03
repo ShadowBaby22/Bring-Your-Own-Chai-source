@@ -38,6 +38,8 @@ namespace KadakChai
             "weapon" => it.type == "ranged" ? "RANGED" : "CLOSE",
             "armour" => "ARMOUR",
             "pass" => "PASS",
+            "antidote" => "CURE",
+            "insurance" => "INSURANCE",
             "consumable" => "CHAI",
             _ => "JUNK",
         };
@@ -47,6 +49,8 @@ namespace KadakChai
             "weapon" => it.type == "ranged" ? UiKit.Hex("#1E88E5") : UiKit.Hex("#E53935"),
             "armour" => UiKit.Hex("#546E7A"),
             "pass" => UiKit.Hex("#00897B"),
+            "antidote" => UiKit.Hex("#43A047"),
+            "insurance" => UiKit.Hex("#1565C0"),
             _ => UiKit.Hex("#8D6E63"),
         };
 
@@ -136,41 +140,41 @@ namespace KadakChai
 
             foreach (Transform c in list) Destroy(c.gameObject);
             float y = 0;
-            BoxCard(y); y += 236;
-            foreach (var it in s.shop) { ItemCard(it, y); y += 232; }
+            BoxCard(y); y += 206;
+            foreach (var it in s.shop) { ItemCard(it, y); y += 192; }
         }
 
         void BoxCard(float y)
         {
             var card = UiKit.Panel(list, "Box", UiKit.Hex("#4A148C"), rounded: true);
-            card.rectTransform.Place(24, y, PW - 48, 216, PW, PH - 336);
-            Icon(card.transform, "mystery_box", 16, 16, 184, PW - 48, 216);
-            var title = UiKit.Label(card.transform, "Title", "Mystery Box", 44, Color.white, TextAnchor.UpperLeft, FontStyle.Bold);
-            title.rectTransform.Place(214, 14, 420, 64, PW - 48, 216);
+            card.rectTransform.Place(24, y, PW - 48, 196, PW, PH - 336);
+            Icon(card.transform, "mystery_box", 14, 14, 168, PW - 48, 196);
+            var title = UiKit.Label(card.transform, "Title", "Mystery Box", 42, Color.white, TextAnchor.UpperLeft, FontStyle.Bold);
+            title.rectTransform.Place(200, 10, 420, 60, PW - 48, 196);
             var laathi = GameData.Items.TryGetValue("laathi", out var l) ? l : null;
             string odds = $"Anything in stock, or the <color=#FFC107><b>ULTRA RARE Laathi</b></color> ({(laathi != null ? Run.BoxOdds(laathi) : 0):0}%).\nMight be bubble wrap.";
             var desc = UiKit.Label(card.transform, "Desc", odds, 26, new Color(1, 1, 1, 0.85f), TextAnchor.UpperLeft);
-            desc.rectTransform.Place(214, 78, 430, 130, PW - 48, 216);
-            Buy(card.transform, GameData.BoxPrice, true, PW - 48, 216, () => StartCoroutine(OpenBox()));
+            desc.rectTransform.Place(200, 70, 450, 120, PW - 48, 196);
+            Buy(card.transform, GameData.BoxPrice, true, PW - 48, 196, () => StartCoroutine(OpenBox()));
         }
 
         void ItemCard(ItemData it, float y)
         {
             var card = UiKit.Panel(list, "Item_" + it.id, Color.white, rounded: true);
-            card.rectTransform.Place(24, y, PW - 48, 212, PW, PH - 336);
+            card.rectTransform.Place(24, y, PW - 48, 180, PW, PH - 336);
             UiKit.Outline(card, UiKit.Hex("#E6D8BF"), 3);
-            Icon(card.transform, "item_" + it.id, 16, 16, 180, PW - 48, 212);
-            var title = UiKit.Label(card.transform, "Title", it.name, 40, UiKit.Ink, TextAnchor.UpperLeft, FontStyle.Bold);
-            title.rectTransform.Place(210, 10, 300, 60, PW - 48, 212);
+            Icon(card.transform, "item_" + it.id, 14, 14, 152, PW - 48, 180);
+            var title = UiKit.Label(card.transform, "Title", it.name, 38, UiKit.Ink, TextAnchor.UpperLeft, FontStyle.Bold);
+            title.rectTransform.Place(184, 6, 300, 56, PW - 48, 180);
             title.horizontalOverflow = HorizontalWrapMode.Overflow;
             var chip = UiKit.Panel(card.transform, "Type", TypeColor(it), rounded: true);
-            chip.rectTransform.Place(210 + Mathf.Min(330, title.preferredWidth + 14), 18, 130, 44, PW - 48, 212);
+            chip.rectTransform.Place(184 + Mathf.Min(330, title.preferredWidth + 14), 12, 150, 42, PW - 48, 180);
             var ct = UiKit.Label(chip.transform, "T", TypeTag(it), 22, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
             ct.rectTransform.Fill();
-            string lasts = it.slot switch { "weapon" or "armour" => $"\n<color=#E8590C><b>Lasts {it.fights} fights</b></color>", "pass" => "\n<color=#E8590C><b>One border</b></color>", _ => "" };
-            var desc = UiKit.Label(card.transform, "Desc", it.desc + lasts, 25, UiKit.Hex("#4E4E4E"), TextAnchor.UpperLeft);
-            desc.rectTransform.Place(210, 70, 440, 140, PW - 48, 212);
-            Buy(card.transform, it.price, false, PW - 48, 212, () => BuyItem(it, card.rectTransform));
+            string lasts = it.slot switch { "weapon" or "armour" => $"\n<color=#E8590C><b>Lasts {it.fights} fights</b></color>", "pass" => "\n<color=#E8590C><b>One border</b></color>", "insurance" => $"\n<color=#E8590C><b>Expires in {it.fights} days</b></color>", _ => "" };
+            var desc = UiKit.Label(card.transform, "Desc", it.desc + lasts, 24, UiKit.Hex("#4E4E4E"), TextAnchor.UpperLeft);
+            desc.rectTransform.Place(184, 60, 470, 118, PW - 48, 180);
+            Buy(card.transform, it.price, false, PW - 48, 180, () => BuyItem(it, card.rectTransform));
         }
 
         void Icon(Transform parent, string sprite, float x, float y, float size, float pw, float ph)

@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -28,6 +29,52 @@ namespace KadakChai
         Vector3 squash = Vector3.one;
         public float BobSpeed { set => bobSpeed = value; }
 
+        Sprite normalSprite, hurtSprite;      // the hurt face becomes the idle pose below 33% HP
+        Image condShaved, condConfused;
+        RectTransform pills;
+
+        /// <summary>Lasting statuses drawn on the hero: shaved head, confusion stars, and a pill for each.</summary>
+        public void SetConditions(IEnumerable<string> ids)
+        {
+            var set = new HashSet<string>(ids);
+            if (condShaved == null)
+            {
+                condShaved = Overlay("cond_shaved");
+                condConfused = Overlay("cond_confused");
+                pills = UiKit.Make("Pills", Root);
+                pills.anchorMin = pills.anchorMax = new Vector2(0.5f, 1);
+                pills.pivot = new Vector2(0.5f, 0);
+                pills.sizeDelta = new Vector2(420, 40);
+                pills.anchoredPosition = new Vector2(0, 80);
+                var hl = pills.gameObject.AddComponent<HorizontalLayoutGroup>();
+                hl.spacing = 6; hl.childAlignment = TextAnchor.MiddleCenter;
+                hl.childControlWidth = hl.childControlHeight = true; hl.childForceExpandWidth = hl.childForceExpandHeight = false;
+            }
+            if (condShaved != null) condShaved.enabled = set.Contains("shaved");
+            if (condConfused != null) condConfused.enabled = set.Contains("confused");
+            foreach (Transform c in pills) Destroy(c.gameObject);
+            foreach (var id in set)
+            {
+                var pill = UiKit.Panel(pills, "Pill", new Color(0.55f, 0.1f, 0.6f, 0.9f), rounded: true);
+                var lg = pill.gameObject.AddComponent<HorizontalLayoutGroup>();
+                lg.padding = new RectOffset(10, 10, 2, 2); lg.childControlWidth = lg.childControlHeight = true;
+                lg.childForceExpandWidth = lg.childForceExpandHeight = false;
+                var t = UiKit.Label(pill.transform, "T", Conditions.Name(id), 20, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+                t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            }
+        }
+
+        Image Overlay(string sprite)
+        {
+            var sp = Art.UI(sprite);
+            if (sp == null) return null;
+            var img = UiKit.Make(sprite, body).gameObject.AddComponent<Image>();
+            img.sprite = sp; img.preserveAspect = true; img.raycastTarget = false;
+            img.rectTransform.Fill();
+            img.enabled = false;
+            return img;
+        }
+
         public static Puppet Create(Transform parent, string id, string displayName, string colorHex,
                                     int hp, int maxHp, string hpLabel, bool showHp, bool faceLeft)
         {
@@ -47,7 +94,8 @@ namespace KadakChai
             p.body.pivot = new Vector2(0.5f, 0f);
             p.image = p.body.gameObject.AddComponent<Image>();
             var (sprite, placeholder) = Art.Character(id);
-            p.image.sprite = p.baseSprite = sprite;
+            p.image.sprite = p.baseSprite = p.normalSprite = sprite;
+            p.hurtSprite = placeholder ? null : Art.Pose(id, "hit");
             p.image.preserveAspect = true;
             p.baseColor = placeholder ? UiKit.Hex(string.IsNullOrEmpty(colorHex) ? "#F2A65A" : colorHex) : Color.white;
             p.image.color = p.baseColor;
@@ -129,6 +177,9 @@ namespace KadakChai
                 if (sp != null && damage.sprite != sp) squash = new Vector3(1.1f, 0.92f, 1); // little jolt when a new bruise appears
                 damage.sprite = sp;
                 damage.enabled = sp != null;
+                // Match the face to the real state (change log): below a third of HP the idle pose is the hurt one.
+                var want = r < 0.33f && hp > 0 && hurtSprite != null ? hurtSprite : normalSprite;
+                if (want != null && baseSprite != want) { baseSprite = want; if (!busy && !down) image.sprite = want; }
             }
             var a = hpFill.rectTransform.anchorMax;
             hpFill.rectTransform.anchorMax = new Vector2(Mathf.Max(0.001f, hp / (float)maxHp), a.y);

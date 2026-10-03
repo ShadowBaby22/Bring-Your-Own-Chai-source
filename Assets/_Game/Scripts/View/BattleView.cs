@@ -407,6 +407,53 @@ namespace KadakChai
             return enemyIndex < enemies.Count ? enemies[enemyIndex] : null;
         }
 
+        readonly HashSet<string> liveConditions = new();
+
+        /// <summary>Bablu's lasting statuses on his puppet (overlays + pills).</summary>
+        public void SetConditions(RunState s)
+        {
+            liveConditions.Clear();
+            foreach (var c in s.conditions) liveConditions.Add(c);
+            hero?.SetConditions(liveConditions);
+        }
+
+        static string StatusIdFromLabel(string label)
+        {
+            foreach (var kv in Conditions.All) if (label.StartsWith(kv.Value.name.ToUpper())) return kv.Key;
+            return label;
+        }
+
+        /// <summary>First punchy phrase of a gimmick line: "PIVOT! Now B2B" -> "PIVOT!".</summary>
+        static string ShortWord(string label)
+        {
+            if (string.IsNullOrEmpty(label)) return "";
+            int i = label.IndexOfAny(new[] { '!', '.', '?' });
+            string w = i > 0 && i < 28 ? label.Substring(0, i + 1) : label.Length > 24 ? label.Substring(0, 22) + "..." : label;
+            return w.ToUpper();
+        }
+
+        /// <summary>Comic-book burst with a big word over a puppet: DISHOOM oomph for gimmicks and statuses.</summary>
+        void Gimmick(Puppet over, string word, Color color)
+        {
+            var root = UiKit.Make("Gimmick", popups);
+            root.sizeDelta = new Vector2(460, 200);
+            root.anchoredPosition = over.HeadPosition(popups) + new Vector2(Random.Range(-30f, 30f), 70);
+            root.localRotation = Quaternion.Euler(0, 0, Random.Range(-10f, 10f));
+            var burst = Art.UI("burst");
+            if (burst != null)
+            {
+                var b = UiKit.Panel(root, "Burst", color);
+                b.sprite = burst; b.raycastTarget = false;
+                b.rectTransform.Fill(-20);
+            }
+            var t = UiKit.Label(root, "Word", word, 52, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            t.rectTransform.Fill();
+            UiKit.Outline(t, UiKit.Ink, 5);
+            t.gameObject.AddComponent<TextFx>().wave = 5f;
+            StartCoroutine(ImpactRoutine(root));
+        }
+
         public IEnumerator Play(BattleResult r)
         {
             bool techno = false; // switch to Delhi techno once the hero drops below 50% HP (change log 19:21)
@@ -473,12 +520,25 @@ namespace KadakChai
                         break;
 
                     case BattleEventType.Stun:
+                        if (actor != null && actor != hero && actor != aunty && !string.IsNullOrEmpty(e.label)) Gimmick(actor, ShortWord(e.label), UiKit.Hex("#FF7043"));
                         if (target != null) Popup(e.label ?? "Stunned", target, new Color(1f, 0.75f, 1f), 40, 0, true);
                         AudioKit.Sfx(GameData.SkillByLabel(e.label)?.sfx ?? "shout", 0.7f);
                         yield return Wait(0.45f);
                         break;
 
                     case BattleEventType.Shout:
+                        if (e.big && target != null)
+                        {
+                            // A lasting status just landed on Bablu: DISHOOM-style word over him (change log).
+                            AudioKit.Sfx("boom", 0.7f);
+                            Gimmick(target, e.label, UiKit.Hex("#AB47BC"));
+                            liveConditions.Add(StatusIdFromLabel(e.label));
+                            hero?.SetConditions(liveConditions);
+                            Shake(14, 0.3f);
+                            yield return Wait(0.9f);
+                            break;
+                        }
+                        if (actor != null && actor != hero && actor != aunty) Gimmick(actor, ShortWord(e.label), UiKit.Hex("#FF7043"));
                         Banner(e.label);
                         yield return Wait(0.9f);
                         break;

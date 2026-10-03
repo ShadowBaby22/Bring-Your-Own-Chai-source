@@ -23,6 +23,8 @@ namespace KadakChai
         public string voice;    // VN typewriter blip: lo, mid, hi
         public string range;    // "close" or "ranged" (GDD: Combat: close vs ranged)
         public string shot;     // ranged only: label for the opening shot ("Iced coffee!")
+        public string inflicts; // lasting status this enemy can give Bablu (Conditions.cs), e.g. "robbed"
+        public float inflictChance; // per landed hit; 0 = default 0.25
         public string flavor;
         public bool Ranged => range == "ranged";
     }

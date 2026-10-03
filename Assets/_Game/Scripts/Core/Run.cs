@@ -38,6 +38,7 @@ namespace KadakChai
         public int fastags;                 // each one skips one Toll Tax
         public int tollDays;                // Toll Tax debuff: all stats -15% while > 0
         public int insuranceDays;           // Health Insurance: one revive at 50% HP while > 0 (expires)
+        public readonly HashSet<string> conditions = new(); // lasting statuses (Conditions.cs) until Pudin Hara
         public readonly List<ItemData> shop = new();
 
         public const float TollPenalty = 0.15f;
@@ -96,6 +97,8 @@ namespace KadakChai
         public bool UsedFastag { get; private set; }
         /// <summary>Rupees the landlord took this morning (0 if it isn't rent day).</summary>
         public int RentPaid { get; private set; }
+        /// <summary>Rupees lost to the Robbed status this morning.</summary>
+        public int RobbedLoss { get; private set; }
 
         public bool Finished => S.dayIndex >= GameData.Days.Count;
         public DayData Day => GameData.Days[Math.Min(S.dayIndex, GameData.Days.Count - 1)];
@@ -123,6 +126,8 @@ namespace KadakChai
             ResolveDay();
             RentPaid = Math.Min(S.rupees, Day.rent);
             S.rupees -= RentPaid;
+            RobbedLoss = S.conditions.Contains("robbed") ? Math.Min(S.rupees, Conditions.RobbedPerDay) : 0;
+            S.rupees -= RobbedLoss;
             var old = Aqi.StageFor(S.aqi);
             S.aqi = Aqi.Roll(S.aqi, Day.aqiDelta, Rng);
             return Aqi.StageFor(S.aqi) != old;
@@ -174,6 +179,7 @@ namespace KadakChai
         public BattleResult Fight()
         {
             var result = AutoBattle.Simulate(S, Enemies(), Rng, Spice);
+            foreach (var c in result.inflicted) S.conditions.Add(c);
             if (!result.won)
             {
                 // No free retries. Health Insurance revives once; otherwise Bablu is dead and the run ends.
@@ -185,6 +191,7 @@ namespace KadakChai
             {
                 S.hp = Math.Max(1, Math.Min(S.maxHp, result.heroHpAfter));
                 result.xpGained = Enemies().Sum(e => e.xp);
+                if (S.conditions.Contains("unpaid")) result.xpGained = (int)(result.xpGained * Conditions.UnpaidXp);
                 S.xp += result.xpGained;
                 result.rupeesGained = FightReward();
                 Earn(result.rupeesGained);
@@ -196,9 +203,10 @@ namespace KadakChai
         /// <summary>Boss: ₹300. Otherwise ₹60-150 depending on the enemies (2x their EXP).</summary>
         int FightReward()
         {
-            if (Kind == DayKind.Boss) return 300;
+            float cut = S.conditions.Contains("brokerage") ? Conditions.BrokerageCut : 1f;
+            if (Kind == DayKind.Boss) return (int)(300 * cut);
             int xp = Enemies().Sum(e => e.xp);
-            return Math.Clamp((int)Math.Round(xp * 2f / 5f) * 5, 60, 150);
+            return (int)(Math.Clamp((int)Math.Round(xp * 2f / 5f) * 5, 60, 150) * cut);
         }
 
         void Earn(int rs) { S.rupees += rs; S.earned += rs; }
@@ -218,7 +226,7 @@ namespace KadakChai
         public void RestockShop()
         {
             S.shop.Clear();
-            var pool = GameData.Items.Values.Where(i => !i.boxOnly && i.slot != "consumable").ToList();
+            var pool = GameData.Items.Values.Where(i => !i.boxOnly && i.slot != "consumable" && i.slot != "antidote").ToList();
             while (S.shop.Count < 3 && pool.Count > 0)
             {
                 int i = Rng.Next(pool.Count);
@@ -226,6 +234,7 @@ namespace KadakChai
                 pool.RemoveAt(i);
             }
             if (GameData.Items.TryGetValue("cutting_chai", out var chai)) S.shop.Add(chai);
+            if (GameData.Items.TryGetValue(Conditions.Antidote, out var cure)) S.shop.Add(cure); // always in stock
         }
 
         public bool CanAfford(int price) => S.rupees >= price;
@@ -236,7 +245,7 @@ namespace KadakChai
             if (!CanAfford(it.price)) return null;
             S.rupees -= it.price;
             S.spent += it.price;
-            if (it.slot != "consumable") S.shop.Remove(it);
+            if (it.slot != "consumable" && it.slot != "antidote") S.shop.Remove(it);
             return Take(it);
         }
 
@@ -257,6 +266,10 @@ namespace KadakChai
                 case "pass":
                     S.fastags++;
                     notes.Add("FASTag ready for the next toll");
+                    break;
+                case "antidote":
+                    notes.Add(S.conditions.Count > 0 ? $"Cured: {string.Join(", ", S.conditions.Select(Conditions.Name))}" : "Nothing to cure. Tastes like regret.");
+                    S.conditions.Clear();
                     break;
                 case "insurance":
                     S.insuranceDays = it.fights;
