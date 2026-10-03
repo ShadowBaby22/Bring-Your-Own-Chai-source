@@ -127,7 +127,7 @@ namespace KadakChai
         static void PickSkill(Run run, Random rng)
         {
             var offer = run.S.OfferSkills(3, rng);
-            if (offer.Count > 0) run.S.AddSkill(offer[rng.Next(offer.Count)]);
+            if (offer.Count > 0) run.TakeBlessing(offer[rng.Next(offer.Count)]);
         }
 
         /// <summary>Rough playback length, matching the delays in BattleView.</summary>

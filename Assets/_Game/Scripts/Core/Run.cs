@@ -72,6 +72,9 @@ namespace KadakChai
 
     public enum DayKind { Fight, Event, Chai, Boss }
 
+    /// <summary>Astrologer Baba's blessings aren't guaranteed (change log): some fizzle, some backfire.</summary>
+    public enum Blessing { Granted, Fizzled, Backfired }
+
     /// <summary>
     /// Drives the 11-day lease. Engine-free: the Unity GameController calls these in order,
     /// and the simulator calls them in a loop to balance the game.
@@ -318,6 +321,25 @@ namespace KadakChai
             string effect = option == 0 ? card.effectA : card.effectB;
             string text = option == 0 ? card.resultA : card.resultB;
             return (text, Effects.Apply(effect, S, Rng));
+        }
+
+        public const float FizzleChance = 0.15f, BackfireChance = 0.10f, BackfireHp = 0.15f;
+        public const int Dakshina = 50;
+
+        /// <summary>The player picked a blessing. 75% it works, 15% it fizzles, 10% it backfires
+        /// (lose 15% max HP, never fatal, and ₹50 dakshina).</summary>
+        public Blessing TakeBlessing(SkillData skill)
+        {
+            double r = Rng.NextDouble();
+            if (r < FizzleChance) return Blessing.Fizzled;
+            if (r < FizzleChance + BackfireChance)
+            {
+                S.hp = Math.Max(1, S.hp - (int)Math.Round(S.maxHp * BackfireHp));
+                S.rupees -= Math.Min(S.rupees, Dakshina);
+                return Blessing.Backfired;
+            }
+            S.AddSkill(skill);
+            return Blessing.Granted;
         }
 
         /// <summary>Spends EXP on level-ups. Each one should be followed by a skill pick.</summary>

@@ -269,6 +269,49 @@ def app_settings():
 
 phone_apps = {'messages': app_messages, 'jhatpat': app_jhatpat, 'skills': app_skills, 'profile': app_profile, 'map': app_map, 'settings': app_settings}
 
+# ------------------------------------------------------------------ Astrologer Baba skill icons (skill_<id>)
+def sk_horn():
+    s = path('M 40 110 L 90 110 L 196 50 L 196 206 L 90 146 L 40 146 Z', '#ffca28') + rect(28, 104, 22, 48, 6, '#8d6e63')
+    s += ''.join(path(f'M {206 + i * 10} {128 - 30 - i * 14} Q {226 + i * 14} 128 {206 + i * 10} {128 + 30 + i * 14}', 'none', stroke='#ff7043', stroke_width='9') for i in range(2))
+    return s
+def sk_smog_gun():
+    s = rect(50, 110, 120, 50, 12, '#26a69a') + rect(70, 156, 34, 60, 8, '#00796b') + rect(166, 122, 40, 26, 6, '#80cbc4')
+    s += ''.join(circle(210 + i * 12, 120 + (i % 2) * 18 - i * 6, 10 + i * 3, '#e0f7fa', stroke_width='4') for i in range(3))
+    return s
+def sk_duct_tape():
+    s = circle(128, 128, 84, '#b0bec5') + circle(128, 128, 38, '#eceff1') + path('M 184 168 L 236 214 L 214 232 L 166 186 Z', '#b0bec5')
+    s += path('M 60 100 Q 128 60 196 100', 'none', line=False, stroke='#90a4ae', stroke_width='6')
+    return s
+def sk_papa():
+    s = rect(46, 64, 164, 120, 14, '#263238') + rect(58, 76, 140, 96, 6, '#ffd54f')
+    s += text(128, 120, 'PAPA', 34, '#263238') + text(128, 158, 'calling...', 22, '#263238', family='Arial, sans-serif')
+    s += path('M 104 196 L 152 196 L 128 226 Z', '#e53935')
+    return s
+def sk_mask():
+    s = path('M 46 104 Q 128 72 210 104 L 200 170 Q 128 210 56 170 Z', '#eceff1')
+    s += ''.join(line(70, 116 + i * 18, 186, 116 + i * 18, 4, '#b0bec5') for i in range(3))
+    s += line(46, 104, 20, 90, 6, '#90a4ae') + line(210, 104, 236, 90, 6, '#90a4ae') + text(128, 196, 'N95', 26, '#1565c0')
+    return s
+def sk_shield():
+    s = circle(128, 128, 90, '#cfd8dc') + circle(128, 128, 66, '#eceff1') + rect(116, 30, 24, 30, 6, '#424242')
+    s += line(70, 90, 186, 166, 10, '#ffca28') + line(186, 90, 70, 166, 10, '#ffca28')                       # duct-taped cooker lid
+    return s
+def sk_wrong_side():
+    s = g(scooty().replace("2 min", ""), sx=-0.8, sy=0.8, cy=110)                 # facing the wrong way
+    s += path('M 216 206 L 90 206 L 90 186 L 40 222 L 90 256 L 90 236 L 216 236 Z', '#e53935', stroke_width='5')
+    return s
+def sk_forward():
+    s = rect(36, 50, 184, 140, 26, '#43a047') + path('M 128 80 L 182 120 L 128 160 L 128 136 Q 84 136 66 168 Q 70 108 128 104 Z', '#ffffff', stroke_width='5')
+    s += text(128, 230, 'x10', 30, '#43a047')
+    return s
+def sk_haggle():
+    s = g(rect(40, 80, 176, 96, 10, '#a5d6a7') + circle(128, 128, 30, '#81c784') + text(128, 140, '500', 30, '#1b5e20'), rot=-10)
+    s += path('M 150 196 L 210 140 M 150 140 L 210 196', 'none', stroke='#455a64', stroke_width='10') + circle(144, 204, 14, 'none', stroke='#455a64', stroke_width='8') + circle(144, 132, 14, 'none', stroke='#455a64', stroke_width='8')
+    return s
+skill_icons = {'pressure_horn': sk_horn, 'anti_smog_gun': sk_smog_gun, 'duct_tape': sk_duct_tape, 'papa_ka_naam': sk_papa,
+               'kadak_chai': cutting_chai, 'n95_mask': sk_mask, 'jugaad_shield': sk_shield, 'wrong_side': sk_wrong_side,
+               'forward_msg': sk_forward, 'haggling': sk_haggle}
+
 # ------------------------------------------------------------------ the NCR map (1000x1000)
 def ncr_map():
     W = H = 1000
@@ -336,6 +379,8 @@ for k, fn in zones.items():
 open(os.path.join(out, 'gear.svg'), 'w').write(sticker(gear()))
 open(os.path.join(out, 'chili.svg'), 'w').write(sticker(chili()))
 open(os.path.join(out, 'scooty.svg'), 'w').write(sticker(scooty()))
+for k, fn in skill_icons.items():
+    open(os.path.join(out, f'skill_{k}.svg'), 'w').write(sticker(fn()))
 for k, fn in phone_apps.items():
     open(os.path.join(out, f'app_{k}.svg'), 'w').write(sticker(fn()))
 open(os.path.join(out, 'map.svg'), 'w').write(ncr_map())

@@ -374,8 +374,18 @@ namespace KadakChai
 
             var overlay = UiKit.Panel(phone, "SkillPick", new Color(0, 0, 0, 0.8f));
             overlay.rectTransform.Fill();
-            var head = UiKit.Label(overlay.transform, "Head", "Astrologer Baba offers a blessing.\n<size=34>Every blessing is temporary.</size>", 50, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
-            head.rectTransform.Place(40, 260, 1000, 220);
+            var head = UiKit.Label(overlay.transform, "Head", "Astrologer Baba offers a blessing.\n<size=34>Pick fast. Blessings are temporary. Some are fake.</size>", 50, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            head.rectTransform.Place(40, 230, 1000, 220);
+
+            // 10-second timer: Baba doesn't wait (change log).
+            const float Patience = 10f;
+            var barBg = UiKit.Panel(overlay.transform, "TimerBg", new Color(1, 1, 1, 0.15f), rounded: true);
+            barBg.rectTransform.Place(140, 470, 800, 34);
+            var bar = UiKit.Panel(barBg.transform, "Timer", UiKit.Orange, rounded: true);
+            bar.rectTransform.anchorMin = Vector2.zero; bar.rectTransform.anchorMax = Vector2.one;
+            bar.rectTransform.offsetMin = bar.rectTransform.offsetMax = Vector2.zero;
+            var timerText = UiKit.Label(overlay.transform, "TimerText", "", 30, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            timerText.rectTransform.Place(140, 504, 800, 40);
 
             int picked = -1;
             for (int i = 0; i < offer.Count; i++)
@@ -383,10 +393,18 @@ namespace KadakChai
                 int idx = i;
                 var s = offer[i];
                 var b = UiKit.Button(overlay.transform, "Skill" + i, "", UiKit.Cream, 34, () => picked = idx);
-                b.GetComponent<RectTransform>().Place(80, 540 + i * 330, 920, 290);
+                b.GetComponent<RectTransform>().Place(60, 570 + i * 330, 960, 300);
+                var icon = UiKit.Panel(b.transform, "Icon", Color.white);
+                icon.sprite = Art.UI("skill_" + s.id);
+                icon.preserveAspect = true;
+                icon.raycastTarget = false;
+                icon.rectTransform.Place(24, 40, 220, 220, 960, 300);
+                if (icon.sprite == null) icon.enabled = false;
                 var label = b.GetComponentInChildren<Text>();
                 label.color = UiKit.Ink;
                 label.fontStyle = FontStyle.Normal;
+                label.alignment = TextAnchor.MiddleLeft;
+                label.rectTransform.offsetMin = new Vector2(icon.enabled ? 262 : 30, 12);
                 Destroy(label.GetComponent<Outline>());
                 label.text = $"<b><size=44>{s.name}</size></b>\n{s.desc}\n<color=#E8590C><b>Lease: {s.lease} days</b></color>";
             }
@@ -407,12 +425,66 @@ namespace KadakChai
                 rt.localScale = Vector3.one;
                 AudioKit.Sfx("card", 0.6f);
             }
-            while (picked < 0) yield return null;
+            float left = Patience;
+            int lastTick = -1;
+            while (picked < 0 && left > 0)
+            {
+                left -= Time.unscaledDeltaTime;
+                bar.rectTransform.anchorMax = new Vector2(Mathf.Clamp01(left / Patience), 1);
+                bar.color = left > 3 ? UiKit.Orange : UiKit.Red;
+                int sec = Mathf.CeilToInt(left);
+                timerText.text = $"Baba leaves in {sec}";
+                if (sec != lastTick && sec <= 3) { lastTick = sec; AudioKit.Sfx("blip_hi", 0.7f); }
+                yield return null;
+            }
 
-            run.S.AddSkill(offer[picked]);
-            log.Add($"New skill: *{offer[picked].name}* (lease: {offer[picked].lease} days)", CardStyle.Good);
+            if (picked < 0)
+            {
+                AudioKit.Sfx("expire");
+                yield return BlessingReveal(overlay.rectTransform, null, "GONE!", new Color(0.7f, 0.7f, 0.75f));
+                log.Add("*Astrologer Baba* got bored and left. \"Destiny waits for no one, beta.\" No blessing.", CardStyle.Bad);
+            }
+            else
+            {
+                var skill = offer[picked];
+                var card = overlay.transform.Find("Skill" + picked) as RectTransform;
+                switch (run.TakeBlessing(skill))
+                {
+                    case Blessing.Granted:
+                        AudioKit.Sfx("levelup", 0.7f);
+                        yield return BlessingReveal(overlay.rectTransform, card, "BLESSED!", UiKit.Green);
+                        log.Add($"New skill: *{skill.name}* (lease: {skill.lease} days)", CardStyle.Good);
+                        break;
+                    case Blessing.Fizzled:
+                        AudioKit.Sfx("lose", 0.6f);
+                        yield return BlessingReveal(overlay.rectTransform, card, "FIZZLED...", new Color(0.7f, 0.7f, 0.75f));
+                        log.Add($"The *{skill.name}* blessing fizzles. Baba: \"Stars are cloudy today. No refunds.\"", CardStyle.Bad);
+                        break;
+                    case Blessing.Backfired:
+                        AudioKit.Sfx("boom");
+                        battle.Shake(18, 0.3f);
+                        yield return BlessingReveal(overlay.rectTransform, card, "BACKFIRED!", UiKit.Red);
+                        log.Add($"The *{skill.name}* blessing *backfires*. -{Mathf.RoundToInt(Run.BackfireHp * 100)}% HP, and Baba keeps ₹{Run.Dakshina} as dakshina.", CardStyle.Bad);
+                        break;
+                }
+            }
             Destroy(overlay.gameObject);
             RefreshHud();
+        }
+
+        /// <summary>Big comic word over the picked card (or the middle of the screen).</summary>
+        IEnumerator BlessingReveal(RectTransform overlay, RectTransform card, string word, Color color)
+        {
+            var t = UiKit.Label(overlay, "Reveal", word, 120, color, TextAnchor.MiddleCenter, FontStyle.Bold);
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            UiKit.Outline(t, UiKit.Ink, 6);
+            t.gameObject.AddComponent<TextFx>().wave = 6f;
+            if (card != null) t.rectTransform.Place(0, (1 - card.anchorMax.y) * UiKit.H + 50, 1080, 200); // over the picked card
+            else t.rectTransform.Place(0, 900, 1080, 200);
+            t.rectTransform.localRotation = Quaternion.Euler(0, 0, -6);
+            for (float k = 0; k < 1; k += Time.unscaledDeltaTime * 5f) { t.rectTransform.localScale = Vector3.one * Mathf.Lerp(2.5f, 1f, k); yield return null; }
+            t.rectTransform.localScale = Vector3.one;
+            yield return new WaitForSecondsRealtime(0.9f);
         }
 
         IEnumerator Stamp()
