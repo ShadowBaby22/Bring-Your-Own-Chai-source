@@ -38,6 +38,7 @@ namespace KadakChai
         public int fastags;                 // each one skips one Toll Tax
         public int tollDays;                // Toll Tax debuff: all stats -15% while > 0
         public int insuranceDays;           // Health Insurance: one revive at 50% HP while > 0 (expires)
+        public readonly HashSet<string> conditions = new(); // lasting statuses (Conditions.cs) until Pudin Hara
         public readonly List<ItemData> shop = new();
 
         public const float TollPenalty = 0.15f;
@@ -47,7 +48,9 @@ namespace KadakChai
         public int DefTotal => def + (armour?.data.def ?? 0);
 
         public int XpToNext => 30 + 20 * (level - 1);
-        public bool HasAunty => flags.Contains("aunty");
+        public string companion;            // one per zone (change log): Pinky Aunty, Daaru Uncle, Sheru, Kush
+        public bool HasAunty => companion == "pinky_aunty";
+        public bool HasCompanion => !string.IsNullOrEmpty(companion);
 
         public void AddSkill(SkillData s)
         {
@@ -72,6 +75,9 @@ namespace KadakChai
 
     public enum DayKind { Fight, Event, Chai, Boss }
 
+    /// <summary>Astrologer Baba's blessings aren't guaranteed (change log): some fizzle, some backfire.</summary>
+    public enum Blessing { Granted, Fizzled, Backfired }
+
     /// <summary>
     /// Drives the 11-day lease. Engine-free: the Unity GameController calls these in order,
     /// and the simulator calls them in a loop to balance the game.
@@ -93,6 +99,12 @@ namespace KadakChai
         public bool UsedFastag { get; private set; }
         /// <summary>Rupees the landlord took this morning (0 if it isn't rent day).</summary>
         public int RentPaid { get; private set; }
+        /// <summary>Companion who joined this morning / left at the last border (null if none).</summary>
+        public string JoinedCompanion { get; private set; }
+        public string LeftCompanion { get; private set; }
+
+        /// <summary>Rupees lost to the Robbed status this morning.</summary>
+        public int RobbedLoss { get; private set; }
 
         public bool Finished => S.dayIndex >= GameData.Days.Count;
         public DayData Day => GameData.Days[Math.Min(S.dayIndex, GameData.Days.Count - 1)];
@@ -118,8 +130,12 @@ namespace KadakChai
         {
             DayStarted = true;
             ResolveDay();
+            JoinedCompanion = null;
+            if (!string.IsNullOrEmpty(Day.companion) && S.companion != Day.companion) { S.companion = Day.companion; JoinedCompanion = Day.companion; }
             RentPaid = Math.Min(S.rupees, Day.rent);
             S.rupees -= RentPaid;
+            RobbedLoss = S.conditions.Contains("robbed") ? Math.Min(S.rupees, Conditions.RobbedPerDay) : 0;
+            S.rupees -= RobbedLoss;
             var old = Aqi.StageFor(S.aqi);
             S.aqi = Aqi.Roll(S.aqi, Day.aqiDelta, Rng);
             return Aqi.StageFor(S.aqi) != old;
@@ -127,7 +143,7 @@ namespace KadakChai
 
         public List<CombatantData> Enemies() => new(todayEnemies);
 
-        /// <summary>Theeka level (1-8) of the current day.</summary>
+        /// <summary>Khatra (danger) level (1-8) of the current day.</summary>
         public int Spice => Day.spice > 0 ? Day.spice : Math.Clamp(1 + S.dayIndex * 7 / Math.Max(1, GameData.Days.Count - 1), 1, GameData.MaxSpice);
 
         /// <summary>True between BeginDay and EndDay: today has been played, so "next" means tomorrow.</summary>
@@ -171,6 +187,7 @@ namespace KadakChai
         public BattleResult Fight()
         {
             var result = AutoBattle.Simulate(S, Enemies(), Rng, Spice);
+            foreach (var c in result.inflicted) S.conditions.Add(c);
             if (!result.won)
             {
                 // No free retries. Health Insurance revives once; otherwise Bablu is dead and the run ends.
@@ -182,6 +199,7 @@ namespace KadakChai
             {
                 S.hp = Math.Max(1, Math.Min(S.maxHp, result.heroHpAfter));
                 result.xpGained = Enemies().Sum(e => e.xp);
+                if (S.conditions.Contains("unpaid")) result.xpGained = (int)(result.xpGained * Conditions.UnpaidXp);
                 S.xp += result.xpGained;
                 result.rupeesGained = FightReward();
                 Earn(result.rupeesGained);
@@ -193,9 +211,10 @@ namespace KadakChai
         /// <summary>Boss: ₹300. Otherwise ₹60-150 depending on the enemies (2x their EXP).</summary>
         int FightReward()
         {
-            if (Kind == DayKind.Boss) return 300;
+            float cut = S.conditions.Contains("brokerage") ? Conditions.BrokerageCut : 1f;
+            if (Kind == DayKind.Boss) return (int)(300 * cut);
             int xp = Enemies().Sum(e => e.xp);
-            return Math.Clamp((int)Math.Round(xp * 2f / 5f) * 5, 60, 150);
+            return (int)(Math.Clamp((int)Math.Round(xp * 2f / 5f) * 5, 60, 150) * cut);
         }
 
         void Earn(int rs) { S.rupees += rs; S.earned += rs; }
@@ -215,7 +234,7 @@ namespace KadakChai
         public void RestockShop()
         {
             S.shop.Clear();
-            var pool = GameData.Items.Values.Where(i => !i.boxOnly && i.slot != "consumable").ToList();
+            var pool = GameData.Items.Values.Where(i => !i.boxOnly && i.slot != "consumable" && i.slot != "antidote").ToList();
             while (S.shop.Count < 3 && pool.Count > 0)
             {
                 int i = Rng.Next(pool.Count);
@@ -223,6 +242,7 @@ namespace KadakChai
                 pool.RemoveAt(i);
             }
             if (GameData.Items.TryGetValue("cutting_chai", out var chai)) S.shop.Add(chai);
+            if (GameData.Items.TryGetValue(Conditions.Antidote, out var cure)) S.shop.Add(cure); // always in stock
         }
 
         public bool CanAfford(int price) => S.rupees >= price;
@@ -233,7 +253,7 @@ namespace KadakChai
             if (!CanAfford(it.price)) return null;
             S.rupees -= it.price;
             S.spent += it.price;
-            if (it.slot != "consumable") S.shop.Remove(it);
+            if (it.slot != "consumable" && it.slot != "antidote") S.shop.Remove(it);
             return Take(it);
         }
 
@@ -254,6 +274,10 @@ namespace KadakChai
                 case "pass":
                     S.fastags++;
                     notes.Add("FASTag ready for the next toll");
+                    break;
+                case "antidote":
+                    notes.Add(S.conditions.Count > 0 ? $"Cured: {string.Join(", ", S.conditions.Select(Conditions.Name))}" : "Nothing to cure. Tastes like regret.");
+                    S.conditions.Clear();
                     break;
                 case "insurance":
                     S.insuranceDays = it.fights;
@@ -303,7 +327,13 @@ namespace KadakChai
             ResolveDay();
             S.xp = 30 * S.dayIndex + 20;
             ConsumeLevelUps();
-            if (day > 2) S.flags.Add("aunty");
+            if (day > 2) { S.flags.Add("aunty"); S.companion = "pinky_aunty"; }
+            for (int i = S.dayIndex; i >= 0; i--)  // the current zone's companion, if it has joined by now
+            {
+                var d = GameData.Days[i];
+                if (d.zone != Day.zone) { if (S.companion == "pinky_aunty" && Day.zone != "dilli") S.companion = null; break; }
+                if (!string.IsNullOrEmpty(d.companion)) { S.companion = d.companion; break; }
+            }
             S.rupees = 200 + 120 * S.dayIndex;
             foreach (var s in S.OfferSkills(3, Rng)) S.AddSkill(s);
             S.hp = S.maxHp;
@@ -318,6 +348,25 @@ namespace KadakChai
             string effect = option == 0 ? card.effectA : card.effectB;
             string text = option == 0 ? card.resultA : card.resultB;
             return (text, Effects.Apply(effect, S, Rng));
+        }
+
+        public const float FizzleChance = 0.15f, BackfireChance = 0.10f, BackfireHp = 0.15f;
+        public const int Dakshina = 50;
+
+        /// <summary>The player picked a blessing. 75% it works, 15% it fizzles, 10% it backfires
+        /// (lose 15% max HP, never fatal, and ₹50 dakshina).</summary>
+        public Blessing TakeBlessing(SkillData skill)
+        {
+            double r = Rng.NextDouble();
+            if (r < FizzleChance) return Blessing.Fizzled;
+            if (r < FizzleChance + BackfireChance)
+            {
+                S.hp = Math.Max(1, S.hp - (int)Math.Round(S.maxHp * BackfireHp));
+                S.rupees -= Math.Min(S.rupees, Dakshina);
+                return Blessing.Backfired;
+            }
+            S.AddSkill(skill);
+            return Blessing.Granted;
         }
 
         /// <summary>Spends EXP on level-ups. Each one should be followed by a skill pick.</summary>
@@ -348,9 +397,11 @@ namespace KadakChai
             string from = Day.zone;
             S.dayIndex++;
             DayStarted = false;
-            Border = null; UsedFastag = false;
+            Border = null; UsedFastag = false; LeftCompanion = null;
             if (!Finished && Day.zone != from)
             {
+                // Everything is temporary: this zone's companion stays behind.
+                LeftCompanion = S.companion; S.companion = null;
                 // Toll Tax at every border: all stats down for a couple of days, unless you have a FASTag.
                 Border = (from, Day.zone);
                 if (S.fastags > 0) { S.fastags--; UsedFastag = true; }

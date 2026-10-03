@@ -265,6 +265,7 @@ namespace KadakChai
             if (s.fastags > 0) Chip(s.fastags > 1 ? $"FASTag x{s.fastags}" : "FASTag", UiKit.Hex("#00897B"));
             if (s.tollDays > 0) Chip($"Toll Tax <b>{s.tollDays}d</b>", UiKit.Hex("#B71C1C"));
             if (s.insuranceDays > 0) Chip($"Insured <b>{s.insuranceDays}d</b>", UiKit.Hex("#1565C0"));
+            foreach (var c in s.conditions) Chip(Conditions.Name(c), UiKit.Hex("#8E24AA"));
             foreach (var o in s.skills) Chip($"{o.data.shortName} <b>{o.daysLeft}d</b>", o.IsLastDay ? UiKit.Red : new Color(1, 1, 1, 0.18f));
             if (chips.childCount == 0)
             {
@@ -322,6 +323,8 @@ namespace KadakChai
             if (s.weapon != null) Item($"<b>{s.weapon.data.name}</b>  ·  {s.weapon.fightsLeft} fight{(s.weapon.fightsLeft > 1 ? "s" : "")} left", s.weapon.data.desc, s.weapon.IsLastFight);
             if (s.armour != null) Item($"<b>{s.armour.data.name}</b>  ·  {s.armour.fightsLeft} fights left", s.armour.data.desc, s.armour.IsLastFight);
             foreach (var o in s.skills) Item($"<b>{o.data.name}</b>  ·  lease: {o.daysLeft} day{(o.daysLeft > 1 ? "s" : "")}", o.data.desc, o.IsLastDay);
+            foreach (var c in s.conditions)
+                Item($"<b>{Conditions.Name(c)}</b>  ·  until cured", Conditions.All[c].desc + " Cure: Pudin Hara at JhatPat.", true);
             if (s.insuranceDays > 0) Item($"<b>Health Insurance</b>  ·  {s.insuranceDays} day{(s.insuranceDays > 1 ? "s" : "")} left", "If Bablu dies, AIIMS revives him once at 50% HP.", s.insuranceDays == 1);
             if (s.tollDays > 0) Item($"<b>Toll Tax</b>  ·  {s.tollDays} day{(s.tollDays > 1 ? "s" : "")} left", "All stats -15%. A FASTag skips the next one.", true);
             if (y < 10)
@@ -335,10 +338,21 @@ namespace KadakChai
         {
             var p = ClearPage("profile");
             Card(p, 8, ContentH - 16, new Color(0, 0, 0, 0.35f));
+            // Portrait matches Bablu's real state (change log): hurt face + bruises at low HP, plus his statuses.
+            float hpr = s.maxHp > 0 ? (float)s.hp / s.maxHp : 1;
             var face = UiKit.Panel(p, "Face", Color.white);
-            face.sprite = Art.Character("new_kid").sprite;
+            string who = s.conditions.Contains("shaved") ? "new_kid_shaved" : "new_kid";
+            face.sprite = (hpr < 0.33f ? Art.Pose(who, "hit") : null) ?? Art.Character(who).sprite;
             face.preserveAspect = true;
             face.rectTransform.Place(40, 20, 200, 250, SW, ContentH);
+            void Layer(string sprite, bool on)
+            {
+                if (!on || Art.UI(sprite) == null) return;
+                var l = UiKit.Panel(face.transform, sprite, Color.white);
+                l.sprite = Art.UI(sprite); l.preserveAspect = true; l.raycastTarget = false; l.rectTransform.Fill();
+            }
+            Layer(hpr > 0.66f ? null : hpr > 0.33f ? "dmg1" : "dmg2", hpr <= 0.66f);
+            Layer("cond_confused", s.conditions.Contains("confused"));
             float x = 270;
             Text Stat(float y, string label)
             {
@@ -351,7 +365,7 @@ namespace KadakChai
             Stat(124, $"ATK {s.AtkTotal}  <size=28>({s.atk} base{(s.weapon != null ? $" + {s.weapon.data.atk} {s.weapon.data.name}" : "")})</size>");
             Stat(178, $"DEF {s.DefTotal}  <size=28>({s.def} base{(s.armour != null ? $" + {s.armour.data.def} {s.armour.data.name}" : "")})</size>");
             Stat(232, $"<color=#FFD23F>₹{s.rupees}</color>  <size=28>earned ₹{s.earned}, spent ₹{s.spent}</size>");
-            Stat(286, $"<color=#FF8A65>Theeka {(run.Finished ? 8 : run.Spice)}/8</color>  <size=28>{GameData.SpiceName(run.Finished ? 8 : run.Spice)}</size>");
+            Stat(286, $"<color=#FF8A65>Khatra {(run.Finished ? 8 : run.Spice)}/8</color>  <size=28>{GameData.SpiceName(run.Finished ? 8 : run.Spice)}</size>");
             var foot = UiKit.Label(p, "Foot", s.HasAunty ? "Party: Pinky Aunty (forwards messages every 3 rounds)" : "Party: just you. For now.", 32, new Color(1, 1, 1, 0.8f), TextAnchor.MiddleLeft);
             foot.rectTransform.Place(40, ContentH - 60, SW - 80, 50, SW, ContentH);
         }

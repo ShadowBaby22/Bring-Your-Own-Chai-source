@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -28,6 +29,77 @@ namespace KadakChai
         Vector3 squash = Vector3.one;
         public float BobSpeed { set => bobSpeed = value; }
 
+        Sprite normalSprite, hurtSprite;      // the hurt face becomes the idle pose below 33% HP
+        RectTransform pills;
+
+        RectTransform[] stars;
+        bool dizzy, flipping;
+
+        /// <summary>Lasting statuses on the hero: bald sprite (Head Shaved), orbiting dizzy stars (Confused), pills.</summary>
+        public void SetConditions(IEnumerable<string> ids)
+        {
+            var set = new HashSet<string>(ids);
+            if (pills == null)
+            {
+                pills = UiKit.Make("Pills", Root);
+                pills.anchorMin = pills.anchorMax = new Vector2(0.5f, 1);
+                pills.pivot = new Vector2(0.5f, 0);
+                pills.sizeDelta = new Vector2(420, 40);
+                pills.anchoredPosition = new Vector2(0, 80);
+                var hl = pills.gameObject.AddComponent<HorizontalLayoutGroup>();
+                hl.spacing = 6; hl.childAlignment = TextAnchor.MiddleCenter;
+                hl.childControlWidth = hl.childControlHeight = true; hl.childForceExpandWidth = hl.childForceExpandHeight = false;
+            }
+            // Head Shaved swaps the whole sprite (a real bald Bablu, not a cap).
+            bool bald = set.Contains("shaved") && Art.HasCharacter(Id + "_shaved");
+            var n = bald ? Art.Character(Id + "_shaved").sprite : Art.Character(Id).sprite;
+            var h = bald ? Art.Pose(Id + "_shaved", "hit") : Art.Pose(Id, "hit");
+            if (n != normalSprite)
+            {
+                bool wasHurt = baseSprite == hurtSprite && hurtSprite != null;
+                normalSprite = n; hurtSprite = h;
+                baseSprite = wasHurt && h != null ? h : n;
+                if (!busy && !down) image.sprite = baseSprite;
+            }
+            // Confused: three comic stars orbit his head.
+            dizzy = set.Contains("confused");
+            if (dizzy && stars == null && Art.UI("star") != null)
+            {
+                stars = new RectTransform[3];
+                for (int i = 0; i < 3; i++)
+                {
+                    var st = UiKit.Panel(body, "Star" + i, Color.white);
+                    st.sprite = Art.UI("star"); st.preserveAspect = true; st.raycastTarget = false;
+                    st.rectTransform.anchorMin = st.rectTransform.anchorMax = new Vector2(0.5f, 0.88f);
+                    st.rectTransform.sizeDelta = new Vector2(46, 46);
+                    stars[i] = st.rectTransform;
+                }
+            }
+            if (stars != null) foreach (var st in stars) st.gameObject.SetActive(dizzy);
+
+            foreach (Transform c in pills) Destroy(c.gameObject);
+            foreach (var id in set)
+            {
+                var pill = UiKit.Panel(pills, "Pill", new Color(0.55f, 0.1f, 0.6f, 0.9f), rounded: true);
+                var lg = pill.gameObject.AddComponent<HorizontalLayoutGroup>();
+                lg.padding = new RectOffset(10, 10, 2, 2); lg.childControlWidth = lg.childControlHeight = true;
+                lg.childForceExpandWidth = lg.childForceExpandHeight = false;
+                var t = UiKit.Label(pill.transform, "T", Conditions.Name(id), 20, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+                t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            }
+        }
+
+        /// <summary>Paper Mario-style flip: the paper cutout turns edge-on, changes, and turns back.</summary>
+        public IEnumerator PaperFlip(System.Action atEdge)
+        {
+            flipping = true;
+            for (float t = 0; t < 1; t += Time.deltaTime * 6f) { squash = new Vector3(Mathf.Cos(t * Mathf.PI / 2), 1.04f, 1); yield return null; }
+            atEdge?.Invoke();
+            for (float t = 0; t < 1; t += Time.deltaTime * 6f) { squash = new Vector3(Mathf.Sin(t * Mathf.PI / 2) * 1.15f, 1.04f, 1); yield return null; }
+            squash = new Vector3(1.15f, 0.9f, 1);
+            flipping = false;
+        }
+
         public static Puppet Create(Transform parent, string id, string displayName, string colorHex,
                                     int hp, int maxHp, string hpLabel, bool showHp, bool faceLeft)
         {
@@ -47,7 +119,8 @@ namespace KadakChai
             p.body.pivot = new Vector2(0.5f, 0f);
             p.image = p.body.gameObject.AddComponent<Image>();
             var (sprite, placeholder) = Art.Character(id);
-            p.image.sprite = p.baseSprite = sprite;
+            p.image.sprite = p.baseSprite = p.normalSprite = sprite;
+            p.hurtSprite = placeholder ? null : Art.Pose(id, "hit");
             p.image.preserveAspect = true;
             p.baseColor = placeholder ? UiKit.Hex(string.IsNullOrEmpty(colorHex) ? "#F2A65A" : colorHex) : Color.white;
             p.image.color = p.baseColor;
@@ -101,7 +174,14 @@ namespace KadakChai
                 float s = Mathf.Sin(phase * Mathf.PI);
                 body.localScale = new Vector3(Flip * (1f + s * 0.025f) * squash.x, (1f - s * 0.035f) * squash.y, 1f);
             }
-            squash = Vector3.Lerp(squash, Vector3.one, Time.deltaTime * 12f);
+            if (!flipping) squash = Vector3.Lerp(squash, Vector3.one, Time.deltaTime * 12f);
+            if (dizzy && stars != null)
+                for (int i = 0; i < stars.Length; i++)
+                {
+                    float a = Time.time * 3.2f + i * Mathf.PI * 2 / stars.Length;
+                    stars[i].anchoredPosition = new Vector2(Mathf.Cos(a) * 70f, Mathf.Sin(a) * 18f + 10f);
+                    stars[i].localScale = Vector3.one * (0.8f + 0.25f * Mathf.Sin(a));   // nearer = bigger
+                }
 
             if (showHp)
             {
@@ -129,6 +209,9 @@ namespace KadakChai
                 if (sp != null && damage.sprite != sp) squash = new Vector3(1.1f, 0.92f, 1); // little jolt when a new bruise appears
                 damage.sprite = sp;
                 damage.enabled = sp != null;
+                // Match the face to the real state (change log): below a third of HP the idle pose is the hurt one.
+                var want = r < 0.33f && hp > 0 && hurtSprite != null ? hurtSprite : normalSprite;
+                if (want != null && baseSprite != want) { baseSprite = want; if (!busy && !down) image.sprite = want; }
             }
             var a = hpFill.rectTransform.anchorMax;
             hpFill.rectTransform.anchorMax = new Vector2(Mathf.Max(0.001f, hp / (float)maxHp), a.y);

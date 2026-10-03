@@ -73,7 +73,7 @@ namespace KadakChai
             sb.AppendLine($"=== {runs} simulated runs ({(shop ? "shopping" : "never shops")}) ===");
             sb.AppendLine($"CLEARED: {100f * clears / runs:0}%   Laathi drops: {laathis}   Rupees earned avg: {earned.Average():0}");
             sb.AppendLine("Killers: " + string.Join(", ", killers.OrderByDescending(k => k.Value).Select(k => $"{k.Key} {k.Value}")));
-            sb.AppendLine("Day  Type    Theeka  Reached  Died here  (of those reaching)  Revives  HP in  Rounds  Secs");
+            sb.AppendLine("Day  Type    Khatra  Reached  Died here  (of those reaching)  Revives  HP in  Rounds  Secs");
             for (int i = 0; i < days; i++)
             {
                 var day = GameData.Days[i];
@@ -91,6 +91,8 @@ namespace KadakChai
             run.RestockShop();
             if (!enabled) return;
             var s = run.S;
+            var cure = s.shop.FirstOrDefault(i => i.slot == "antidote");
+            if (cure != null && s.conditions.Count > 0 && run.CanAfford(cure.price)) run.Buy(cure);
             var chai = s.shop.FirstOrDefault(i => i.slot == "consumable");
             while (chai != null && s.hp < s.maxHp * 0.6f && run.CanAfford(chai.price)) run.Buy(chai);
 
@@ -111,7 +113,7 @@ namespace KadakChai
                 var it = run.OpenBox();
                 if (it.id == "laathi") laathis++;
                 bool better = it.slot == "weapon" && (s.weapon == null || it.atk > s.weapon.data.atk) ||
-                              it.slot == "armour" && s.armour == null || it.slot == "pass" || it.slot == "consumable" || it.slot == "insurance";
+                              it.slot == "armour" && s.armour == null || it.slot == "pass" || it.slot == "consumable" || it.slot == "insurance" || it.slot == "antidote" && s.conditions.Count > 0;
                 if (better) run.Take(it); else run.Sell(it);
             }
         }
@@ -127,7 +129,7 @@ namespace KadakChai
         static void PickSkill(Run run, Random rng)
         {
             var offer = run.S.OfferSkills(3, rng);
-            if (offer.Count > 0) run.S.AddSkill(offer[rng.Next(offer.Count)]);
+            if (offer.Count > 0) run.TakeBlessing(offer[rng.Next(offer.Count)]);
         }
 
         /// <summary>Rough playback length, matching the delays in BattleView.</summary>

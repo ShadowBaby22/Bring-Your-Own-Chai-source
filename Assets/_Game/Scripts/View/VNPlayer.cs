@@ -91,6 +91,8 @@ namespace KadakChai
             if (keepOnTop != null) keepOnTop.SetAsLastSibling();
             leftId = rightId = null;
             leftImg.enabled = rightImg.enabled = false;
+            bodyText.text = ""; nameText.text = ""; // no flash of the previous scene's last line while fading in
+            plate.gameObject.SetActive(false);
             skip = false;
             for (float t = 0; t < 1; t += Time.unscaledDeltaTime * 5f) { group.alpha = t; yield return null; }
             group.alpha = 1;

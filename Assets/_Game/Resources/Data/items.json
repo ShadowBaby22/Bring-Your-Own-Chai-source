@@ -16,6 +16,8 @@
       "desc": "Skip the Toll Tax debuff at the next border.", "breakText": "" },
     { "id": "health_insurance", "name": "Health Insurance", "type": "none", "slot": "insurance", "price": 300, "atk": 0, "def": 0, "fights": 3, "perk": "", "chance": 0, "power": 0, "rarity": "rare", "boxWeight": 5, "boxOnly": false,
       "desc": "If Bablu dies, AIIMS revives him once at 50% HP. The policy expires in 3 days.", "breakText": "" },
+    { "id": "pudin_hara", "name": "Pudin Hara", "type": "none", "slot": "antidote", "price": 80, "atk": 0, "def": 0, "fights": 0, "perk": "", "chance": 0, "power": 0, "rarity": "common", "boxWeight": 6, "boxOnly": false,
+      "desc": "Cures every status: Robbed, Confused, Head Shaved, all of it. Tastes like regret.", "breakText": "" },
     { "id": "cutting_chai", "name": "Cutting Chai", "type": "none", "slot": "consumable", "price": 60, "atk": 0, "def": 0, "fights": 0, "perk": "heal", "chance": 0, "power": 0.4, "rarity": "common", "boxWeight": 12, "boxOnly": false,
       "desc": "Heals 40% HP right away.", "breakText": "" },
     { "id": "laathi", "name": "Laathi", "type": "close", "slot": "weapon", "price": 0, "atk": 12, "def": 0, "fights": 5, "perk": "lathicharge", "chance": 0.25, "power": 1, "rarity": "ultra", "boxWeight": 5, "boxOnly": true,

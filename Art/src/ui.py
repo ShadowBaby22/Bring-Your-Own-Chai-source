@@ -236,6 +236,51 @@ def scooty():
     s += text(214, 46, '2 min', 26, '#e53935', rot=-8)
     return s
 
+def pudin_hara():
+    s = path('M 96 70 L 160 70 L 160 96 Q 196 112 196 150 L 196 214 Q 196 232 178 232 L 78 232 Q 60 232 60 214 L 60 150 Q 60 112 96 96 Z', '#66bb6a', opacity='0.95')
+    s += rect(100, 36, 56, 38, 8, '#eceff1') + rect(70, 140, 116, 64, 8, '#ffffff') + text(128, 168, 'PUDIN', 22, '#1b5e20') + text(128, 194, 'HARA', 22, '#1b5e20')
+    s += path('M 176 60 Q 210 40 226 66 Q 206 84 176 60 Z', '#43a047') + path('M 186 92 Q 222 84 230 112 Q 204 120 186 92 Z', '#43a047')
+    return s
+
+def cond_overlay_svg(inner):
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="512" height="640" viewBox="0 0 512 640">{inner}</svg>')
+
+def cond_shaved():
+    # Bald dome over Bablu's hair (the chibi template's head is a circle at 262,232 r138).
+    s = path('M 120 240 Q 108 86 262 80 Q 414 80 406 224 Q 330 196 262 200 Q 190 200 120 240 Z', '#D9A066', stroke_width='8')
+    s += ellipse(220, 130, 46, 22, '#ffffff', line=False, opacity='0.45', transform='rotate(-18 220 130)')
+    s += ''.join(line(x, y, x + 10, y + 4, 4, '#c62828') for x, y in ((300, 120), (330, 150), (196, 170)))   # razor nicks
+    return s
+
+def cond_confused():
+    s = ellipse(262, 70, 120, 26, 'none', line=False, stroke='#ffffff', stroke_width='5', stroke_dasharray='14 10', opacity='0.8')
+    for x, y, r in ((160, 72, 26), (262, 46, 30), (364, 76, 24)):
+        pts = []
+        for i in range(10):
+            rr = r if i % 2 == 0 else r * 0.45
+            a = math.pi * 2 * i / 10 - math.pi / 2
+            pts.append(f'{x + rr * math.cos(a):.1f},{y + rr * math.sin(a):.1f}')
+        s += f'<polygon points="{" ".join(pts)}" fill="#ffeb3b" stroke="{OUT}" stroke-width="5" stroke-linejoin="round"/>'
+    return s
+
+def khatra():
+    """KHATRA 440 VOLT: the skull-and-lightning danger sign on every Delhi electric pole."""
+    s = path('M 128 18 L 244 222 L 12 222 Z', '#ffd600', stroke_width='10')
+    s += circle(128, 118, 40, '#ffffff') + rect(108, 146, 40, 26, 6, '#ffffff')
+    s += circle(112, 116, 11, OUT, line=False) + circle(144, 116, 11, OUT, line=False) + path('M 128 128 L 120 142 L 136 142 Z', OUT, line=False)
+    s += line(114, 160, 114, 172, 4) + line(128, 160, 128, 172, 4) + line(142, 160, 142, 172, 4)
+    s += path('M 200 120 L 176 168 L 194 168 L 182 206 L 218 150 L 198 150 L 212 120 Z', '#e53935', stroke_width='4')
+    s += text(84, 208, '440V', 26, '#e53935')
+    return s
+
+def star():
+    pts = []
+    for i in range(10):
+        r = 110 if i % 2 == 0 else 48
+        a = math.pi * 2 * i / 10 - math.pi / 2
+        pts.append(f'{128 + r * math.cos(a):.1f},{132 + r * math.sin(a):.1f}')
+    return f'<polygon points="{" ".join(pts)}" fill="#ffeb3b" stroke="{OUT}" stroke-width="12" stroke-linejoin="round"/>'
+
 # ------------------------------------------------------------------ bitterChai phone app icons (glossy dark squares, bitterSweet style)
 def app_base(inner):
     return ('<defs><linearGradient id="gl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a5056"/><stop offset="1" stop-color="#1c1f22"/></linearGradient></defs>'
@@ -268,6 +313,49 @@ def app_settings():
     return app_base(g(gear(), sx=0.62, sy=0.62))
 
 phone_apps = {'messages': app_messages, 'jhatpat': app_jhatpat, 'skills': app_skills, 'profile': app_profile, 'map': app_map, 'settings': app_settings}
+
+# ------------------------------------------------------------------ Astrologer Baba skill icons (skill_<id>)
+def sk_horn():
+    s = path('M 40 110 L 90 110 L 196 50 L 196 206 L 90 146 L 40 146 Z', '#ffca28') + rect(28, 104, 22, 48, 6, '#8d6e63')
+    s += ''.join(path(f'M {206 + i * 10} {128 - 30 - i * 14} Q {226 + i * 14} 128 {206 + i * 10} {128 + 30 + i * 14}', 'none', stroke='#ff7043', stroke_width='9') for i in range(2))
+    return s
+def sk_smog_gun():
+    s = rect(50, 110, 120, 50, 12, '#26a69a') + rect(70, 156, 34, 60, 8, '#00796b') + rect(166, 122, 40, 26, 6, '#80cbc4')
+    s += ''.join(circle(210 + i * 12, 120 + (i % 2) * 18 - i * 6, 10 + i * 3, '#e0f7fa', stroke_width='4') for i in range(3))
+    return s
+def sk_duct_tape():
+    s = circle(128, 128, 84, '#b0bec5') + circle(128, 128, 38, '#eceff1') + path('M 184 168 L 236 214 L 214 232 L 166 186 Z', '#b0bec5')
+    s += path('M 60 100 Q 128 60 196 100', 'none', line=False, stroke='#90a4ae', stroke_width='6')
+    return s
+def sk_papa():
+    s = rect(46, 64, 164, 120, 14, '#263238') + rect(58, 76, 140, 96, 6, '#ffd54f')
+    s += text(128, 120, 'PAPA', 34, '#263238') + text(128, 158, 'calling...', 22, '#263238', family='Arial, sans-serif')
+    s += path('M 104 196 L 152 196 L 128 226 Z', '#e53935')
+    return s
+def sk_mask():
+    s = path('M 46 104 Q 128 72 210 104 L 200 170 Q 128 210 56 170 Z', '#eceff1')
+    s += ''.join(line(70, 116 + i * 18, 186, 116 + i * 18, 4, '#b0bec5') for i in range(3))
+    s += line(46, 104, 20, 90, 6, '#90a4ae') + line(210, 104, 236, 90, 6, '#90a4ae') + text(128, 196, 'N95', 26, '#1565c0')
+    return s
+def sk_shield():
+    s = circle(128, 128, 90, '#cfd8dc') + circle(128, 128, 66, '#eceff1') + rect(116, 30, 24, 30, 6, '#424242')
+    s += line(70, 90, 186, 166, 10, '#ffca28') + line(186, 90, 70, 166, 10, '#ffca28')                       # duct-taped cooker lid
+    return s
+def sk_wrong_side():
+    s = g(scooty().replace("2 min", ""), sx=-0.8, sy=0.8, cy=110)                 # facing the wrong way
+    s += path('M 216 206 L 90 206 L 90 186 L 40 222 L 90 256 L 90 236 L 216 236 Z', '#e53935', stroke_width='5')
+    return s
+def sk_forward():
+    s = rect(36, 50, 184, 140, 26, '#43a047') + path('M 128 80 L 182 120 L 128 160 L 128 136 Q 84 136 66 168 Q 70 108 128 104 Z', '#ffffff', stroke_width='5')
+    s += text(128, 230, 'x10', 30, '#43a047')
+    return s
+def sk_haggle():
+    s = g(rect(40, 80, 176, 96, 10, '#a5d6a7') + circle(128, 128, 30, '#81c784') + text(128, 140, '500', 30, '#1b5e20'), rot=-10)
+    s += path('M 150 196 L 210 140 M 150 140 L 210 196', 'none', stroke='#455a64', stroke_width='10') + circle(144, 204, 14, 'none', stroke='#455a64', stroke_width='8') + circle(144, 132, 14, 'none', stroke='#455a64', stroke_width='8')
+    return s
+skill_icons = {'pressure_horn': sk_horn, 'anti_smog_gun': sk_smog_gun, 'duct_tape': sk_duct_tape, 'papa_ka_naam': sk_papa,
+               'kadak_chai': cutting_chai, 'n95_mask': sk_mask, 'jugaad_shield': sk_shield, 'wrong_side': sk_wrong_side,
+               'forward_msg': sk_forward, 'haggling': sk_haggle}
 
 # ------------------------------------------------------------------ the NCR map (1000x1000)
 def ncr_map():
@@ -336,6 +424,14 @@ for k, fn in zones.items():
 open(os.path.join(out, 'gear.svg'), 'w').write(sticker(gear()))
 open(os.path.join(out, 'chili.svg'), 'w').write(sticker(chili()))
 open(os.path.join(out, 'scooty.svg'), 'w').write(sticker(scooty()))
+open(os.path.join(out, 'khatra.svg'), 'w').write(sticker(khatra()))
+open(os.path.join(out, 'star.svg'), 'w').write(sticker(star()))
+open(os.path.join(out, 'item_pudin_hara.svg'), 'w').write(sticker(pudin_hara()))
+os.makedirs(os.path.join(out, 'overlays'), exist_ok=True)   # 512x640, drawn over the hero sprite
+open(os.path.join(out, 'overlays', 'cond_shaved.svg'), 'w').write(cond_overlay_svg(cond_shaved()))
+open(os.path.join(out, 'overlays', 'cond_confused.svg'), 'w').write(cond_overlay_svg(cond_confused()))
+for k, fn in skill_icons.items():
+    open(os.path.join(out, f'skill_{k}.svg'), 'w').write(sticker(fn()))
 for k, fn in phone_apps.items():
     open(os.path.join(out, f'app_{k}.svg'), 'w').write(sticker(fn()))
 open(os.path.join(out, 'map.svg'), 'w').write(ncr_map())

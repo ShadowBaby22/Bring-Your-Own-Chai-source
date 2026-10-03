@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace KadakChai
 {
-    public enum BattleEventType { Round, Hit, Miss, Dodge, Immune, Heal, Stun, Shout, Death, Revive }
+    public enum BattleEventType { Round, Hit, Miss, Dodge, Immune, Heal, Stun, Shout, Death, Revive, Summon }
 
     /// <summary>One beat of a fight. The view replays these with animations; the sim just counts them.</summary>
     public class BattleEvent
@@ -36,6 +36,7 @@ namespace KadakChai
         public bool revived;                    // lost, but Health Insurance brought Bablu back (fight again)
         public bool died;                       // lost with no insurance: the run is over
         public string killer;                   // name of whoever landed the last hit
+        public List<string> inflicted = new();  // lasting statuses picked up in this fight (Conditions.cs)
         public List<ItemData> broken = new();   // gear that broke after this win
         public readonly List<UnitInfo> units = new();
         public readonly List<BattleEvent> events = new();
@@ -50,8 +51,8 @@ namespace KadakChai
         public const int MaxRounds = 15;          // after this: AQI 999 sudden death until someone drops
         public const int HardCap = 40;
         public const float SuddenDeathPct = 0.12f; // of max HP, everyone, every sudden-death round
-        // Theeka level (Balatro-style ante, 1-8): every level above 1 adds this much to enemy HP and ATK.
-        public const float SpiceHp = 0.08f, SpiceAtk = 0.12f;
+        // Khatra level (Balatro-style ante, 1-8): every level above 1 adds this much to enemy HP and ATK.
+        public const float SpiceHp = 0.08f, SpiceAtk = 0.10f;
         public const float RangedPenalty = 0.8f;  // ranged attacks do 20% less damage
         public const float CloseBonus = 1.25f;    // close attacks do 25% more to ranged targets
         static readonly HashSet<string> Uncles = new() { "scooty_uncle", "auto_bhaiya", "guard", "broker", "babu", "sector_cabbie" };
@@ -62,8 +63,9 @@ namespace KadakChai
         readonly List<Combatant> units = new();
         readonly List<Combatant> foes = new();
         readonly List<SkillData> active = new();
-        Combatant hero, aunty;
+        Combatant hero, pet;   // pet = this zone's companion
         ItemData weapon;
+        readonly HashSet<string> cond = new();  // Bablu's statuses: the ones he came in with plus any picked up here
         GrapStage stage;
         bool ignoreAqi;
         int round, shieldHits, spice;
@@ -71,7 +73,7 @@ namespace KadakChai
 
         AutoBattle(RunState s, Random rng, int spice) { this.s = s; this.rng = rng; this.spice = Math.Max(1, spice); }
 
-        /// <param name="spice">Theeka level 1-8 of the day: scales enemy HP and ATK.</param>
+        /// <param name="spice">Khatra level 1-8 of the day: scales enemy HP and ATK.</param>
         public static BattleResult Simulate(RunState s, List<CombatantData> enemies, Random rng, int spice = 1) =>
             new AutoBattle(s, rng, spice).Run(enemies);
 
@@ -106,7 +108,7 @@ namespace KadakChai
                 else if (!heroSkipShown) { heroSkipShown = true; Shout(hero, "Odd-Even! Your car stays home this round."); }
                 if (Decided()) break;
 
-                if (aunty != null && round % 3 == 0) AuntyAct();
+                if (pet != null) PetAct();
                 if (Decided()) break;
 
                 if (foeTurn) foreach (var f in foes.ToList()) { if (f.Alive) EnemyAct(f); if (Decided()) break; }
@@ -114,6 +116,16 @@ namespace KadakChai
                 if (Decided()) break;
 
                 foreach (var u in units) u.TickStatuses();
+                if (cond.Count > 0 && hero.Alive)
+                {
+                    // Lasting statuses bleed every round, like Pokémon poison (change log), until Pudin Hara.
+                    int stacks = cond.Count + (cond.Contains("bitten") ? 1 : 0);
+                    int dmg = Math.Max(1, (int)Math.Ceiling(hero.maxHp * Conditions.PoisonPerRound * stacks));
+                    hero.hp = Math.Max(0, hero.hp - dmg);
+                    Emit(BattleEventType.Hit, null, hero, dmg, hero.hp, string.Join(" + ", cond.Select(Conditions.Name)));
+                    if (hero.hp == 0) { r.killer = Conditions.Name(cond.First()); OnZeroHp(hero); }
+                    if (Decided()) break;
+                }
             }
 
             r.rounds = Math.Min(round, HardCap);
@@ -134,8 +146,8 @@ namespace KadakChai
             int heroMax = (int)Math.Round(s.maxHp * toll);
             hero = AddUnit(new Combatant(units.Count, "new_kid", GameData.HeroName, true, false, Math.Min(s.hp, heroMax), heroMax, s.AtkTotal * toll, s.DefTotal * toll));
             hero.ranged = s.Ranged;
-            if (s.HasAunty && GameData.Combatants.TryGetValue("pinky_aunty", out var ad))
-                aunty = AddUnit(new Combatant(units.Count, ad.id, ad.name, true, true, 1, 1, ad.atk, 0, ad));
+            if (s.HasCompanion && GameData.Combatants.TryGetValue(s.companion, out var ad))
+                pet = AddUnit(new Combatant(units.Count, ad.id, ad.name, true, true, 1, 1, ad.atk, 0, ad));
             float hpMul = 1f + SpiceHp * (spice - 1), atkMul = 1f + SpiceAtk * (spice - 1);
             foreach (var e in enemies)
             {
@@ -144,6 +156,13 @@ namespace KadakChai
             }
 
             if (s.tollDays > 0) Shout(hero, $"Toll Tax! All stats -{RunState.TollPenalty * 100:0}% ({s.tollDays} day{(s.tollDays > 1 ? "s" : "")} left).");
+            foreach (var c in s.conditions) { cond.Add(c); ApplyCondition(c); }
+            if (cond.Contains("grilled"))
+            {
+                int g = (int)Math.Ceiling(hero.maxHp * Conditions.GrilledHp);
+                hero.hp = Math.Max(1, hero.hp - g);
+                Emit(BattleEventType.Hit, null, hero, g, hero.hp, "Interrogated");
+            }
 
             // Pre-fight gimmicks
             if (foes.Any(f => f.Ai == "firecracker") && stage < GrapStage.Grap4)
@@ -210,6 +229,16 @@ namespace KadakChai
         void HeroAct()
         {
             if (hero.Has(StatusKind.Stunned)) { Emit(BattleEventType.Stun, hero, hero, label: "Stuck explaining where you're going"); return; }
+            if (round == 1 && cond.Contains("limping")) { Emit(BattleEventType.Stun, hero, hero, label: "Tyre Marks! Still limping."); return; }
+            if (cond.Contains("smoked") && Roll(Conditions.SmokedChance)) { Emit(BattleEventType.Stun, hero, hero, label: "*cough cough* Smoked out."); return; }
+            if (cond.Contains("confused") && Roll(Conditions.ConfusedChance))
+            {
+                int self = Math.Max(1, (int)Math.Round(hero.atk * 0.3f));
+                hero.hp = Math.Max(0, hero.hp - self);
+                Emit(BattleEventType.Hit, hero, hero, self, hero.hp, "Confused! Hit yourself.", true);
+                if (hero.hp == 0) { r.killer = "confusion"; OnZeroHp(hero); }
+                return;
+            }
 
             foreach (var k in active)
                 if (k.kind == "heal_every" && k.every > 0 && round % k.every == 0)
@@ -288,12 +317,39 @@ namespace KadakChai
             }
         }
 
-        void AuntyAct()
+        /// <summary>The zone companion's move (change log: a different companion in each zone).</summary>
+        void PetAct()
         {
-            if (hero.hp < hero.maxHp * 0.5f)
-                Heal(aunty, hero, (int)Math.Round(hero.maxHp * 0.25f), "Good Morning Flower Image!");
-            else if (FrontFoe() is { } t)
-                Attack(aunty, t, 2f, "Complaint to Society Secretary!", true, typed: false);
+            switch (pet.id)
+            {
+                case "pinky_aunty" when round % 3 == 0:
+                    if (hero.hp < hero.maxHp * 0.5f) Heal(pet, hero, (int)Math.Round(hero.maxHp * 0.25f), "Good Morning Flower Image!");
+                    else if (FrontFoe() is { } t) Attack(pet, t, 2f, "Complaint to Society Secretary!", true, typed: false);
+                    break;
+                case "daaru_uncle" when round % 3 == 0:
+                    if (hero.hp < hero.maxHp * 0.5f) { Heal(pet, hero, (int)Math.Round(hero.maxHp * 0.2f), "Desi tonic! Smells terrible."); break; }
+                    if (Roll(0.1f))
+                    {
+                        int oops = Math.Max(1, (int)Math.Round(hero.maxHp * 0.06f));
+                        hero.hp = Math.Max(1, hero.hp - oops);   // drunk, not deadly
+                        Emit(BattleEventType.Hit, pet, hero, oops, hero.hp, "Oops! Wrong target. Hic.");
+                    }
+                    else if (foes.Where(f => f.Alive).OrderBy(f => f.hp).FirstOrDefault() is { } w)
+                        Attack(pet, w, 1.8f, "Bottle throw!", true, typed: false);
+                    break;
+                case "sheru" when round % 2 == 0:
+                    if (FrontFoe() is { } d)
+                    {
+                        Attack(pet, d, 1.1f, "Bhow! Bite!", false, typed: false);
+                        if (d.Alive && Roll(0.3f)) { d.Add(new StatusEffect(StatusKind.Stunned, 1)); Emit(BattleEventType.Stun, pet, d, label: "Chased off!"); }
+                    }
+                    break;
+                case "rival_student" when round % 3 == 0:
+                    if (hero.hp < hero.maxHp * 0.4f) { Heal(pet, hero, (int)Math.Round(hero.maxHp * 0.2f), "Glucose biscuit. Tier-1 snacks."); break; }
+                    hero.Add(new StatusEffect(StatusKind.AtkUp, 2, 0.25f));
+                    Shout(pet, "Topper notes! +25% ATK. (He'll take the credit.)");
+                    break;
+            }
         }
 
         void EnemyAct(Combatant f)
@@ -335,13 +391,22 @@ namespace KadakChai
                     break;
 
                 case "ceo":
-                    if (f.actions % 2 == 0)
+                    // Lalaji (change log): a family business "startup". Losing? Call the board: his relatives.
+                    if (!f.b2bMode && f.hp < f.maxHp * 0.5f)
                     {
-                        f.b2bMode = !f.b2bMode;
-                        f.atk = f.data.atk * (f.b2bMode ? 0.6f : 1.5f);
-                        f.def = f.data.def * (f.b2bMode ? 2.5f : 0.6f);
-                        Shout(f, f.b2bMode ? "PIVOT! Now B2B (high DEF)." : "PIVOT! Now B2C (high ATK).");
+                        f.b2bMode = true; // board already called
+                        Shout(f, "Bunty! Pappu! BOARD MEETING!");
+                        foreach (var id in new[] { "cfo_bunty", "cto_pappu" })
+                            if (GameData.Combatants.TryGetValue(id, out var rel))
+                            {
+                                int hp = (int)Math.Round(rel.hp * (1f + SpiceHp * (spice - 1)));
+                                var c = AddUnit(new Combatant(units.Count, rel.id, rel.name, false, false, hp, hp, rel.atk * (1f + SpiceAtk * (spice - 1)), rel.def, rel) { ranged = rel.Ranged });
+                                foes.Add(c);
+                                Emit(BattleEventType.Summon, f, c);
+                            }
+                        return;
                     }
+                    if (f.actions % 4 == 0) { Heal(f, f, (int)Math.Round(f.maxHp * 0.08f), "Bahi-khata! Adjusts the accounts."); return; }
                     break;
             }
             Attack(f, hero, 1f, null, false);
@@ -349,7 +414,7 @@ namespace KadakChai
 
         // --- Resolution ----------------------------------------------------------
 
-        /// <param name="typed">False for skills and Pinky Aunty: no close/ranged modifiers (GDD: skills have no type).</param>
+        /// <param name="typed">False for skills and companions: no close/ranged modifiers (GDD: skills have no type).</param>
         int Attack(Combatant a, Combatant t, float power, string label, bool big, bool typed = true)
         {
             bool ranged = typed && a.ranged;
@@ -357,6 +422,7 @@ namespace KadakChai
             bool sureShot = a == hero && weapon?.perk == "sure_shot";
             bool aqiApplies = !(a.isPlayerSide && ignoreAqi) && !sureShot;
             if (stage == GrapStage.Grap2 && aqiApplies && Roll(0.15f)) { Emit(BattleEventType.Miss, a, t, label: label, ranged: ranged, proj: proj); return 0; }
+            if (a == hero && cond.Contains("lost") && Roll(Conditions.LostMiss)) { Emit(BattleEventType.Miss, a, t, label: "Lost!", ranged: ranged, proj: proj); return 0; }
             if (t == hero && dodge > 0 && Roll(dodge)) { Emit(BattleEventType.Dodge, a, t, ranged: ranged, proj: proj); return 0; }
             if (t.Has(StatusKind.Invulnerable)) { Emit(BattleEventType.Immune, a, t, label: "LUNCH BREAK", ranged: ranged, proj: proj); return 0; }
 
@@ -377,6 +443,13 @@ namespace KadakChai
             t.hp = Math.Max(0, t.hp - dmg);
             Emit(BattleEventType.Hit, a, t, dmg, t.hp, label, big, ranged, proj);
             if (t.hp == 0) { if (t == hero) r.killer = a.name; OnZeroHp(t); }
+            else if (t == hero && a.data != null && !string.IsNullOrEmpty(a.data.inflicts) && !cond.Contains(a.data.inflicts)
+                     && Roll(a.data.inflictChance > 0 ? a.data.inflictChance : 0.25f))
+            {
+                string c = a.data.inflicts;
+                cond.Add(c); r.inflicted.Add(c); ApplyCondition(c);
+                Emit(BattleEventType.Shout, a, hero, label: Conditions.Name(c).ToUpper() + "!", big: true); // DISHOOM-style status popup
+            }
             return dmg;
         }
 
@@ -400,8 +473,16 @@ namespace KadakChai
 
         void Heal(Combatant a, Combatant t, int amount, string label)
         {
+            if (t == hero && cond.Contains("cringe")) amount = Math.Max(1, (int)(amount * Conditions.CringeHeal));
             t.Heal(amount);
             Emit(BattleEventType.Heal, a, t, amount, t.hp, label);
+        }
+
+        /// <summary>Stat effects of a lasting status, applied when the fight starts or the status lands.</summary>
+        void ApplyCondition(string c)
+        {
+            if (c == "shaved") hero.def *= Conditions.ShavedDef;
+            if (c == "cancelled") hero.atk *= Conditions.CancelledAtk;
         }
 
         void Shout(Combatant a, string text) => Emit(BattleEventType.Shout, a, null, label: text);

@@ -16,7 +16,7 @@ namespace KadakChai
         RectTransform area, stage, bgRoot, popups, tickerText, overlay;
         Image bg, bgNext, smog, flash;
         Text roundText, speedText;
-        Puppet hero, aunty;
+        Puppet hero, aunty;   // aunty = the current zone companion's puppet (any companion)
         readonly List<Puppet> enemies = new();
         string zone;
         // "1x" plays at 0.65 of the original pace (playtest: original felt too fast). The speed button cycles
@@ -240,7 +240,8 @@ namespace KadakChai
             hero.Root.Place(150, 330, 250, 330, AW, AH);
             hero.SetHp(s.hp, s.maxHp);
 
-            if (s.HasAunty && aunty == null && GameData.Combatants.TryGetValue("pinky_aunty", out var ad))
+            if (aunty != null && aunty.Id != s.companion) { Destroy(aunty.gameObject); aunty = null; } // companion left or changed
+            if (s.HasCompanion && aunty == null && GameData.Combatants.TryGetValue(s.companion, out var ad))
             {
                 aunty = Puppet.Create(stage, ad.id, ad.name, ad.color, 1, 1, "", false, false);
                 aunty.Root.Place(10, 470, 160, 200, AW, AH);
@@ -407,6 +408,73 @@ namespace KadakChai
             return enemyIndex < enemies.Count ? enemies[enemyIndex] : null;
         }
 
+        readonly HashSet<string> liveConditions = new();
+
+        /// <summary>Bablu's lasting statuses on his puppet (overlays + pills).</summary>
+        public void SetConditions(RunState s)
+        {
+            liveConditions.Clear();
+            foreach (var c in s.conditions) liveConditions.Add(c);
+            hero?.SetConditions(liveConditions);
+        }
+
+        static string StatusIdFromLabel(string label)
+        {
+            foreach (var kv in Conditions.All) if (label.StartsWith(kv.Value.name.ToUpper())) return kv.Key;
+            return label;
+        }
+
+        /// <summary>First punchy phrase of a gimmick line: "PIVOT! Now B2B" -> "PIVOT!".</summary>
+        static string ShortWord(string label)
+        {
+            if (string.IsNullOrEmpty(label)) return "";
+            int i = label.IndexOfAny(new[] { '!', '.', '?' });
+            string w = i > 0 && i < 28 ? label.Substring(0, i + 1) : label.Length > 24 ? label.Substring(0, 22) + "..." : label;
+            return w.ToUpper();
+        }
+
+        /// <summary>Paper Mario-style status card: a white paper sticker with a thick outline and a drop shadow.</summary>
+        void PaperCard(Puppet over, string word, Color color)
+        {
+            var root = UiKit.Make("PaperCard", popups);
+            root.sizeDelta = new Vector2(440, 130);
+            root.anchoredPosition = over.HeadPosition(popups) + new Vector2(0, 110);
+            root.localRotation = Quaternion.Euler(0, 0, Random.Range(-7f, 7f));
+            var shadow = UiKit.Panel(root, "Shadow", new Color(0, 0, 0, 0.35f), rounded: true);
+            shadow.rectTransform.Fill(); shadow.rectTransform.anchoredPosition = new Vector2(10, -10);
+            var paper = UiKit.Panel(root, "Paper", Color.white, rounded: true);
+            paper.rectTransform.Fill();
+            UiKit.Outline(paper, UiKit.Ink, 6);
+            var t = UiKit.Label(root, "Word", word, 56, color, TextAnchor.MiddleCenter, FontStyle.Bold);
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            t.rectTransform.Fill(8);
+            UiKit.Outline(t, UiKit.Ink, 3);
+            t.gameObject.AddComponent<TextFx>().wave = 4f;
+            StartCoroutine(ImpactRoutine(root));
+        }
+
+        /// <summary>Comic-book burst with a big word over a puppet: DISHOOM oomph for gimmicks and statuses.</summary>
+        void Gimmick(Puppet over, string word, Color color)
+        {
+            var root = UiKit.Make("Gimmick", popups);
+            root.sizeDelta = new Vector2(460, 200);
+            root.anchoredPosition = over.HeadPosition(popups) + new Vector2(Random.Range(-30f, 30f), 70);
+            root.localRotation = Quaternion.Euler(0, 0, Random.Range(-10f, 10f));
+            var burst = Art.UI("burst");
+            if (burst != null)
+            {
+                var b = UiKit.Panel(root, "Burst", color);
+                b.sprite = burst; b.raycastTarget = false;
+                b.rectTransform.Fill(-20);
+            }
+            var t = UiKit.Label(root, "Word", word, 52, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            t.horizontalOverflow = HorizontalWrapMode.Overflow;
+            t.rectTransform.Fill();
+            UiKit.Outline(t, UiKit.Ink, 5);
+            t.gameObject.AddComponent<TextFx>().wave = 5f;
+            StartCoroutine(ImpactRoutine(root));
+        }
+
         public IEnumerator Play(BattleResult r)
         {
             bool techno = false; // switch to Delhi techno once the hero drops below 50% HP (change log 19:21)
@@ -473,12 +541,25 @@ namespace KadakChai
                         break;
 
                     case BattleEventType.Stun:
+                        if (actor != null && actor != hero && actor != aunty && !string.IsNullOrEmpty(e.label)) Gimmick(actor, ShortWord(e.label), UiKit.Hex("#FF7043"));
                         if (target != null) Popup(e.label ?? "Stunned", target, new Color(1f, 0.75f, 1f), 40, 0, true);
                         AudioKit.Sfx(GameData.SkillByLabel(e.label)?.sfx ?? "shout", 0.7f);
                         yield return Wait(0.45f);
                         break;
 
                     case BattleEventType.Shout:
+                        if (e.big && target != null)
+                        {
+                            // A lasting status just landed on Bablu: DISHOOM-style word over him (change log).
+                            AudioKit.Sfx("boom", 0.7f);
+                            PaperCard(target, e.label, UiKit.Hex("#8E24AA"));
+                            liveConditions.Add(StatusIdFromLabel(e.label));
+                            if (target == hero) StartCoroutine(hero.PaperFlip(() => hero.SetConditions(liveConditions)));
+                            Shake(14, 0.3f);
+                            yield return Wait(0.9f);
+                            break;
+                        }
+                        if (actor != null && actor != hero && actor != aunty) Gimmick(actor, ShortWord(e.label), UiKit.Hex("#FF7043"));
                         Banner(e.label);
                         yield return Wait(0.9f);
                         break;
@@ -499,6 +580,26 @@ namespace KadakChai
                             yield return target.Die(speed);
                             if (finalBlow) { Celebrate(); yield return new WaitForSecondsRealtime(0.4f); }
                         }
+                        break;
+
+                    case BattleEventType.Summon:
+                        // Lalaji's board meeting: a relative drops into the fight.
+                        if (e.target >= 0 && e.target < r.units.Count)
+                        {
+                            var u = r.units[e.target];
+                            var slot = enemies.Count == 1 ? new Rect(470, 400, 200, 270) : new Rect(900, 420, 170, 240);
+                            var p = Puppet.Create(stage, u.id, u.name, u.color, u.hp, u.maxHp, u.hpLabel, true, true);
+                            p.Root.Place(slot.x, slot.y, slot.width, slot.height, AW, AH);
+                            enemies.Add(p);
+                            popups.SetAsLastSibling(); flash.transform.SetAsLastSibling();
+                            enemiesLeft++;
+                            StartCoroutine(p.DropIn(0f));
+                            StartCoroutine(DustLater(p, 0.35f));
+                            AudioKit.Sfx("whoosh");
+                            Gimmick(p, u.id == "cfo_bunty" ? "CFO!" : "CTO!", UiKit.Hex("#FF7043"));
+                            Shake(12, 0.25f);
+                        }
+                        yield return Wait(0.7f);
                         break;
 
                     case BattleEventType.Revive:

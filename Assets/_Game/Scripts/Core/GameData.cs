@@ -23,6 +23,8 @@ namespace KadakChai
         public string voice;    // VN typewriter blip: lo, mid, hi
         public string range;    // "close" or "ranged" (GDD: Combat: close vs ranged)
         public string shot;     // ranged only: label for the opening shot ("Iced coffee!")
+        public string inflicts; // lasting status this enemy can give Bablu (Conditions.cs), e.g. "robbed"
+        public float inflictChance; // per landed hit; 0 = default 0.25
         public string flavor;
         public bool Ranged => range == "ranged";
     }
@@ -78,8 +80,9 @@ namespace KadakChai
         public string outro;     // optional: VN scene played after winning / choosing
         public int aqiDelta;     // nudges the daily AQI roll (e.g. Diwali week)
         public int rent;         // rupees the landlord takes at the start of this day
-        public int spice;        // Theeka level 1-8 (Balatro-style ante): scales enemy HP and ATK
+        public int spice;        // Khatra level 1-8 (Balatro-style ante): scales enemy HP and ATK
         public string bg;        // optional background override (e.g. "metro"); default is the zone's
+        public string companion; // optional: this zone's companion joins today (one per zone, leaves at the border)
     }
 
     /// <summary>One line of a visual-novel scene (scenes.csv).</summary>
@@ -116,11 +119,17 @@ namespace KadakChai
 
         public static readonly string[] Zones = { "dilli", "gurugram", "noida", "daftar" };
 
+        /// <summary>Short zone name for tight spaces (the top bar).</summary>
+        public static string ZoneShort(string zone) => zone switch
+        {
+            "dilli" => "Dilli", "gurugram" => "Gurugram", "noida" => "Noida", "daftar" => "Sarkari Daftar", _ => ZoneName(zone),
+        };
+
         /// <summary>The hero's display name (combatants.json "new_kid").</summary>
         public static string HeroName => Combatants.TryGetValue("new_kid", out var h) && !string.IsNullOrEmpty(h.name) ? h.name : "Bablu";
 
         public const int MaxSpice = 8;
-        static readonly string[] SpiceNames = { "Phika", "Halka", "Chatpata", "Teekha", "Mirchi", "Lal Mirch", "Bhoot Jolokia", "Dilli Belly" };
+        static readonly string[] SpiceNames = { "Sab Changa", "Thoda Risky", "Sambhal Ke", "Khatra", "Bada Khatra", "Khauf", "Maha Khauf", "Khatam" };
         public static string SpiceName(int level) => SpiceNames[Math.Clamp(level, 1, MaxSpice) - 1];
         public static string ZoneName(string zone) => zone switch
         {

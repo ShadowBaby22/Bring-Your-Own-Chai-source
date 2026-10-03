@@ -250,21 +250,6 @@ def guard():
     s += line(370, 560, 450, 330, 18, OUT) + line(370, 560, 450, 330, 10, '#8d6e63')
     return s
 
-def ceo():
-    skin = '#E0AC69'
-    s = legs('#455a64', '#ffffff')
-    s += torso('#64B5F6')
-    s += path('M 168 400 Q 168 362 210 362 L 240 362 L 240 556 L 200 556 Q 168 556 168 520 Z', '#9E9E9E') + path('M 358 400 Q 358 362 316 362 L 286 362 L 286 556 L 326 556 Q 358 556 358 520 Z', '#9E9E9E')
-    s += line(262, 380, 262, 556, 4, '#e0e0e0')
-    s += f'<g transform="rotate(-12 150 470)">' + rect(96, 420, 120, 84, 10, '#cfd8dc') + circle(156, 462, 14, '#ff7043', line=False) + '</g>'   # laptop under arm
-    s += capsule(178, 400, 168, 484, 42, '#9E9E9E') + hand(168, 492, skin)
-    s += head(skin)
-    s += path('M 126 230 Q 116 110 220 90 Q 300 60 380 110 Q 420 150 400 200 Q 360 130 300 140 Q 240 150 200 140 Q 150 160 150 236 Z', '#8d5a3b')
-    s += rect(130, 252, 14, 26, 6, '#ffffff')                                                               # AirPod
-    s += eyes(skin, lid=8) + brows('smug') + mouth('smirk')
-    s += capsule(352, 400, 396, 456, 42, '#64B5F6') + rect(378, 400, 52, 76, 10, '#ffffff') + rect(378, 424, 52, 26, 0, '#8d6e63') + hand(400, 462, skin)
-    return s
-
 def babu():
     skin = '#C68B59'
     s = legs('#5d4037', '#3e2723')
@@ -349,11 +334,132 @@ def shona():
     s += path('M 476 140 L 500 124 M 480 166 L 508 166 M 476 190 L 500 206', 'none', stroke='#fff59d', stroke_width='7')                    # flash
     return s
 
+def new_kid_shaved():
+    """Bablu after the RWA (Pinky Aunty) shaves his head: shiny comic dome, stubble, a band-aid. No hair at all."""
+    skin = '#D9A066'
+    s = legs('#3A5A99', '#f5f5f5')
+    s += path('M 150 372 Q 262 330 374 372 L 360 400 Q 262 372 164 400 Z', '#1f8c80')
+    s += torso('#2BB3A3')
+    s += rect(196, 372, 22, 170, 8, '#5d4037') + rect(306, 372, 22, 170, 8, '#5d4037')
+    s += rect(228, 470, 70, 40, 14, '#24a093')
+    s += capsule(178, 400, 150, 488, 44, '#2BB3A3') + hand(148, 496, skin)
+    s += head(skin)
+    s += ellipse(214, 150, 58, 30, '#ffffff', line=False, opacity='0.55', transform='rotate(-24 214 150)')   # big comic shine
+    s += ellipse(300, 116, 16, 9, '#ffffff', line=False, opacity='0.7', transform='rotate(-10 300 116)')
+    s += ''.join(circle(x, y, 2.6, '#8a6440', line=False, opacity='0.6') for x, y in
+                 [(190, 120), (206, 104), (226, 96), (250, 92), (274, 92), (298, 96), (322, 104), (344, 116), (364, 132), (238, 110), (262, 104), (286, 108), (310, 116), (334, 128)])  # stubble
+    s += f'<g transform="rotate(28 330 150)">' + rect(296, 136, 70, 26, 13, '#f4c79a') + rect(320, 138, 22, 22, 4, '#e8b07e', line=False) + '</g>'  # band-aid
+    s += path('M 404 150 Q 418 176 404 190 Q 390 176 404 150 Z', '#7fd3ff')
+    s += eyes(skin) + brows('worried') + mouth('wavy') + blush()
+    s += capsule(350, 400, 394, 470, 44, '#2BB3A3')
+    s += f'<g transform="rotate(-18 420 452)">' + rect(370, 432, 110, 40, 12, '#fff8e1') + rect(418, 428, 14, 48, 4, '#e53935') + '</g>'
+    s += hand(398, 474, skin)
+    return s
+
+def daaru_uncle():
+    """Gurugram companion: a cheerful drunk with an empty bottle."""
+    skin = '#B07A4F'
+    s = legs('#6d4c41', '#3e2723', spread=40)
+    s += torso('#E0D6C2', belly=True)
+    s += path('M 200 420 L 214 470 L 196 520 M 300 440 L 318 500', 'none', stroke='#a1887f', stroke_width='5')   # torn kurta
+    s += capsule(170, 410, 140, 490, 44, '#E0D6C2') + hand(140, 498, skin)
+    s += head(skin)
+    s += path('M 124 230 Q 100 120 170 100 Q 160 70 210 80 Q 230 50 270 74 Q 320 52 340 90 Q 400 96 404 190 Q 380 150 340 140 L 330 170 L 300 136 L 270 164 L 240 132 L 214 166 L 190 136 L 160 180 Q 140 200 146 236 Z', '#9e9e9e')
+    s += path('M 238 300 Q 262 380 330 384 Q 392 380 404 300 Q 380 330 330 334 Q 270 330 238 300 Z', '#bdbdbd')    # beard
+    s += circle(318, 280, 18, '#e57373', line=False, opacity='0.85')                                              # red nose
+    s += eyes(skin, kind='closed', y=246) + brows('raised') + mouth('grin', y=318)
+    s += capsule(354, 410, 392, 330, 44, '#E0D6C2') + hand(396, 322, skin)
+    s += path('M 386 300 L 398 220 L 418 220 L 430 300 Z', '#66bb6a') + rect(400, 200, 16, 24, 4, '#43a047')     # bottle up high
+    s += text(452, 196, 'hic!', 30, '#5d4037', rot=-14)
+    return s
+
+def sheru():
+    """Noida companion: a desi street dog with a tika."""
+    s = ellipse(262, 470, 150, 82, '#C8A27A')                                                          # body
+    s += path('M 400 440 Q 470 380 440 330 Q 430 380 392 420 Z', '#C8A27A')                            # curly tail
+    for x in (170, 220, 300, 350):
+        s += capsule(x, 520, x, 596, 30, '#C8A27A') + ellipse(x + 6, 600, 24, 12, '#f5f5f5')
+    s += ellipse(250, 492, 70, 36, '#f3e2c7', line=False)                                              # light belly
+    s += circle(150, 330, 92, '#C8A27A')                                                               # head
+    s += path('M 86 278 Q 70 200 110 186 Q 130 236 128 270 Z', '#9c7650') + path('M 196 262 Q 230 200 250 220 Q 236 270 206 290 Z', '#9c7650')  # ears (one up)
+    s += ellipse(96, 360, 50, 36, '#f3e2c7') + circle(64, 350, 14, '#2b2024')                          # snout + nose
+    s += circle(170, 310, 13, '#2b2024', line=False) + circle(174, 305, 4, '#ffffff', line=False)
+    s += circle(122, 306, 11, '#2b2024', line=False) + circle(125, 302, 4, '#ffffff', line=False)
+    s += path('M 80 384 Q 100 410 122 392', 'none') + path('M 92 392 Q 98 430 112 424 Q 120 410 114 396 Z', '#ef5350')  # tongue
+    s += ellipse(148, 262, 8, 14, '#e53935', line=False)                                               # tika
+    s += text(330, 330, 'Bhow!', 34, '#5d4037', rot=10)
+    return s
+
+def rival_student():
+    """Daftar companion: Kush, rival-uni topper. Helps, then takes the credit."""
+    skin = '#E8B98A'
+    s = legs('#263238', '#ffffff')
+    s += torso('#7B1FA2')
+    s += text(262, 470, 'TIER-1', 30, '#FFD54F')
+    s += path('M 150 372 Q 262 330 374 372 L 360 400 Q 262 372 164 400 Z', '#6a1b9a')
+    s += capsule(178, 400, 164, 486, 42, '#7B1FA2') + hand(164, 494, skin)
+    s += rect(108, 430, 70, 90, 6, '#fff8e1') + ''.join(line(118, 450 + i * 14, 168, 450 + i * 14, 3, '#90a4ae') for i in range(4))  # notes
+    s += head(skin)
+    s += path('M 126 236 Q 118 96 262 92 Q 404 94 400 236 Q 380 140 300 132 Q 300 150 262 150 Q 190 148 150 180 Q 136 200 136 236 Z', '#3e2723')
+    s += circle(274, 244, 30, 'none') + circle(344, 244, 30, 'none') + line(304, 244, 314, 244, 6)   # glasses
+    s += eyes(skin, lid=10) + brows('smug') + mouth('smirk')
+    s += capsule(352, 400, 400, 340, 42, '#7B1FA2') + hand(404, 332, skin) + capsule(404, 314, 404, 276, 14, skin)   # finger up: "actually..."
+    return s
+
+def ceo():
+    """Lalaji, CEO of Lalaji & Sons Pvt. Ltd. (a startup since 1972): kurta, jacket, ledger, gold chain."""
+    skin = '#D9A066'
+    s = legs('#f5f5f5', '#6d4c41', spread=40)
+    s += torso('#FFF3E0', belly=True)
+    s += path('M 160 420 Q 160 372 204 368 L 230 368 L 236 560 L 186 556 Q 156 540 156 500 Z', '#8D6E63') + path('M 364 420 Q 364 372 320 368 L 294 368 L 288 560 L 338 556 Q 368 540 368 500 Z', '#8D6E63')   # Nehru jacket
+    s += path('M 214 380 Q 262 440 310 380', 'none', stroke='#FFC107', stroke_width='8')                     # gold chain
+    s += capsule(170, 410, 146, 486, 44, '#FFF3E0') + hand(146, 494, skin)
+    s += rect(84, 430, 92, 110, 6, '#c62828') + rect(92, 438, 76, 94, 4, '#ffcdd2', line=False) + line(130, 430, 130, 540, 4, '#7f0000')   # bahi-khata ledger
+    s += head(skin)
+    s += path('M 128 236 Q 120 150 170 128 Q 150 190 152 236 Z', '#424242') + path('M 396 236 Q 404 150 356 128 Q 376 190 374 236 Z', '#424242')   # balding sides
+    s += ellipse(250, 120, 50, 22, '#ffffff', line=False, opacity='0.4', transform='rotate(-15 250 120)')
+    s += circle(274, 246, 30, 'none') + circle(344, 246, 30, 'none') + line(304, 246, 314, 246, 6)          # specs
+    s += eyes(skin, lid=14) + brows('smug') + mustache(318, 290, big=True) + mouth('smirk', y=318)
+    s += capsule(354, 410, 396, 360, 44, '#FFF3E0') + hand(400, 352, skin)
+    s += rect(380, 280, 60, 70, 8, '#37474f') + rect(388, 288, 44, 18, 2, '#a5d6a7', line=False) + ''.join(rect(388 + (i % 3) * 15, 312 + (i // 3) * 12, 11, 8, 2, '#eceff1', line=False) for i in range(6))   # calculator
+    return s
+
+def cfo_bunty():
+    """Bunty, brother-in-law and CFO. Flashy shirt, shades, throws calculators."""
+    skin = '#C68B59'
+    s = legs('#212121', '#795548')
+    s += torso('#E91E63')
+    s += ''.join(circle(200 + (i % 4) * 40, 400 + (i // 4) * 44, 8, '#FFEB3B', line=False) for i in range(16))   # loud print shirt
+    s += path('M 236 368 L 262 420 L 288 368', 'none', stroke='#FFC107', stroke_width='7')
+    s += capsule(178, 400, 160, 486, 42, '#E91E63') + hand(160, 494, skin)
+    s += head(skin)
+    s += path('M 126 230 Q 120 110 262 104 Q 400 110 400 230 Q 380 150 300 140 Q 220 136 170 160 Q 140 190 140 230 Z', '#1b1b1b')
+    s += rect(236, 222, 74, 40, 14, '#212121') + rect(318, 222, 64, 40, 14, '#212121') + line(310, 238, 318, 238, 6)   # shades
+    s += mustache(318, 288) + mouth('grin', y=316)
+    s += capsule(352, 400, 396, 440, 42, '#E91E63') + rect(372, 400, 56, 74, 8, '#37474f') + hand(400, 470, skin)
+    s += text(250, 590, 'CFO', 30, '#E91E63', mirror=True)
+    return s
+
+def cto_pappu():
+    """Pappu, nephew and CTO. 17 years old. Gaming headset, sticker laptop."""
+    skin = '#E0AC69'
+    s = legs('#455a64', '#ffffff')
+    s += torso('#263238')
+    s += text(262, 470, 'CTO', 34, '#00E676', mirror=True)
+    s += capsule(178, 400, 164, 480, 40, '#263238') + hand(164, 488, skin)
+    s += head(skin, r=128)
+    s += path('M 136 230 Q 130 116 262 110 Q 392 116 388 230 Q 360 160 290 156 Q 220 156 180 176 Q 150 200 150 232 Z', '#4e342e')
+    s += path('M 126 236 Q 126 96 262 92 Q 398 96 398 236', 'none', stroke='#00E676', stroke_width='14') + rect(108, 216, 34, 64, 12, '#00E676') + rect(382, 216, 34, 64, 12, '#00E676')  # headset
+    s += eyes(skin, lid=18, look=10) + brows('flat') + mouth('flat', y=312)
+    s += capsule(350, 400, 392, 452, 40, '#263238')
+    s += rect(330, 440, 140, 90, 8, '#b0bec5') + circle(360, 470, 10, '#e53935', line=False) + rect(390, 480, 30, 18, 4, '#7c4dff', line=False) + hand(392, 456, skin)   # sticker laptop
+    return s
+
 SWEAT = (path('M 410 150 Q 426 178 410 194 Q 394 178 410 150 Z', '#7fd3ff') +
          path('M 120 170 Q 132 192 120 204 Q 108 192 120 170 Z', '#7fd3ff') +
          line(420, 250, 450, 240, 6) + line(424, 280, 456, 284, 6))  # pain marks
 
-for fn in [new_kid, pinky_aunty, scooty_uncle, auto_bhaiya, south_delhi_girl, broker, monkey, firecracker, guard, ceo, babu, sector_cabbie, techbro, jaanu, shona]:
+for fn in [new_kid, pinky_aunty, scooty_uncle, auto_bhaiya, south_delhi_girl, broker, monkey, firecracker, guard, ceo, babu, sector_cabbie, techbro, jaanu, shona, new_kid_shaved, daaru_uncle, sheru, rival_student, cfo_bunty, cto_pappu]:
     C[fn.__name__] = fn()
     HURT = True
     C[fn.__name__ + '_hit'] = fn() + SWEAT

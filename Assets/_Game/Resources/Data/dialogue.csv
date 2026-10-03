@@ -24,13 +24,15 @@ fight_techbro,"Welcome to the *Gurugram Corporate Emirates*. A *LinkedIn Tech Br
 fight_techbro_win,"He updates his headline to ""Humbled. Learning from failure."" It gets 9k likes. You get endorsed for Violence.",,,,,,
 fight_jaanu,"*Rajiv Chowk*, 6 PM. The doors open and you are *transferred* inside. A *PDA couple* has claimed the only door. Your stop is next.",,,,,,
 fight_jaanu_win,"The couple breaks up mid-fight, gets back together at Mandi House, and posts about it. You make your stop. Barely.",,,,,,
+fight_rwa_aunty,"*The Noida society gate.* The RWA has called an emergency meeting about *you*. Chairing it: *Pinky Aunty*. Her WiFi works now. She no longer needs you.",,,,,,
+fight_rwa_aunty_win,"Pinky Aunty retreats to draft a 47-paragraph WhatsApp forward about this. The guard lets you through. Your head is cold.",,,,,,
 #
 # --- Fixed day cards ---
 d2,"*Pinky Aunty* from the RWA WhatsApp group corners you at the gate. ""Beta, I will help you. But first forward this to 10 people.""",Forward it,flag:aunty,"*Pinky Aunty* joins you! You are now in 14 new WhatsApp groups.",Leave her on read,flag:aunty;hp:-10%,"She joins anyway, and tells the whole society you are ""very rude"". *Pinky Aunty* joins you!"
 d4,"The *Broker* appears. ""Sir, small matter only. One month brokerage, one month deposit, one month *documentation charges*.""",,,,,,
 d4_win,"The Broker drops his phone. He was on a call with another tenant the whole time. He hands you a *temporary address proof*.",,,,,,
-d8,"The *Startup CEO* blocks your path in a fleece vest. ""We're disrupting the concept of walking. Our Series A closes tonight.""",,,,,,
-d8_win,"His *runway* hits zero. ""We're excited to announce the end of our incredible journey."" He posts about it on LinkedIn. It gets 40k likes.",,,,,,
+d8,"*Lalaji*, CEO of *Lalaji & Sons Pvt. Ltd.* (a startup since 1972), blocks your path with his bahi-khata. ""Intern! Culture-fit round. Now.""",,,,,,
+d8_win,"Lalaji shuts the bahi-khata. ""Profit is temporary, beta. Family is forever."" Bunty writes you down as a loss.",,,,,,
 ev_daftar_chai,"A *chai tapri* outside the Daftar. *Delivery Wale Bhaiya* calls: ""Sir, 2 minute mein pahunch raha hoon."" He said that on Day 1.",Sip it slowly,heal:100%,"Kadak chai. Full HP. For one moment, everything is fine.",Gulp it down,heal:50%;atk:+4,"You burn your tongue. Now you are furious, which helps."
 d11,"The *Babu*, Keeper of the Stamp, looks up. ""Original + 3 photocopies + self-attested + attested by gazetted officer + your soul.""",,,,,,
 d11_win,"THUNK. The *stamp* lands: *POLICE VERIFICATION, VALID FOR 11 MONTHS*. Bablu is officially a person. For 11 months.",,,,,,
@@ -93,6 +95,12 @@ border_dilli_gurugram,"*Sirhaul toll plaza.* Welcome to Gurugram. The toll is 30
 border_gurugram_noida,"*DND Flyway.* It has been toll-free for years. The *Toll Tax* still applies, out of respect. *All stats -15% for 2 days.*",,,,,,
 border_noida_daftar,"*Delhi border.* An MCD man with a receipt book appears from nowhere. *Toll Tax: all stats -15% for 2 days.*",,,,,,
 border_fastag,"Your *FASTag* beeps. The boom barrier opens. For one moment, you understand what it feels like to be rich. *No Toll Tax.*",,,,,,
+join_daaru_uncle,"*Daaru Uncle* has joined you! He sleeps outside the Cyber Hub fountain and knows every shortcut. He throws bottles. Mostly at enemies.",,,,,,
+join_sheru,"*Sheru* the street dog has joined you! You gave him half a samosa. He is now yours, forever, or until the border.",,,,,,
+join_rival_student,"*Kush* from the rival uni has joined you. Tier-1. He will share his notes. He will also remind you he is Tier-1.",,,,,,
+leave_pinky_aunty,"*Pinky Aunty* stays back in Dilli for a kitty party. ""Beta, call me."" You will not.",,,,,,
+leave_daaru_uncle,"*Daaru Uncle* stays at the toll plaza. He has made friends with the boom barrier.",,,,,,
+leave_sheru,"*Sheru* stops at the Delhi border. Noida dogs do not cross borders. He watches you go. You are not crying, it is the smog.",,,,,,
 delivery_end,"*Delivery Wale Bhaiya* finally arrives. ""Sir, your order."" You placed it 11 months ago.",,,,,,
 credits,"e-CHALLAN No. 2026/TEMP/11
 Offence: Making a whole game in one weekend
