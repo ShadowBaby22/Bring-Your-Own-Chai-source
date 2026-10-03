@@ -58,7 +58,7 @@ namespace KadakChai
                         BattleResult res;
                         do
                         {
-                            res = run.Fight();
+                            res = run.Fight(PlayerOpener(rng));
                             rounds[d].Add(res.rounds);
                             fightSeconds[d].Add(EstimateSeconds(res));
                             if (res.revived) revives[d]++;
@@ -147,6 +147,9 @@ namespace KadakChai
             if (ids.Count == 0) return 0;
             return (float)ids.Count(id => GameData.Combatants.TryGetValue(id, out var c) && c.Ranged) / ids.Count;
         }
+
+        /// <summary>How a typical player does on the Kadak meter: 35% KADAK, 45% theek, 20% pheeka.</summary>
+        public static int PlayerOpener(Random rng) { double r = rng.NextDouble(); return r < 0.35 ? 2 : r < 0.80 ? 1 : 0; }
 
         static void PickSkill(Run run, Random rng)
         {

@@ -224,9 +224,10 @@ namespace KadakChai
         }
 
         /// <summary>Simulates today's fight. On a win, applies HP and EXP. On a loss, nothing changes (retry).</summary>
-        public BattleResult Fight()
+        /// <param name="opener">Kadak opener result from the tap before the fight: 2 kadak, 1 theek, 0 pheeka.</param>
+        public BattleResult Fight(int opener = 0)
         {
-            var result = AutoBattle.Simulate(S, Enemies(), Rng, Spice, (Day.enemyScale > 0 ? Day.enemyScale : 1f) * MercyScale);
+            var result = AutoBattle.Simulate(S, Enemies(), Rng, Spice, (Day.enemyScale > 0 ? Day.enemyScale : 1f) * MercyScale, opener);
             foreach (var c in result.inflicted) S.conditions.Add(c);
             if (!result.won)
             {

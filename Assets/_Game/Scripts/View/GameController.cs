@@ -165,7 +165,7 @@ namespace KadakChai
             var burst = Sprite("Burst", Art.UI("burst"), -110, -140, 1300, 1300, new Color(1f, 0.82f, 0.2f, 0.5f));
             Fx(burst).spin = 9f;
 
-            var street = Sprite("Street", Art.Background("dilli").sprite, -560, 560, 2200, 1366);
+            var street = Sprite("Street", Art.Background("dilli").sprite, -345, 700, 1771, 1100);
             street.preserveAspect = false;
             var streetFx = Fx(street); streetFx.drift = 140f; streetFx.driftSpeed = 0.12f;
 
@@ -197,8 +197,8 @@ namespace KadakChai
             var cupFx = Fx(cup); cupFx.popDelay = 0.7f; cupFx.sway = 7f; cupFx.swaySpeed = 2.6f;
             for (int i = 0; i < 3; i++)
             {
-                var steam = Sprite("Steam", Art.Dot, 800 + i * 32, 520, 46, 46, new Color(1, 1, 1, 0.85f));
-                var fx = Fx(steam); fx.rise = 120f; fx.riseTime = 2.1f; fx.phase = i * 0.7f; fx.drift = 10f; fx.driftSpeed = 3f;
+                var steam = Sprite("Steam", Art.Dot, 805 + i * 28, 575, 36, 36, new Color(1, 1, 1, 0.85f));
+                var fx = Fx(steam); fx.rise = 60f; fx.riseTime = 2.1f; fx.phase = i * 0.7f; fx.drift = 10f; fx.driftSpeed = 3f;
             }
 
             var ribbon = UiKit.Panel(p.transform, "Ribbon", new Color(0.07f, 0.05f, 0.12f, 0.88f), rounded: true);
@@ -206,9 +206,9 @@ namespace KadakChai
             var tag = UiKit.Label(ribbon.transform, "Tag", "Bablu. 11 days. One stamp. <b>No Bachelors.</b>\n<color=#FFE14D><i>Everything is temporary.</i></color>", 44, Color.white);
             tag.rectTransform.Fill(10);
 
-            var hero = Sprite("Bablu", Art.Character("new_kid").sprite, 30, 1060, 360, 450);
+            var hero = Sprite("Bablu", Art.Character("new_kid").sprite, 40, 1035, 350, 440);
             var heroFx = Fx(hero); heroFx.bob = 10f; heroFx.bobSpeed = 3f;
-            var babu = Sprite("Babu", Art.Character("babu").sprite, 690, 1060, 360, 450);
+            var babu = Sprite("Babu", Art.Character("babu").sprite, 690, 1035, 350, 440);
             babu.rectTransform.localScale = new Vector3(-1, 1, 1);   // face Bablu
             var babuFx = Fx(babu); babuFx.bob = 6f; babuFx.bobSpeed = 2f; babuFx.phase = 1f;
 
@@ -371,7 +371,9 @@ namespace KadakChai
                 {
                     yield return WaitMain(label, run.Kind == DayKind.Boss ? UiKit.Red : UiKit.Green);
                     AudioKit.Music(run.S.hp < run.S.maxHp * 0.5f ? "techno" : "battle");
-                    var result = run.Fight();
+                    int opener = 0;
+                    yield return KadakMeter(v => opener = v);
+                    var result = run.Fight(opener);
                     battle.HeroHp = phoneView.ShowLiveHp;
                     yield return battle.Play(result);
                     battle.HeroHp = null;
@@ -458,6 +460,75 @@ namespace KadakChai
         }
 
         // ============================================================== Overlays
+
+        /// <summary>
+        /// Kadak opener: one tap before every fight. Stop the needle in the dark middle for KADAK chai
+        /// (+40% ATK for 3 rounds), near it for theek-thaak (+15% for 2), anywhere else for pheeka (nothing).
+        /// Reports 2, 1 or 0. No tap within 4 seconds counts as pheeka, so it can never block the game.
+        /// </summary>
+        IEnumerator KadakMeter(System.Action<int> done)
+        {
+            HideButtons();
+            bool tapped = false;
+            var overlay = UiKit.Panel(phone, "KadakMeter", new Color(0, 0, 0, 0.45f));
+            overlay.rectTransform.Fill();
+            var catcher = overlay.gameObject.AddComponent<Button>();
+            catcher.transition = Selectable.Transition.None;
+            catcher.onClick.AddListener(() => tapped = true);
+
+            var card = UiKit.Panel(overlay.transform, "Card", UiKit.Cream, rounded: true);
+            card.rectTransform.Place(60, 1150, 960, 560);
+            card.raycastTarget = false;
+            UiKit.Outline(card, Color.black, 5);
+            var head = UiKit.Label(card.transform, "Head", "Brew it <color=#6D3B1F>KADAK!</color>", 64, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            head.rectTransform.Place(20, 24, 920, 90, 960, 560);
+            var sub = UiKit.Label(card.transform, "Sub", "Tap anywhere when the glass hits the dark middle", 34, UiKit.Ink);
+            sub.rectTransform.Place(20, 112, 920, 60, 960, 560);
+
+            var bar = UiKit.Panel(card.transform, "Bar", UiKit.Hex("#F3E1B9"), rounded: true);
+            bar.rectTransform.Place(70, 220, 820, 110, 960, 560);
+            bar.raycastTarget = false;
+            UiKit.Outline(bar, Color.black, 4);
+            Image Zone(string name, float half, Color c)
+            {
+                var z = UiKit.Panel(bar.transform, name, c);
+                z.raycastTarget = false;
+                z.rectTransform.anchorMin = new Vector2(0.5f - half, 0.08f);
+                z.rectTransform.anchorMax = new Vector2(0.5f + half, 0.92f);
+                z.rectTransform.offsetMin = z.rectTransform.offsetMax = Vector2.zero;
+                return z;
+            }
+            Zone("Theek", 0.2f, UiKit.Hex("#D9A066"));
+            Zone("Kadak", 0.08f, UiKit.Hex("#6D3B1F"));
+            var tick = UiKit.Panel(bar.transform, "Glass", Color.white);
+            tick.sprite = Art.UI("item_cutting_chai");
+            tick.preserveAspect = true;
+            tick.raycastTarget = false;
+            var trt = tick.rectTransform;
+            trt.sizeDelta = new Vector2(120, 150);
+            var labels = UiKit.Label(card.transform, "Zones", "<color=#A1887F>pheeka</color>          <color=#B26A2E>theek</color>   <color=#6D3B1F><b>KADAK</b></color>   <color=#B26A2E>theek</color>          <color=#A1887F>pheeka</color>", 30, UiKit.Ink);
+            labels.rectTransform.Place(40, 350, 880, 50, 960, 560);
+            var result = UiKit.Label(card.transform, "Result", "", 72, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            result.rectTransform.Place(20, 420, 920, 110, 960, 560);
+
+            float t = 0, x = 0;
+            while (!tapped && t < 4f)
+            {
+                t += Time.unscaledDeltaTime;
+                x = Mathf.PingPong(t * 1.15f, 1f);
+                trt.anchorMin = trt.anchorMax = new Vector2(x, 0.5f);
+                trt.anchoredPosition = Vector2.zero;
+                yield return null;
+            }
+            float off = Mathf.Abs(x - 0.5f);
+            int v = !tapped ? 0 : off <= 0.08f ? 2 : off <= 0.2f ? 1 : 0;
+            result.text = v == 2 ? "<color=#6D3B1F>KADAK!</color>" : v == 1 ? "<color=#B26A2E>Theek hai.</color>" : tapped ? "<color=#8D6E63>Pheeka...</color>" : "<color=#8D6E63>Chai got cold.</color>";
+            AudioKit.Sfx(v == 2 ? "levelup" : v == 1 ? "coin" : "click", 0.8f);
+            if (v == 2) { battle.Celebrate(); battle.Banner("*KADAK!*  +40% ATK for 3 rounds"); }
+            yield return new WaitForSecondsRealtime(0.8f);
+            Destroy(overlay.gameObject);
+            done(v);
+        }
 
         IEnumerator SkillPick()
         {

@@ -55,6 +55,9 @@ namespace KadakChai
         public const float SpiceHp = 0.08f, SpiceAtk = 0.10f;
         public const float RangedPenalty = 0.8f;  // ranged attacks do 20% less damage
         public const float CloseBonus = 1.25f;    // close attacks do 25% more to ranged targets
+        /// <summary>Kadak opener (one tap before each fight): 2 = KADAK chai, 1 = theek-thaak, 0 = pheeka.</summary>
+        public const float OpenerKadak = 0.40f, OpenerTheek = 0.15f;
+        public const int OpenerKadakRounds = 3, OpenerTheekRounds = 2;
         static readonly HashSet<string> Uncles = new() { "scooty_uncle", "auto_bhaiya", "guard", "broker", "babu", "sector_cabbie" };
 
         readonly RunState s;
@@ -71,13 +74,15 @@ namespace KadakChai
         bool ignoreAqi;
         int round, shieldHits, spice;
         float scale = 1f;   // per-day enemy multiplier (days.json enemyScale)
+        int opener;         // Kadak opener result: 2 kadak, 1 theek, 0 pheeka
         float dodge;
 
         AutoBattle(RunState s, Random rng, int spice) { this.s = s; this.rng = rng; this.spice = Math.Max(1, spice); }
 
         /// <param name="spice">Khatra level 1-8 of the day: scales enemy HP and ATK.</param>
-        public static BattleResult Simulate(RunState s, List<CombatantData> enemies, Random rng, int spice = 1, float scale = 1f) =>
-            new AutoBattle(s, rng, spice) { scale = scale }.Run(enemies);
+        /// <param name="opener">Kadak opener: 2 = KADAK (+40% ATK for 3 rounds), 1 = theek (+15% for 2), 0 = none.</param>
+        public static BattleResult Simulate(RunState s, List<CombatantData> enemies, Random rng, int spice = 1, float scale = 1f, int opener = 0) =>
+            new AutoBattle(s, rng, spice) { scale = scale, opener = opener }.Run(enemies);
 
         BattleResult Run(List<CombatantData> enemies)
         {
@@ -171,6 +176,9 @@ namespace KadakChai
                 hero.hp = Math.Max(1, hero.hp - g);
                 Emit(BattleEventType.Hit, null, hero, g, hero.hp, "Interrogated");
             }
+
+            if (opener >= 2) { hero.Add(new StatusEffect(StatusKind.AtkUp, OpenerKadakRounds, OpenerKadak)); Shout(hero, $"KADAK CHAI! +{OpenerKadak * 100:0}% ATK for {OpenerKadakRounds} rounds."); }
+            else if (opener == 1) { hero.Add(new StatusEffect(StatusKind.AtkUp, OpenerTheekRounds, OpenerTheek)); Shout(hero, $"Theek-thaak chai. +{OpenerTheek * 100:0}% ATK for {OpenerTheekRounds} rounds."); }
 
             // Pre-fight gimmicks
             if (foes.Any(f => f.Ai == "firecracker") && stage < GrapStage.Grap4)

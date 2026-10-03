@@ -656,6 +656,30 @@ static class Tests
             int h = HeroIndex(res);
             Check(res.events.Any(e => e.type == BattleEventType.Hit && e.target == h && (e.label ?? "").Contains(Conditions.Name("shaved"))), "no status bleed event");
         });
+        Test("a KADAK opener wins more fights than a pheeka one (Day 9, 300 seeds)", () =>
+        {
+            int d = DayIndexOf(x => EnemyIds(x).Contains("rwa_aunty"));
+            int Wins(int opener)
+            {
+                int w = 0;
+                for (int seed = 1; seed <= 300; seed++) { var r = new Run(seed); r.DebugSkipTo(d + 1); if (r.Fight(opener).won) w++; }
+                return w;
+            }
+            int pheeka = Wins(0), theek = Wins(1), kadak = Wins(2);
+            Check(kadak > theek && theek >= pheeka, $"wins kadak {kadak}, theek {theek}, pheeka {pheeka}");
+        });
+        Test("the opener shouts its buff, and only when earned", () =>
+        {
+            int d = DayIndexOf(x => EnemyIds(x).Contains("broker"));
+            bool Shouts(int opener, string text)
+            {
+                var r = new Run(3); r.DebugSkipTo(d + 1);
+                return r.Fight(opener).events.Any(e => e.type == BattleEventType.Shout && (e.label ?? "").Contains(text));
+            }
+            Check(Shouts(2, "KADAK CHAI"), "no KADAK shout");
+            Check(Shouts(1, "Theek-thaak"), "no theek shout");
+            Check(!Shouts(0, "KADAK CHAI") && !Shouts(0, "Theek-thaak"), "pheeka still got a buff");
+        });
         Test("a won fight pays rupees and EXP", () =>
         {
             var r = RunOn(0); Buff(r.S);
