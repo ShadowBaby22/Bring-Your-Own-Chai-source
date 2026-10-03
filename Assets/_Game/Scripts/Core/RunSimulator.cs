@@ -11,24 +11,22 @@ namespace KadakChai
     /// </summary>
     public static class RunSimulator
     {
-        const int MaxAttemptsPerDay = 10;
 
+        /// <summary>Plays N full runs. Death is permanent (Health Insurance revives once), so this reports how
+        /// often runs clear and where Bablu dies. shop = false is a player who never opens JhatPat.</summary>
         public static string Simulate(int runs, int seed = 1, bool shop = true)
         {
             int days = GameData.Days.Count;
-            var losses = new int[days];
+            var deaths = new int[days];
             var reached = new int[days];
-            var timeouts = new int[days];
-            var firstTryWins = new int[days];
+            var revives = new int[days];
             var rounds = new List<int>[days];
             var fightSeconds = new List<float>[days];
-            for (int i = 0; i < days; i++) { rounds[i] = new List<int>(); fightSeconds[i] = new List<float>(); }
-            var finalLevels = new List<int>();
-            var skillsExpired = new List<int>();
-            int stuck = 0, laathis = 0, tolls = 0;
-            var gearAtFinal = new Dictionary<string, int>();
+            var hpIn = new List<float>[days];
+            for (int i = 0; i < days; i++) { rounds[i] = new List<int>(); fightSeconds[i] = new List<float>(); hpIn[i] = new List<float>(); }
+            var killers = new Dictionary<string, int>();
+            int clears = 0, laathis = 0, tolls = 0;
             var earned = new List<int>();
-            var spent = new List<int>();
 
             for (int n = 0; n < runs; n++)
             {
@@ -36,57 +34,53 @@ namespace KadakChai
                 var rng = run.Rng;
                 PickSkill(run, rng); // Astrologer Baba's first offer
                 Shop(run, shop, ref laathis);
-                int expired = 0;
-                bool gaveUp = false;
 
-                while (!run.Finished)
+                while (!run.Finished && !run.Dead)
                 {
                     int d = run.S.dayIndex;
                     reached[d]++;
                     run.BeginDay();
-                    if (d == days - 1) { string w = run.S.weapon?.data.id ?? "none"; gearAtFinal[w] = gearAtFinal.GetValueOrDefault(w) + 1; }
                     if (run.IsFightDay)
                     {
+                        hpIn[d].Add((float)run.S.hp / run.S.maxHp);
                         BattleResult res;
-                        int attempts = 0;
                         do
                         {
                             res = run.Fight();
                             rounds[d].Add(res.rounds);
                             fightSeconds[d].Add(EstimateSeconds(res));
-                            if (!res.won) { losses[d]++; if (res.loseReason == "time") timeouts[d]++; run.RetryDay(); }
-                        } while (!res.won && ++attempts < MaxAttemptsPerDay);
-                        if (!res.won) { gaveUp = true; break; }
-                        if (attempts == 0) firstTryWins[d]++;
+                            if (res.revived) revives[d]++;
+                        } while (res.revived);
+                        if (res.died)
+                        {
+                            deaths[d]++;
+                            killers[run.Killer] = killers.GetValueOrDefault(run.Killer) + 1;
+                            break;
+                        }
                     }
                     else run.Choose(rng.Next(2));
 
                     for (int l = run.ConsumeLevelUps(); l > 0; l--) PickSkill(run, rng);
                     if (run.DayNumber < run.TotalDays) Shop(run, shop, ref laathis);
-                    expired += run.EndDay().Count;
+                    run.EndDay();
                     if (run.Border != null && !run.UsedFastag) tolls++;
                 }
-
-                if (gaveUp) stuck++;
-                finalLevels.Add(run.S.level);
+                if (!run.Dead) clears++;
                 earned.Add(run.S.earned);
-                spent.Add(run.S.spent);
-                skillsExpired.Add(expired);
             }
 
             var sb = new StringBuilder();
             sb.AppendLine($"=== {runs} simulated runs ({(shop ? "shopping" : "never shops")}) ===");
-            sb.AppendLine($"Rupees earned avg: {earned.Average():0}  spent avg: {spent.Average():0}   Laathi drops: {laathis}   Toll Taxes taken per run: {(float)tolls / runs:0.0}");
-            sb.AppendLine("Weapon at the final boss: " + string.Join(", ", gearAtFinal.OrderByDescending(k => k.Value).Select(k => $"{k.Key} {k.Value}")));
-            sb.AppendLine($"Runs stuck (lost {MaxAttemptsPerDay}x on one day): {stuck}");
-            sb.AppendLine($"Final level avg: {finalLevels.Average():0.0}   Skills expired per run avg: {skillsExpired.Average():0.0}");
-            sb.AppendLine("Day  Type   Reached  First-try win%  Avg losses (timeouts)  Avg rounds  Avg fight secs (1x)");
+            sb.AppendLine($"CLEARED: {100f * clears / runs:0}%   Laathi drops: {laathis}   Rupees earned avg: {earned.Average():0}");
+            sb.AppendLine("Killers: " + string.Join(", ", killers.OrderByDescending(k => k.Value).Select(k => $"{k.Key} {k.Value}")));
+            sb.AppendLine("Day  Type    Theeka  Reached  Died here  (of those reaching)  Revives  HP in  Rounds  Secs");
             for (int i = 0; i < days; i++)
             {
                 var day = GameData.Days[i];
-                if (rounds[i].Count == 0) { sb.AppendLine($"{day.day,3}  {day.type,-6}  {reached[i],7}"); continue; }
+                string sp = $"{(day.spice > 0 ? day.spice : 0)}/8";
+                if (rounds[i].Count == 0) { sb.AppendLine($"{day.day,3}  {day.type,-6}  {sp,6}  {reached[i],7}"); continue; }
                 int n = Math.Max(1, reached[i]);
-                sb.AppendLine($"{day.day,3}  {day.type,-6}  {reached[i],7}  {100f * firstTryWins[i] / n,13:0}%  {(float)losses[i] / n,10:0.00} ({(float)timeouts[i] / n:0.00})  {rounds[i].Average(),10:0.0}  {fightSeconds[i].Average(),10:0.0}");
+                sb.AppendLine($"{day.day,3}  {day.type,-6}  {sp,6}  {reached[i],7}  {deaths[i],9}  {100f * deaths[i] / n,18:0}%  {revives[i],7}  {hpIn[i].Average() * 100,4:0}%  {rounds[i].Average(),6:0.0}  {fightSeconds[i].Average(),4:0}");
             }
             return sb.ToString();
         }
@@ -106,6 +100,9 @@ namespace KadakChai
             if (weapon != null && (s.weapon == null || s.weapon.fightsLeft <= 1 || weapon.atk > s.weapon.data.atk + 2)) run.Buy(weapon);
             var armour = s.shop.FirstOrDefault(i => i.slot == "armour");
             if (armour != null && s.armour == null && run.CanAfford(armour.price + 100)) run.Buy(armour);
+            var ins = s.shop.FirstOrDefault(i => i.slot == "insurance");
+            bool bossNext = run.DayNumber < run.TotalDays && GameData.Days[run.S.dayIndex + 1].type == "boss";
+            if (ins != null && s.insuranceDays == 0 && (bossNext || s.hp < s.maxHp * 0.5f) && run.CanAfford(ins.price)) run.Buy(ins);
             var tag = s.shop.FirstOrDefault(i => i.slot == "pass");
             if (tag != null && s.fastags == 0 && run.CanAfford(tag.price + 150)) run.Buy(tag);
 
@@ -114,7 +111,7 @@ namespace KadakChai
                 var it = run.OpenBox();
                 if (it.id == "laathi") laathis++;
                 bool better = it.slot == "weapon" && (s.weapon == null || it.atk > s.weapon.data.atk) ||
-                              it.slot == "armour" && s.armour == null || it.slot == "pass" || it.slot == "consumable";
+                              it.slot == "armour" && s.armour == null || it.slot == "pass" || it.slot == "consumable" || it.slot == "insurance";
                 if (better) run.Take(it); else run.Sell(it);
             }
         }

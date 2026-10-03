@@ -236,7 +236,7 @@ namespace KadakChai
         public void ShowParty(RunState s)
         {
             if (hero == null)
-                hero = Puppet.Create(stage, "new_kid", "New Kid", "#F2A65A", s.hp, s.maxHp, "HP", true, false);
+                hero = Puppet.Create(stage, "new_kid", GameData.HeroName, "#F2A65A", s.hp, s.maxHp, "HP", true, false);
             hero.Root.Place(150, 330, 250, 330, AW, AH);
             hero.SetHp(s.hp, s.maxHp);
 
@@ -292,6 +292,14 @@ namespace KadakChai
         }
 
         public void RefreshHero(RunState s) => hero?.SetHp(s.hp, s.maxHp);
+
+        /// <summary>New run after a death: the hero gets back up.</summary>
+        public void ReviveHero(RunState s)
+        {
+            if (hero == null) return;
+            StartCoroutine(hero.StandUp(1f));
+            hero.SetHp(s.hp, s.maxHp);
+        }
 
         Image held;
         string heldId;
@@ -359,7 +367,7 @@ namespace KadakChai
                 return rt;
             }
 
-            var leftRt = Side(true, UiKit.Hex("#2BB3A3"), "new_kid", "New Kid", null);
+            var leftRt = Side(true, UiKit.Hex("#2BB3A3"), "new_kid", GameData.HeroName, null);
             string enemyName = list.Count == 1 ? list[0].name : list.Count == 2 ? $"{list[0].name} + 1" : $"{list[0].name} + {list.Count - 1}";
             var rightRt = Side(false, boss ? UiKit.Purple : UiKit.Red, list.Count > 0 ? list[0].id : "", enemyName, boss ? "BOSS" : null);
 
@@ -414,7 +422,7 @@ namespace KadakChai
                 switch (e.type)
                 {
                     case BattleEventType.Round:
-                        roundText.text = $"Round {e.amount}/{AutoBattle.MaxRounds}";
+                        roundText.text = e.amount > AutoBattle.MaxRounds ? "<color=#FF5252>SUDDEN DEATH</color>" : $"Round {e.amount}/{AutoBattle.MaxRounds}";
                         yield return Wait(0.15f);
                         break;
 

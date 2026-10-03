@@ -264,6 +264,7 @@ namespace KadakChai
             if (s.armour != null) Chip($"{s.armour.data.name} <b>{s.armour.fightsLeft}f</b>", s.armour.IsLastFight ? UiKit.Red : UiKit.Hex("#546E7A"));
             if (s.fastags > 0) Chip(s.fastags > 1 ? $"FASTag x{s.fastags}" : "FASTag", UiKit.Hex("#00897B"));
             if (s.tollDays > 0) Chip($"Toll Tax <b>{s.tollDays}d</b>", UiKit.Hex("#B71C1C"));
+            if (s.insuranceDays > 0) Chip($"Insured <b>{s.insuranceDays}d</b>", UiKit.Hex("#1565C0"));
             foreach (var o in s.skills) Chip($"{o.data.shortName} <b>{o.daysLeft}d</b>", o.IsLastDay ? UiKit.Red : new Color(1, 1, 1, 0.18f));
             if (chips.childCount == 0)
             {
@@ -321,6 +322,7 @@ namespace KadakChai
             if (s.weapon != null) Item($"<b>{s.weapon.data.name}</b>  ·  {s.weapon.fightsLeft} fight{(s.weapon.fightsLeft > 1 ? "s" : "")} left", s.weapon.data.desc, s.weapon.IsLastFight);
             if (s.armour != null) Item($"<b>{s.armour.data.name}</b>  ·  {s.armour.fightsLeft} fights left", s.armour.data.desc, s.armour.IsLastFight);
             foreach (var o in s.skills) Item($"<b>{o.data.name}</b>  ·  lease: {o.daysLeft} day{(o.daysLeft > 1 ? "s" : "")}", o.data.desc, o.IsLastDay);
+            if (s.insuranceDays > 0) Item($"<b>Health Insurance</b>  ·  {s.insuranceDays} day{(s.insuranceDays > 1 ? "s" : "")} left", "If Bablu dies, AIIMS revives him once at 50% HP.", s.insuranceDays == 1);
             if (s.tollDays > 0) Item($"<b>Toll Tax</b>  ·  {s.tollDays} day{(s.tollDays > 1 ? "s" : "")} left", "All stats -15%. A FASTag skips the next one.", true);
             if (y < 10) Row(p, 140, "Nothing yet. Astrologer Baba hands out skills on level up.", 30, null, TextAnchor.MiddleCenter);
         }
@@ -340,7 +342,7 @@ namespace KadakChai
                 t.rectTransform.Place(x, y, SW - x - 30, 44, SW, ContentH);
                 return t;
             }
-            Stat(20, "New Kid  ·  <color=#FFD23F>Lv " + s.level + "</color>");
+            Stat(20, GameData.HeroName + "  ·  <color=#FFD23F>Lv " + s.level + "</color>");
             Stat(66, $"EXP {s.xp}/{s.XpToNext}");
             Stat(112, $"HP {s.hp}/{s.maxHp}");
             Stat(158, $"ATK {s.AtkTotal}  <size=24>({s.atk} base{(s.weapon != null ? $" + {s.weapon.data.atk} {s.weapon.data.name}" : "")})</size>");

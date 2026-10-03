@@ -218,6 +218,12 @@ def gear():
 
 zones = {'dilli': india_gate, 'gurugram': beer, 'noida': katta, 'daftar': stamp_file}
 
+def chili():
+    s = path('M 70 70 Q 40 140 90 196 Q 140 240 206 226 Q 150 210 128 168 Q 110 128 118 84 Z', '#e53935')
+    s += path('M 84 92 Q 74 140 100 176', 'none', line=False, stroke='#ff8a80', stroke_width='10', opacity='0.8')
+    s += path('M 70 70 Q 82 44 112 48 Q 124 60 118 84 Q 96 66 70 70 Z', '#43a047') + path('M 100 50 Q 96 28 114 16', 'none', stroke='#2e7d32', stroke_width='10')
+    return s
+
 # ------------------------------------------------------------------ bitterChai phone app icons (glossy dark squares, bitterSweet style)
 def app_base(inner):
     return ('<defs><linearGradient id="gl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a5056"/><stop offset="1" stop-color="#1c1f22"/></linearGradient></defs>'
@@ -316,6 +322,7 @@ for k, fn in shots.items():
 for k, fn in zones.items():
     open(os.path.join(out, f'zone_{k}.svg'), 'w').write(sticker(fn()))
 open(os.path.join(out, 'gear.svg'), 'w').write(sticker(gear()))
+open(os.path.join(out, 'chili.svg'), 'w').write(sticker(chili()))
 for k, fn in phone_apps.items():
     open(os.path.join(out, f'app_{k}.svg'), 'w').write(sticker(fn()))
 open(os.path.join(out, 'map.svg'), 'w').write(ncr_map())
