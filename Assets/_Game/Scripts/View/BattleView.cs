@@ -294,6 +294,9 @@ namespace KadakChai
 
         public void RefreshHero(RunState s) => hero?.SetHp(s.hp, s.maxHp);
 
+        /// <summary>Jadi-Booti Zombie: Bablu turns green for the next fight.</summary>
+        public void SetZombie(bool on) => hero?.SetTint(on ? new Color(0.62f, 1f, 0.55f) : Color.white);
+
         /// <summary>New run after a death: the hero gets back up.</summary>
         public void ReviveHero(RunState s)
         {

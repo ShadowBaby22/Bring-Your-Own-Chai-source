@@ -265,6 +265,7 @@ namespace KadakChai
             if (s.fastags > 0) Chip(s.fastags > 1 ? $"FASTag x{s.fastags}" : "FASTag", UiKit.Hex("#00897B"));
             if (s.tollDays > 0) Chip($"Toll Tax <b>{s.tollDays}d</b>", UiKit.Hex("#B71C1C"));
             if (s.insuranceDays > 0) Chip($"Insured <b>{s.insuranceDays}d</b>", UiKit.Hex("#1565C0"));
+            if (s.zombieFights > 0) Chip("Zombie <b>1 fight</b>", UiKit.Hex("#558B2F"));
             foreach (var c in s.conditions) Chip(Conditions.Name(c), UiKit.Hex("#8E24AA"));
             foreach (var o in s.skills) Chip($"{o.data.shortName} <b>{o.daysLeft}d</b>", o.IsLastDay ? UiKit.Red : new Color(1, 1, 1, 0.18f));
             if (chips.childCount == 0)

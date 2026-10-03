@@ -89,6 +89,14 @@ namespace KadakChai
             }
         }
 
+        /// <summary>Tints the sprite (zombie green). Hit flashes return to this colour.</summary>
+        public void SetTint(Color c)
+        {
+            if (baseColor == c) return;
+            baseColor = c;
+            if (image != null) image.color = c;
+        }
+
         /// <summary>Paper Mario-style flip: the paper cutout turns edge-on, changes, and turns back.</summary>
         public IEnumerator PaperFlip(System.Action atEdge)
         {

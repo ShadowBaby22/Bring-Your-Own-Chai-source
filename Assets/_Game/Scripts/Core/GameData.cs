@@ -190,6 +190,8 @@ namespace KadakChai
         {
             null or "" or "narrator" => "",
             "astrologer" => "Astrologer Baba",
+            "sadhu" => "Vaidya Baba",
+            "amma" => "Amma",
             "delivery" => "Delivery Wale Bhaiya",
             "maamu" => "Maamu",
             _ => Combatants.TryGetValue(id, out var c) ? c.name : id,

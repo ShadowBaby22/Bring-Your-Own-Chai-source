@@ -65,7 +65,8 @@ namespace KadakChai
         readonly List<SkillData> active = new();
         Combatant hero, pet;   // pet = this zone's companion
         ItemData weapon;
-        readonly HashSet<string> cond = new();  // Bablu's statuses: the ones he came in with plus any picked up here
+        readonly HashSet<string> cond = new();
+        bool zombie, undeathUsed;  // Bablu's statuses: the ones he came in with plus any picked up here
         GrapStage stage;
         bool ignoreAqi;
         int round, shieldHits, spice;
@@ -158,6 +159,12 @@ namespace KadakChai
 
             if (s.tollDays > 0) Shout(hero, $"Toll Tax! All stats -{RunState.TollPenalty * 100:0}% ({s.tollDays} day{(s.tollDays > 1 ? "s" : "")} left).");
             foreach (var c in s.conditions) { cond.Add(c); ApplyCondition(c); }
+            if (s.zombieFights > 0)
+            {
+                zombie = true;
+                hero.atk *= KadakChai.Run.ZombieAtk; hero.def *= KadakChai.Run.ZombieDef;
+                Emit(BattleEventType.Shout, hero, hero, label: "JADI-BOOTI ZOMBIE! +30% ATK, lifesteal, one un-death.", big: false);
+            }
             if (cond.Contains("grilled"))
             {
                 int g = (int)Math.Ceiling(hero.maxHp * Conditions.GrilledHp);
@@ -443,6 +450,8 @@ namespace KadakChai
 
             t.hp = Math.Max(0, t.hp - dmg);
             Emit(BattleEventType.Hit, a, t, dmg, t.hp, label, big, ranged, proj);
+            if (zombie && a == hero && hero.Alive && hero.hp < hero.maxHp)
+                Heal(hero, hero, Math.Max(1, (int)Math.Round(dmg * KadakChai.Run.ZombieLifesteal)), null);   // zombie lifesteal
             if (t.hp == 0) { if (t == hero) r.killer = a.name; OnZeroHp(t); }
             else if (t == hero && a.data != null && !string.IsNullOrEmpty(a.data.inflicts) && !cond.Contains(a.data.inflicts)
                      && Roll(a.data.inflictChance > 0 ? a.data.inflictChance : 0.25f))
@@ -456,6 +465,13 @@ namespace KadakChai
 
         void OnZeroHp(Combatant t)
         {
+            if (t == hero && zombie && !undeathUsed)
+            {
+                undeathUsed = true;
+                t.hp = 1;
+                Emit(BattleEventType.Revive, t, t, 1, 1, "UN-DEATH! Zombies don't die that easily.");
+                return;
+            }
             if (t.Ai == "babu" && !t.revived)
             {
                 t.revived = true;

@@ -41,6 +41,31 @@ namespace KadakChai
         public readonly HashSet<string> conditions = new(); // lasting statuses (Conditions.cs) until Pudin Hara
         public readonly List<ItemData> shop = new();
         public bool freeBoxUsed;            // JhatPat welcome offer: the first Mystery Box is free
+        public int zombieFights;            // Jadi-Booti Zombie buff after Amma's Nursing Home (next fight)
+        public int faints;                  // times Bablu woke up at Amma's Nursing Home
+
+        /// <summary>Copy of the whole run state (taken every morning, restored after a faint).</summary>
+        public RunState Clone()
+        {
+            var fresh = new RunState();
+            fresh.CopyFrom(this);
+            return fresh;
+        }
+
+        public void CopyFrom(RunState o)
+        {
+            dayIndex = o.dayIndex; level = o.level; xp = o.xp; maxHp = o.maxHp; hp = o.hp; atk = o.atk; def = o.def; aqi = o.aqi;
+            skills.Clear(); foreach (var k in o.skills) skills.Add(new OwnedSkill { data = k.data, daysLeft = k.daysLeft });
+            flags.Clear(); flags.UnionWith(o.flags);
+            usedCards.Clear(); usedCards.UnionWith(o.usedCards);
+            rupees = o.rupees; earned = o.earned; spent = o.spent;
+            weapon = o.weapon == null ? null : new OwnedItem { data = o.weapon.data, fightsLeft = o.weapon.fightsLeft };
+            armour = o.armour == null ? null : new OwnedItem { data = o.armour.data, fightsLeft = o.armour.fightsLeft };
+            fastags = o.fastags; tollDays = o.tollDays; insuranceDays = o.insuranceDays;
+            conditions.Clear(); conditions.UnionWith(o.conditions);
+            companion = o.companion; freeBoxUsed = o.freeBoxUsed; zombieFights = o.zombieFights; faints = o.faints;
+            shop.Clear(); shop.AddRange(o.shop);
+        }
 
         public const float TollPenalty = 0.15f;
         public const int TollDays = 2;
@@ -87,8 +112,13 @@ namespace KadakChai
     {
         public readonly RunState S = new();
         public readonly Random Rng;
-        /// <summary>Bablu died with no insurance. The run is over: back to Day 1.</summary>
+        /// <summary>Bablu died with no insurance. The run is over: back to Day 1. (Unused since the nursing home.)</summary>
         public bool Dead { get; private set; }
+        /// <summary>Bablu lost a fight with no insurance: he wakes at Amma's Nursing Home (change log 04 Oct).</summary>
+        public bool Fainted { get; private set; }
+        public const int NursingHomeBill = 100;
+        public const float ZombieAtk = 1.3f, ZombieDef = 0.8f, ZombieLifesteal = 0.2f;
+        readonly Dictionary<int, RunState> mornings = new();   // state at the start of each day
         public string Killer { get; private set; }
         public const float ReviveHp = 0.5f;
 
@@ -130,6 +160,8 @@ namespace KadakChai
         public bool BeginDay()
         {
             DayStarted = true;
+            Fainted = false;
+            mornings[S.dayIndex] = S.Clone();
             ResolveDay();
             JoinedCompanion = null;
             if (!string.IsNullOrEmpty(Day.companion) && S.companion != Day.companion) { S.companion = Day.companion; JoinedCompanion = Day.companion; }
@@ -193,7 +225,8 @@ namespace KadakChai
             {
                 // No free retries. Health Insurance revives once; otherwise Bablu is dead and the run ends.
                 if (S.insuranceDays > 0) { S.insuranceDays = 0; S.hp = Math.Max(1, (int)Math.Round(S.maxHp * ReviveHp)); result.revived = true; }
-                else { S.hp = 0; Dead = true; Killer = result.killer ?? "the city"; result.died = true; }
+                else { S.hp = 0; Fainted = true; Killer = result.killer ?? "the city"; result.died = true; }
+                if (S.zombieFights > 0) S.zombieFights--;
                 return result;
             }
             if (result.won)
@@ -205,6 +238,7 @@ namespace KadakChai
                 result.rupeesGained = FightReward();
                 Earn(result.rupeesGained);
                 result.broken = WearGear();
+                if (S.zombieFights > 0) S.zombieFights--;
             }
             return result;
         }
@@ -373,6 +407,24 @@ namespace KadakChai
             }
             S.AddSkill(skill);
             return Blessing.Granted;
+        }
+
+        /// <summary>
+        /// After a faint: wake at Amma's Nursing Home. Back to the morning of the previous day (or today on Day 1)
+        /// with what Bablu had then, minus Amma's bill, plus the sadhu's Jadi-Booti Zombie buff for the next fight.
+        /// </summary>
+        public void WakeAtNursingHome()
+        {
+            int faints = S.faints + 1;
+            int back = Math.Max(0, S.dayIndex - 1);
+            if (!mornings.TryGetValue(back, out var m)) mornings.TryGetValue(S.dayIndex, out m);
+            if (m != null) S.CopyFrom(m);
+            S.faints = faints;
+            S.hp = S.maxHp;
+            S.rupees -= Math.Min(S.rupees, NursingHomeBill);
+            S.zombieFights = 1;
+            Fainted = false; DayStarted = false;
+            Border = null; LeftCompanion = null; JoinedCompanion = null;
         }
 
         /// <summary>Spends EXP on level-ups. Each one should be followed by a skill pick.</summary>
