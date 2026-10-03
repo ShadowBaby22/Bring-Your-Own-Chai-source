@@ -676,9 +676,9 @@ static class Tests
                 var r = new Run(3); r.DebugSkipTo(d + 1);
                 return r.Fight(opener).events.Any(e => e.type == BattleEventType.Shout && (e.label ?? "").Contains(text));
             }
-            Check(Shouts(2, "KADAK CHAI"), "no KADAK shout");
+            Check(Shouts(2, "KADAK BREW"), "no KADAK shout");
             Check(Shouts(1, "Theek-thaak"), "no theek shout");
-            Check(!Shouts(0, "KADAK CHAI") && !Shouts(0, "Theek-thaak"), "pheeka still got a buff");
+            Check(!Shouts(0, "KADAK BREW") && !Shouts(0, "Theek-thaak"), "pheeka still got a buff");
         });
         Test("a won fight pays rupees and EXP", () =>
         {

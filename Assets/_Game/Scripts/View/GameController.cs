@@ -464,7 +464,7 @@ namespace KadakChai
         /// <summary>
         /// Kadak opener: one tap before every fight. Stop the needle in the dark middle for KADAK chai
         /// (+40% ATK for 3 rounds), near it for theek-thaak (+15% for 2), anywhere else for pheeka (nothing).
-        /// Reports 2, 1 or 0. No tap within 4 seconds counts as pheeka, so it can never block the game.
+        /// Reports 2, 1 or 0. No tap within 6 seconds counts as pheeka, so it can never block the game.
         /// </summary>
         IEnumerator KadakMeter(System.Action<int> done)
         {
@@ -512,7 +512,7 @@ namespace KadakChai
             result.rectTransform.Place(20, 420, 920, 110, 960, 560);
 
             float t = 0, x = 0;
-            while (!tapped && t < 4f)
+            while (!tapped && t < 6f)
             {
                 t += Time.unscaledDeltaTime;
                 x = Mathf.PingPong(t * 1.15f, 1f);

@@ -177,8 +177,8 @@ namespace KadakChai
                 Emit(BattleEventType.Hit, null, hero, g, hero.hp, "Interrogated");
             }
 
-            if (opener >= 2) { hero.Add(new StatusEffect(StatusKind.AtkUp, OpenerKadakRounds, OpenerKadak)); Shout(hero, $"KADAK CHAI! +{OpenerKadak * 100:0}% ATK for {OpenerKadakRounds} rounds."); }
-            else if (opener == 1) { hero.Add(new StatusEffect(StatusKind.AtkUp, OpenerTheekRounds, OpenerTheek)); Shout(hero, $"Theek-thaak chai. +{OpenerTheek * 100:0}% ATK for {OpenerTheekRounds} rounds."); }
+            if (opener >= 2) { hero.Add(new StatusEffect(StatusKind.AtkUp, OpenerKadakRounds, OpenerKadak)); Shout(hero, $"KADAK BREW! +{OpenerKadak * 100:0}% ATK for {OpenerKadakRounds} rounds."); }
+            else if (opener == 1) { hero.Add(new StatusEffect(StatusKind.AtkUp, OpenerTheekRounds, OpenerTheek)); Shout(hero, $"Theek-thaak brew. +{OpenerTheek * 100:0}% ATK for {OpenerTheekRounds} rounds."); }
 
             // Pre-fight gimmicks
             if (foes.Any(f => f.Ai == "firecracker") && stage < GrapStage.Grap4)
