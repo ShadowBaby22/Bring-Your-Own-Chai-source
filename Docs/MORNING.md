@@ -19,12 +19,13 @@ Staging (what the team saw yesterday): https://shadowbaby22.github.io/Bring-Your
 | `feature/kadak-opener` | **Brew it KADAK!**: one tap before every fight for an ATK boost; Days 6-11 retuned to keep 42% clean wins |
 | `feature/skills-scroll` | The Skills app list scrolls instead of running over the dock (the P1 from the Feedback Log) |
 | `feature/round2-fixes` | The brew result is visible and logged; Baba never gives two duds in a row or repeats an offer |
+| `feature/round3-fixes` | The meter states its payoff; event results and new statuses get banners; the speed button reads "SPEED 2x" |
 
-`feature/round2-fixes` contains every branch above, so **one merge ships all of it.**
+`feature/round3-fixes` contains every branch above, so **one merge ships all of it.**
 
 ## Ship it (about 10 minutes)
 1. Play the dev link on your phone for 3 minutes. If anything is wrong, tell Claude before merging.
-2. Merge: open a PR from `feature/round2-fixes` to `main` (or ask Claude to), merge it, and close PR #4 as included.
+2. Merge: open a PR from `feature/round3-fixes` to `main` (or ask Claude to), merge it, and close PR #4 as included.
 3. Ask Claude to "push to staging": it fast-forwards `staging`, runs the test suite, and deploys. `Builds/WebGL` already holds this exact build.
 
 ## Scores so far (Docs/playtests/SCOREBOARD.md)
@@ -32,8 +33,9 @@ Staging (what the team saw yesterday): https://shadowbaby22.github.io/Bring-Your
 |---|---|---|---|---|---|---|---|
 | 1 | juror (old build) | 8 | 6 | 5 | 7 | 6 | 6 |
 | 2 | ncr_student (new build) | 8 | 7 | 6 | 8 | 7 | 7 |
+| 3 | juror again (round 2 build) | **9** | 6 | **6** | **8** | **7** | **7** |
 
-Gameplay is still the weakest node; the Kadak opener and the round 2 fixes target it. Round 3 (juror again, on the newest build) is in the scoreboard if it finished.
+The same juror went up a point on theme, gameplay, aesthetics, overall and audience. **Innovation (6) is now the weakest node, and it's mostly the pitch:** lead the IndieConnect page with what's new (a faint rolls the day back as a zombie; the phone is the whole world; the AQI changes the rules; brew your chai before each fight). Round 4 (a juror from outside India) is in the scoreboard if it finished.
 
 ## People
 - **Siddharth:** play the dev link, merge, record 8-10 voice barks on your phone, watch 2-3 real people play, own the IndieConnect page (draft in `Docs/SUBMISSION.md`, needs the Discord username).
