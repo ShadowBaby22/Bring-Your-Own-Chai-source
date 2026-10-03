@@ -1,4 +1,4 @@
-# Kadak Chai: "GRAP Stage 4" (jam build)
+# KADAK Chai (jam build)
 
 Design doc: [GDD.pdf](GDD.pdf) / [GDD.md](GDD.md)
 

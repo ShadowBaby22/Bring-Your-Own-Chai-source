@@ -1,4 +1,4 @@
-"""Sticker-style chibi characters for GRAP Stage 4. Everyone faces RIGHT (enemies are flipped in-game).
+"""Sticker-style chibi characters for KADAK Chai. Everyone faces RIGHT (enemies are flipped in-game).
 Canvas 512x640. Outputs SVG files; render.sh turns them into transparent PNGs."""
 import os, sys
 

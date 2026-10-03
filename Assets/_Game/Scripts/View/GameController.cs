@@ -145,32 +145,101 @@ namespace KadakChai
 
         void ShowTitle()
         {
-            var p = UiKit.Panel(phone, "Title", new Color(0.08f, 0.08f, 0.12f, 1f));
+            // A Bollywood-poster title: pink sky, a spinning sunburst, a chunky KADAK logo with a steaming chai,
+            // and the Dilli street below with Bablu facing down the Babu over a No Bachelors board.
+            var p = UiKit.Panel(phone, "Title", UiKit.Hex("#C2185B"));
             p.rectTransform.Fill();
             titlePanel = p.gameObject;
+            Image Sprite(string name, Sprite sprite, float x, float y, float w, float h, Color? tint = null)
+            {
+                var img = UiKit.Panel(p.transform, name, tint ?? Color.white);
+                img.sprite = sprite;
+                img.preserveAspect = true;
+                img.raycastTarget = false;
+                img.rectTransform.Place(x, y, w, h);
+                return img;
+            }
+            TitleFx Fx(Component c) => c.gameObject.AddComponent<TitleFx>();
 
-            var title = UiKit.Label(p.transform, "Title", "GRAP STAGE 4", 120, UiKit.Orange, TextAnchor.MiddleCenter, FontStyle.Bold);
-            title.rectTransform.Place(40, 420, 1000, 300);
-            title.gameObject.AddComponent<TextFx>().wave = 6f;
-            UiKit.Outline(title, Color.black, 5);
-            var sub = UiKit.Label(p.transform, "Sub", "Bablu. 11 days. One stamp. No Bachelors.\n<i>Everything is temporary.</i>", 44, Color.white);
-            sub.rectTransform.Place(60, 740, 960, 200);
-            var metro = UiKit.Label(p.transform, "Metro", "\"Agla station: Temporary. Darwaze baayi taraf khulenge.\"", 32, new Color(1, 1, 1, 0.6f));
-            metro.rectTransform.Place(60, 1000, 960, 120);
+            var burst = Sprite("Burst", Art.UI("burst"), -110, -140, 1300, 1300, new Color(1f, 0.82f, 0.2f, 0.5f));
+            Fx(burst).spin = 9f;
 
-            var info = Resources.Load<TextAsset>("build_info");
-            var ver = UiKit.Label(p.transform, "Build", info != null ? info.text : "editor", 26, new Color(1, 1, 1, 0.35f));
-            ver.rectTransform.Place(60, 1840, 960, 50);
+            var street = Sprite("Street", Art.Background("dilli").sprite, -560, 560, 2200, 1366);
+            street.preserveAspect = false;
+            var streetFx = Fx(street); streetFx.drift = 140f; streetFx.driftSpeed = 0.12f;
 
-            var titleOpt = GearButton(p.transform, "TitleOptions");
-            titleOpt.GetComponent<RectTransform>().Place(960, 30, 96, 96);
+            foreach (var (x, y, size, ph) in new[] { (120f, 250f, 70f, 0f), (900f, 210f, 90f, 0.8f), (160f, 650f, 60f, 1.6f), (930f, 640f, 70f, 2.4f), (520f, 160f, 50f, 1.1f) })
+            {
+                var star = Sprite("Star", Art.UI("star"), x, y, size, size, new Color(1f, 0.95f, 0.6f, 1f));
+                var fx = Fx(star); fx.twinkle = 2.2f; fx.phase = ph; fx.spin = 30f;
+            }
 
-            var start = UiKit.Button(p.transform, "Start", "Sign the Agreement", UiKit.Green, 52, () =>
+            var kadak = UiKit.Label(p.transform, "Kadak", "KADAK", 250, UiKit.Hex("#FFE14D"), TextAnchor.MiddleCenter, FontStyle.Bold);
+            kadak.rectTransform.Place(20, 250, 1040, 330);
+            kadak.rectTransform.localRotation = Quaternion.Euler(0, 0, 4f);
+            var shadow = kadak.gameObject.AddComponent<Shadow>();
+            shadow.effectColor = UiKit.Hex("#311B92"); shadow.effectDistance = new Vector2(14, -14);
+            UiKit.Outline(kadak, Color.black, 7);
+            kadak.gameObject.AddComponent<TextFx>().wave = 7f;
+            var kadakFx = Fx(kadak); kadakFx.popDelay = 0.15f; kadakFx.sway = 1.5f;
+
+            var badge = UiKit.Panel(p.transform, "ChaiBadge", UiKit.Hex("#00897B"), rounded: true);
+            badge.rectTransform.Place(300, 575, 420, 160);
+            badge.rectTransform.localRotation = Quaternion.Euler(0, 0, -5f);
+            UiKit.Outline(badge, Color.black, 5);
+            var chai = UiKit.Label(badge.transform, "Chai", "Chai", 120, UiKit.Cream, TextAnchor.MiddleCenter, FontStyle.BoldAndItalic);
+            chai.rectTransform.Fill(4);
+            UiKit.Outline(chai, Color.black, 4);
+            var badgeFx = Fx(badge); badgeFx.popDelay = 0.45f; badgeFx.sway = 3f; badgeFx.swaySpeed = 2.2f;
+
+            var cup = Sprite("Cup", Art.UI("item_cutting_chai"), 735, 545, 210, 210);
+            var cupFx = Fx(cup); cupFx.popDelay = 0.7f; cupFx.sway = 7f; cupFx.swaySpeed = 2.6f;
+            for (int i = 0; i < 3; i++)
+            {
+                var steam = Sprite("Steam", Art.Dot, 800 + i * 32, 520, 46, 46, new Color(1, 1, 1, 0.85f));
+                var fx = Fx(steam); fx.rise = 120f; fx.riseTime = 2.1f; fx.phase = i * 0.7f; fx.drift = 10f; fx.driftSpeed = 3f;
+            }
+
+            var ribbon = UiKit.Panel(p.transform, "Ribbon", new Color(0.07f, 0.05f, 0.12f, 0.88f), rounded: true);
+            ribbon.rectTransform.Place(80, 775, 920, 170);
+            var tag = UiKit.Label(ribbon.transform, "Tag", "Bablu. 11 days. One stamp. <b>No Bachelors.</b>\n<color=#FFE14D><i>Everything is temporary.</i></color>", 44, Color.white);
+            tag.rectTransform.Fill(10);
+
+            var hero = Sprite("Bablu", Art.Character("new_kid").sprite, 30, 1060, 360, 450);
+            var heroFx = Fx(hero); heroFx.bob = 10f; heroFx.bobSpeed = 3f;
+            var babu = Sprite("Babu", Art.Character("babu").sprite, 690, 1060, 360, 450);
+            babu.rectTransform.localScale = new Vector3(-1, 1, 1);   // face Bablu
+            var babuFx = Fx(babu); babuFx.bob = 6f; babuFx.bobSpeed = 2f; babuFx.phase = 1f;
+
+            var sign = UiKit.Panel(p.transform, "NoBachelors", UiKit.Red, rounded: true);
+            sign.rectTransform.Place(395, 1110, 290, 190);
+            sign.rectTransform.localRotation = Quaternion.Euler(0, 0, -7f);
+            UiKit.Outline(sign, Color.black, 5);
+            var signText = UiKit.Label(sign.transform, "T", "NO\nBACHELORS", 50, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            signText.rectTransform.Fill(8);
+            var signFx = Fx(sign); signFx.sway = 4f; signFx.swaySpeed = 1.3f;
+
+            var floor = UiKit.Panel(p.transform, "Floor", new Color(0.07f, 0.05f, 0.12f, 0.92f));
+            floor.rectTransform.Place(0, 1530, 1080, 390);
+
+            var start = UiKit.Button(p.transform, "Start", "Sign the Agreement", UiKit.Green, 56, () =>
             {
                 Destroy(titlePanel);
                 StartCoroutine(RunLoop());
             });
-            start.GetComponent<RectTransform>().Place(190, 1400, 700, 170);
+            start.GetComponent<RectTransform>().Place(140, 1575, 800, 175);
+            UiKit.Outline(start.targetGraphic, Color.black, 5);
+            var startFx = Fx(start); startFx.pulse = 0.035f; startFx.pulseSpeed = 4f;
+
+            var metro = UiKit.Label(p.transform, "Metro", "\"Agla station: Temporary. Darwaze baayi taraf khulenge.\"", 32, new Color(1, 1, 1, 0.75f));
+            metro.rectTransform.Place(60, 1770, 960, 70);
+
+            var info = Resources.Load<TextAsset>("build_info");
+            var ver = UiKit.Label(p.transform, "Build", info != null ? info.text : "editor", 24, new Color(1, 1, 1, 0.35f));
+            ver.rectTransform.Place(60, 1850, 960, 50);
+
+            var titleOpt = GearButton(p.transform, "TitleOptions");
+            titleOpt.GetComponent<RectTransform>().Place(960, 30, 96, 96);
         }
 
         // ============================================================== Flow

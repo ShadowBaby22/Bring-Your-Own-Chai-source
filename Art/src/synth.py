@@ -1,4 +1,4 @@
-"""Placeholder chiptune SFX + music for GRAP Stage 4. Pure Python (no numpy).
+"""Placeholder chiptune SFX + music for KADAK Chai. Pure Python (no numpy).
 Usage: python3 synth.py <Assets/_Game/Resources/Audio>   -> writes SFX/*.wav, Music/*.wav
 Replace any file with your own recording of the same name whenever you like."""
 import math, os, random, struct, sys, wave

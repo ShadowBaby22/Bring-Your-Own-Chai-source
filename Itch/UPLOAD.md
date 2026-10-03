@@ -4,7 +4,7 @@ File to upload: `Builds/GRAP-Stage-4-web-<day-time>.zip` (the newest one).
 
 ## First time (~3 minutes)
 1. Go to https://itch.io, log in, then open **Dashboard** and click **Create new project**.
-2. **Title:** `GRAP Stage 4`. The project URL fills itself in.
+2. **Title:** `KADAK Chai`. The project URL fills itself in.
 3. **Kind of project:** **HTML**.
 4. **Uploads:** click **Upload files** and choose the zip. Tick **"This file will be played in the browser"**.
 5. **Embed options:**
@@ -21,6 +21,6 @@ File to upload: `Builds/GRAP-Stage-4-web-<day-time>.zip` (the newest one).
 Ask Claude for "a new web build", then on the project's **Edit** page delete the old zip, upload the new one, and tick "played in the browser" again. **The link stays the same**, so teammates just refresh.
 
 ## For playtesters (paste this with the link)
-> GRAP Stage 4: jam build. Phone or desktop. Turn sound on and hold the phone upright.
+> KADAK Chai: jam build. Phone or desktop. Turn sound on and hold the phone upright.
 > Tap **Run game**, then **Sign the Agreement**. A run is 11 in-game days, about 15 minutes.
 > Please note: anything that made you laugh, anything slow or confusing, and the "dev build" text at the bottom of the title screen.
