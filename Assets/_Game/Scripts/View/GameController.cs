@@ -219,7 +219,7 @@ namespace KadakChai
             while (true)
             {
                 yield return PlayDay();
-                if (run.Dead) { yield return GameOver(); yield break; }
+                if (run.Fainted) { yield return NursingHome(); continue; }   // back to yesterday, as a zombie
 
                 bool lastDay = run.DayNumber >= run.TotalDays;
                 if (lastDay) { run.EndDay(); break; }
@@ -612,6 +612,29 @@ namespace KadakChai
             StartCoroutine(RunLoop());
         }
 
+        /// <summary>
+        /// Bablu fainted (change log 04 Oct): he wakes at Amma's Nursing Home, the Ayurvedic sadhu gives him
+        /// jadi-booti (Zombie buff for the next fight), Amma takes ₹100, and he goes back to yesterday morning.
+        /// </summary>
+        IEnumerator NursingHome()
+        {
+            HideButtons();
+            yield return new WaitForSeconds(1.2f);
+            string killer = run.Killer;
+            run.WakeAtNursingHome();
+            yield return vn.Play(GameData.Scene("nursing_home"));
+            AudioKit.Sfx("heal");
+            AudioKit.Music("day");
+            log.Add($"Knocked out by *{killer}*. *{GameData.HeroName}* wakes up at *Amma's Nursing Home*. Amma's bill: *₹{Run.NursingHomeBill}*. The sadhu's jadi-booti makes him a *Zombie* for the next fight.", CardStyle.Bad);
+            battle.ClearEnemies();
+            battle.ReviveHero(run.S);
+            battle.ShowParty(run.S);
+            battle.SetZone(string.IsNullOrEmpty(run.Day.bg) ? run.Day.zone : run.Day.bg, run.DayInZone);
+            RefreshHud();
+            battle.Banner($"*JADI-BOOTI ZOMBIE!* Back to Day {run.DayNumber}.");
+            yield return WaitMain($"Back to Day {run.DayNumber}  >", UiKit.Hex("#7CB342"));
+        }
+
         void ShowCredits()
         {
             var p = UiKit.Panel(phone, "Credits", new Color(0, 0, 0, 0.85f));
@@ -692,6 +715,7 @@ namespace KadakChai
             aqiBox.color = new Color(r, g, b);
             phoneView.Refresh();
             battle.SetConditions(s);
+            battle.SetZombie(s.zombieFights > 0);
             battle.RefreshHero(s);
             battle.SetHeld(s);
         }

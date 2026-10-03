@@ -25,7 +25,7 @@ namespace KadakChai
             var hpIn = new List<float>[days];
             for (int i = 0; i < days; i++) { rounds[i] = new List<int>(); fightSeconds[i] = new List<float>(); hpIn[i] = new List<float>(); }
             var killers = new Dictionary<string, int>();
-            int clears = 0, laathis = 0, tolls = 0;
+            int clears = 0, laathis = 0, tolls = 0, cleanClears = 0, faintTotal = 0;
             var earned = new List<int>();
 
             for (int n = 0; n < runs; n++)
@@ -35,7 +35,8 @@ namespace KadakChai
                 PickSkill(run, rng); // Astrologer Baba's first offer
                 Shop(run, shop, ref laathis);
 
-                while (!run.Finished && !run.Dead)
+                int faintsHere = 0;
+                while (!run.Finished && !run.Dead && faintsHere <= 10)
                 {
                     int d = run.S.dayIndex;
                     reached[d]++;
@@ -55,7 +56,9 @@ namespace KadakChai
                         {
                             deaths[d]++;
                             killers[run.Killer] = killers.GetValueOrDefault(run.Killer) + 1;
-                            break;
+                            faintsHere++;
+                            run.WakeAtNursingHome();   // back to yesterday morning, as a zombie
+                            continue;
                         }
                     }
                     else run.Choose(rng.Next(2));
@@ -65,15 +68,17 @@ namespace KadakChai
                     run.EndDay();
                     if (run.Border != null && !run.UsedFastag) tolls++;
                 }
-                if (!run.Dead) clears++;
+                if (run.Finished) clears++;
+                if (run.Finished && run.S.faints == 0) cleanClears++;
+                faintTotal += run.S.faints;
                 earned.Add(run.S.earned);
             }
 
             var sb = new StringBuilder();
             sb.AppendLine($"=== {runs} simulated runs ({(shop ? "shopping" : "never shops")}) ===");
-            sb.AppendLine($"CLEARED: {100f * clears / runs:0}%   Laathi drops: {laathis}   Rupees earned avg: {earned.Average():0}");
+            sb.AppendLine($"FINISHED: {100f * clears / runs:0}%   CLEAN WIN (no faints): {100f * cleanClears / runs:0}%   Faints per run avg: {(float)faintTotal / runs:0.0}   Laathi drops: {laathis}");
             sb.AppendLine("Killers: " + string.Join(", ", killers.OrderByDescending(k => k.Value).Select(k => $"{k.Key} {k.Value}")));
-            sb.AppendLine("Day  Type    Khatra  Reached  Died here  (of those reaching)  Revives  HP in  Rounds  Secs");
+            sb.AppendLine("Day  Type    Khatra  Visits   Faints    (per visit)          Revives  HP in  Rounds  Secs");
             for (int i = 0; i < days; i++)
             {
                 var day = GameData.Days[i];
@@ -108,7 +113,7 @@ namespace KadakChai
             var tag = s.shop.FirstOrDefault(i => i.slot == "pass");
             if (tag != null && s.fastags == 0 && run.CanAfford(tag.price + 150)) run.Buy(tag);
 
-            while (run.CanAfford(GameData.BoxPrice + 60))
+            while (run.CanAfford(run.BoxPrice + 60))
             {
                 var it = run.OpenBox();
                 if (it.id == "laathi") laathis++;

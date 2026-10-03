@@ -152,10 +152,12 @@ namespace KadakChai
             var title = UiKit.Label(card.transform, "Title", "Mystery Box", 42, Color.white, TextAnchor.UpperLeft, FontStyle.Bold);
             title.rectTransform.Place(200, 10, 420, 60, PW - 48, 196);
             var laathi = GameData.Items.TryGetValue("laathi", out var l) ? l : null;
-            string odds = $"Anything in stock, or the <color=#FFC107><b>ULTRA RARE Laathi</b></color> ({(laathi != null ? Run.BoxOdds(laathi) : 0):0}%).\nMight be bubble wrap.";
+            string odds = run.S.freeBoxUsed
+                ? $"Anything in stock, or the <color=#FFC107><b>ULTRA RARE Laathi</b></color> ({(laathi != null ? Run.BoxOdds(laathi) : 0):0}%).\nMight be bubble wrap."
+                : $"<color=#FFC107><b>Welcome offer: your first box is FREE.</b></color>\nCould be the ULTRA RARE Laathi ({(laathi != null ? Run.BoxOdds(laathi) : 0):0}%).";
             var desc = UiKit.Label(card.transform, "Desc", odds, 26, new Color(1, 1, 1, 0.85f), TextAnchor.UpperLeft);
             desc.rectTransform.Place(200, 70, 450, 120, PW - 48, 196);
-            Buy(card.transform, GameData.BoxPrice, true, PW - 48, 196, () => StartCoroutine(OpenBox()));
+            Buy(card.transform, run.BoxPrice, true, PW - 48, 196, () => StartCoroutine(OpenBox()));
         }
 
         void ItemCard(ItemData it, float y)
@@ -192,7 +194,7 @@ namespace KadakChai
         void Buy(Transform card, int price, bool onDark, float pw, float ph, Action onBuy)
         {
             bool can = run.CanAfford(price);
-            var b = UiKit.Button(card, "Buy", "₹" + price, can ? UiKit.Green : new Color(0.62f, 0.62f, 0.62f), 40, () =>
+            var b = UiKit.Button(card, "Buy", price == 0 ? "FREE" : "₹" + price, can ? UiKit.Green : new Color(0.62f, 0.62f, 0.62f), 40, () =>
             {
                 if (busy) return;
                 if (!run.CanAfford(price)) { AudioKit.Sfx("lose", 0.4f); Toast($"Need ₹{price - run.S.rupees} more."); return; }

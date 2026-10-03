@@ -83,6 +83,7 @@ namespace KadakChai
         public int spice;        // Khatra level 1-8 (Balatro-style ante): scales enemy HP and ATK
         public string bg;        // optional background override (e.g. "metro"); default is the zone's
         public string companion; // optional: this zone's companion joins today (one per zone, leaves at the border)
+        public float enemyScale; // optional: enemy HP/ATK multiplier for this day (0 = 1). Days 1-5 are gentler so judges see more.
     }
 
     /// <summary>One line of a visual-novel scene (scenes.csv).</summary>
@@ -189,6 +190,8 @@ namespace KadakChai
         {
             null or "" or "narrator" => "",
             "astrologer" => "Astrologer Baba",
+            "sadhu" => "Vaidya Baba",
+            "amma" => "Amma",
             "delivery" => "Delivery Wale Bhaiya",
             "maamu" => "Maamu",
             _ => Combatants.TryGetValue(id, out var c) ? c.name : id,
