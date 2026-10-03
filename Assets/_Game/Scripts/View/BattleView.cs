@@ -49,7 +49,7 @@ namespace KadakChai
             v.bgNext = UiKit.Panel(v.bgRoot, "Next", Color.clear);
             v.bgNext.rectTransform.Fill();
 
-            v.smog = UiKit.Panel(v.stage, "Smog", new Color(0.45f, 0.36f, 0.22f, 0));
+            v.smog = UiKit.Panel(v.stage, "Smog", new Color(0.62f, 0.63f, 0.66f, 0));
             v.smog.rectTransform.Fill();
             v.smog.raycastTarget = false;
 
@@ -205,8 +205,8 @@ namespace KadakChai
 
         public void SetAqi(int aqi)
         {
-            float a = Mathf.Clamp01((aqi - 150f) / 850f) * 0.45f;
-            smog.color = new Color(0.45f, 0.36f, 0.22f, a);
+            float a = Mathf.Clamp01((aqi - 120f) / 700f) * 0.55f;
+            smog.color = new Color(0.62f, 0.63f, 0.66f, a); // hazy grey (change log 19:21)
         }
 
         public void SetTicker(string text)
@@ -409,6 +409,7 @@ namespace KadakChai
 
         public IEnumerator Play(BattleResult r)
         {
+            bool techno = false; // switch to Delhi techno once the hero drops below 50% HP (change log 19:21)
             int enemiesLeft = 0;
             foreach (var u in r.units) if (!u.isPlayerSide) enemiesLeft++;
 
@@ -427,6 +428,7 @@ namespace KadakChai
                         break;
 
                     case BattleEventType.Hit:
+                        if (!techno && targetIsHero && e.hpAfter < r.units[0].maxHp * 0.5f) { techno = true; AudioKit.Music("techno"); }
                         if (actor != null && actor != target) yield return Approach(e, actor, target, dir);
                         if (!string.IsNullOrEmpty(e.label) && actor != null) Popup(e.label, actor, new Color(0.7f, 0.95f, 1f), 42, 60);
                         if (target != null)

@@ -224,6 +224,18 @@ def chili():
     s += path('M 70 70 Q 82 44 112 48 Q 124 60 118 84 Q 96 66 70 70 Z', '#43a047') + path('M 100 50 Q 96 28 114 16', 'none', stroke='#2e7d32', stroke_width='10')
     return s
 
+def scooty():
+    """Delivery Wale Bhaiya's scooty with the JhatPat box, running late."""
+    s = circle(64, 196, 30, '#37474f') + circle(64, 196, 12, '#b0bec5') + circle(196, 196, 30, '#37474f') + circle(196, 196, 12, '#b0bec5')
+    s += path('M 40 170 Q 60 130 112 132 L 150 132 L 170 104 L 186 104 L 196 168 Q 196 182 182 182 L 96 182 Q 80 162 40 170 Z', '#ffca28')
+    s += line(172, 104, 190, 70, 8) + line(178, 70, 206, 70, 8)                                   # handlebar
+    s += rect(24, 64, 82, 70, 8, '#FFD23F') + path('M 70 76 L 54 100 L 66 100 L 58 122 L 80 94 L 68 94 Z', '#e8590c', stroke_width='4')  # JhatPat box
+    s += circle(136, 84, 24, '#d9a066') + path('M 112 82 Q 112 52 136 52 Q 162 52 162 82 Z', '#e53935')  # bhaiya + helmet
+    s += path('M 120 106 Q 136 98 152 106 L 160 140 L 116 140 Z', '#43a047')
+    s += ''.join(line(10, y, 30, y, 6, '#90a4ae') for y in (150, 170, 190))                       # speed lines
+    s += text(214, 46, '2 min', 26, '#e53935', rot=-8)
+    return s
+
 # ------------------------------------------------------------------ bitterChai phone app icons (glossy dark squares, bitterSweet style)
 def app_base(inner):
     return ('<defs><linearGradient id="gl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a5056"/><stop offset="1" stop-color="#1c1f22"/></linearGradient></defs>'
@@ -323,6 +335,7 @@ for k, fn in zones.items():
     open(os.path.join(out, f'zone_{k}.svg'), 'w').write(sticker(fn()))
 open(os.path.join(out, 'gear.svg'), 'w').write(sticker(gear()))
 open(os.path.join(out, 'chili.svg'), 'w').write(sticker(chili()))
+open(os.path.join(out, 'scooty.svg'), 'w').write(sticker(scooty()))
 for k, fn in phone_apps.items():
     open(os.path.join(out, f'app_{k}.svg'), 'w').write(sticker(fn()))
 open(os.path.join(out, 'map.svg'), 'w').write(ncr_map())

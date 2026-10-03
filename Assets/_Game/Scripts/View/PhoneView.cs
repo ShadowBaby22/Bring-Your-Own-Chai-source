@@ -292,7 +292,7 @@ namespace KadakChai
             return p;
         }
 
-        Text Row(RectTransform page, float y, string text, int size = 30, Color? color = null, TextAnchor anchor = TextAnchor.MiddleLeft)
+        Text Row(RectTransform page, float y, string text, int size = 36, Color? color = null, TextAnchor anchor = TextAnchor.MiddleLeft)
         {
             var t = UiKit.Label(page, "Row", UiKit.Rich(text), size, color ?? Color.white, anchor);
             t.rectTransform.Place(30, y, SW - 60, size + 18, SW, ContentH);
@@ -313,18 +313,22 @@ namespace KadakChai
             float y = 6;
             void Item(string head, string sub, bool warn)
             {
-                Card(p, y, 86, warn ? new Color(0.8f, 0.15f, 0.15f, 0.55f) : new Color(0, 0, 0, 0.35f));
-                Row(p, y + 4, head, 32);
-                var t = Row(p, y + 44, sub, 26, new Color(1, 1, 1, 0.85f));
-                t.rectTransform.Place(30, y + 44, SW - 60, 38, SW, ContentH);
-                y += 94;
+                Card(p, y, 104, warn ? new Color(0.8f, 0.15f, 0.15f, 0.55f) : new Color(0, 0, 0, 0.35f));
+                Row(p, y + 4, head, 38);
+                var t = Row(p, y + 52, sub, 30, new Color(1, 1, 1, 0.85f));
+                t.rectTransform.Place(30, y + 52, SW - 60, 46, SW, ContentH);
+                y += 112;
             }
             if (s.weapon != null) Item($"<b>{s.weapon.data.name}</b>  ·  {s.weapon.fightsLeft} fight{(s.weapon.fightsLeft > 1 ? "s" : "")} left", s.weapon.data.desc, s.weapon.IsLastFight);
             if (s.armour != null) Item($"<b>{s.armour.data.name}</b>  ·  {s.armour.fightsLeft} fights left", s.armour.data.desc, s.armour.IsLastFight);
             foreach (var o in s.skills) Item($"<b>{o.data.name}</b>  ·  lease: {o.daysLeft} day{(o.daysLeft > 1 ? "s" : "")}", o.data.desc, o.IsLastDay);
             if (s.insuranceDays > 0) Item($"<b>Health Insurance</b>  ·  {s.insuranceDays} day{(s.insuranceDays > 1 ? "s" : "")} left", "If Bablu dies, AIIMS revives him once at 50% HP.", s.insuranceDays == 1);
             if (s.tollDays > 0) Item($"<b>Toll Tax</b>  ·  {s.tollDays} day{(s.tollDays > 1 ? "s" : "")} left", "All stats -15%. A FASTag skips the next one.", true);
-            if (y < 10) Row(p, 140, "Nothing yet. Astrologer Baba hands out skills on level up.", 30, null, TextAnchor.MiddleCenter);
+            if (y < 10)
+            {
+                var t = Row(p, 90, "No skills yet.\n<size=34>Astrologer Baba hands them out when Bablu levels up. Every skill has a lease.</size>", 46, null, TextAnchor.MiddleCenter);
+                t.rectTransform.Place(40, 60, SW - 80, 300, SW, ContentH);
+            }
         }
 
         void BuildProfile(RunState s)
@@ -338,18 +342,18 @@ namespace KadakChai
             float x = 270;
             Text Stat(float y, string label)
             {
-                var t = UiKit.Label(p, "Stat", label, 32, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
-                t.rectTransform.Place(x, y, SW - x - 30, 44, SW, ContentH);
+                var t = UiKit.Label(p, "Stat", label, 38, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
+                t.rectTransform.Place(x, y, SW - x - 30, 52, SW, ContentH);
                 return t;
             }
-            Stat(20, GameData.HeroName + "  ·  <color=#FFD23F>Lv " + s.level + "</color>");
-            Stat(66, $"EXP {s.xp}/{s.XpToNext}");
-            Stat(112, $"HP {s.hp}/{s.maxHp}");
-            Stat(158, $"ATK {s.AtkTotal}  <size=24>({s.atk} base{(s.weapon != null ? $" + {s.weapon.data.atk} {s.weapon.data.name}" : "")})</size>");
-            Stat(204, $"DEF {s.DefTotal}  <size=24>({s.def} base{(s.armour != null ? $" + {s.armour.data.def} {s.armour.data.name}" : "")})</size>");
-            Stat(250, $"<color=#FFD23F>₹{s.rupees}</color>  <size=24>earned ₹{s.earned}, spent ₹{s.spent}</size>");
-            var foot = UiKit.Label(p, "Foot", s.HasAunty ? "Party: Pinky Aunty (forwards messages every 3 rounds)" : "Party: just you. For now.", 26, new Color(1, 1, 1, 0.75f), TextAnchor.MiddleLeft);
-            foot.rectTransform.Place(40, ContentH - 66, SW - 80, 44, SW, ContentH);
+            Stat(16, GameData.HeroName + "  ·  <color=#FFD23F>Lv " + s.level + "</color>  <size=26>B.Tech, 4 backlogs</size>");
+            Stat(70, $"EXP {s.xp}/{s.XpToNext}   HP {s.hp}/{s.maxHp}");
+            Stat(124, $"ATK {s.AtkTotal}  <size=28>({s.atk} base{(s.weapon != null ? $" + {s.weapon.data.atk} {s.weapon.data.name}" : "")})</size>");
+            Stat(178, $"DEF {s.DefTotal}  <size=28>({s.def} base{(s.armour != null ? $" + {s.armour.data.def} {s.armour.data.name}" : "")})</size>");
+            Stat(232, $"<color=#FFD23F>₹{s.rupees}</color>  <size=28>earned ₹{s.earned}, spent ₹{s.spent}</size>");
+            Stat(286, $"<color=#FF8A65>Theeka {(run.Finished ? 8 : run.Spice)}/8</color>  <size=28>{GameData.SpiceName(run.Finished ? 8 : run.Spice)}</size>");
+            var foot = UiKit.Label(p, "Foot", s.HasAunty ? "Party: Pinky Aunty (forwards messages every 3 rounds)" : "Party: just you. For now.", 32, new Color(1, 1, 1, 0.8f), TextAnchor.MiddleLeft);
+            foot.rectTransform.Place(40, ContentH - 60, SW - 80, 50, SW, ContentH);
         }
 
         void BuildMap()
@@ -361,6 +365,10 @@ namespace KadakChai
             map.sprite = Art.UI("map");
             map.preserveAspect = true;
             map.rectTransform.Place(mx, my, size, size, SW, ContentH);
+            var tap = map.gameObject.AddComponent<Button>();
+            tap.onClick.AddListener(OpenBigMap);
+            var hint = UiKit.Label(p, "Hint", "Tap the map\nto zoom", 30, new Color(1, 1, 1, 0.8f), TextAnchor.LowerRight, FontStyle.Bold);
+            hint.rectTransform.Place(SW - mx + 10, ContentH - 110, mx - 30, 100, SW, ContentH);
             if (run == null || run.Finished) return;
             if (!MapView.Cities.TryGetValue(run.Day.zone, out var c)) return;
             float k = size / 1000f, m = 70;
@@ -368,9 +376,64 @@ namespace KadakChai
             marker.sprite = Art.Character("new_kid").sprite;
             marker.preserveAspect = true;
             marker.rectTransform.Place(mx + c.x * k - m / 2, my + c.y * k - m * 0.9f, m, m, SW, ContentH);
-            var day = UiKit.Label(p, "Where", $"Day {run.DayNumber} of {run.TotalDays}\n{GameData.ZoneName(run.Day.zone)}", 26, Color.white, TextAnchor.UpperLeft, FontStyle.Bold);
+            var day = UiKit.Label(p, "Where", $"Day {run.DayNumber} of {run.TotalDays}\n{GameData.ZoneName(run.Day.zone)}", 32, Color.white, TextAnchor.UpperLeft, FontStyle.Bold);
             day.rectTransform.Place(20, 10, mx - 30, 120, SW, ContentH);
             UiKit.Outline(day, new Color(0, 0, 0, 0.6f), 2);
+        }
+
+        System.Collections.IEnumerator Bob(RectTransform rt)
+        {
+            Vector2 home = rt.anchoredPosition;
+            while (rt != null && rt.gameObject.activeInHierarchy)
+            {
+                rt.anchoredPosition = home + new Vector2(Mathf.Sin(Time.time * 9f) * 4f, Mathf.Abs(Mathf.Sin(Time.time * 18f)) * 6f);
+                yield return null;
+            }
+        }
+
+        /// <summary>Full-screen NCR map: drag to pan, +/- to zoom (change log 19:21).</summary>
+        void OpenBigMap()
+        {
+            var root = (RectTransform)transform.parent;
+            var dim = UiKit.Panel(root, "BigMap", new Color(0.04f, 0.05f, 0.08f, 0.96f));
+            dim.rectTransform.Fill();
+            var view = UiKit.Make("Viewport", dim.transform).Place(20, 120, 1040, 1560);
+            view.gameObject.AddComponent<RectMask2D>();
+            view.gameObject.AddComponent<Image>().color = new Color(0, 0, 0, 0.01f); // catches drags
+            var content = UiKit.Make("Content", view);
+            content.anchorMin = content.anchorMax = new Vector2(0.5f, 0.5f);
+            content.sizeDelta = new Vector2(1040, 1040);
+            var img = UiKit.Panel(content, "Map", Color.white);
+            img.sprite = Art.UI("map");
+            img.preserveAspect = true;
+            img.raycastTarget = false;
+            img.rectTransform.Fill();
+            if (run != null && !run.Finished && MapView.Cities.TryGetValue(run.Day.zone, out var c))
+            {
+                var m = UiKit.Panel(content, "Marker", Color.white);
+                m.sprite = Art.Character("new_kid").sprite;
+                m.preserveAspect = true;
+                m.raycastTarget = false;
+                m.rectTransform.anchorMin = m.rectTransform.anchorMax = new Vector2(c.x / 1000f, 1 - c.y / 1000f);
+                m.rectTransform.pivot = new Vector2(0.5f, 0.1f);
+                m.rectTransform.sizeDelta = new Vector2(130, 130);
+            }
+            var sr = view.gameObject.AddComponent<ScrollRect>();
+            sr.content = content; sr.viewport = view; sr.movementType = ScrollRect.MovementType.Clamped; sr.scrollSensitivity = 30;
+            float zoom = 1f;
+            void Zoom(float z)
+            {
+                zoom = Mathf.Clamp(z, 1f, 3f);
+                content.localScale = Vector3.one * zoom;
+                sr.horizontal = sr.vertical = zoom > 1.01f;
+                if (zoom <= 1.01f) content.anchoredPosition = Vector2.zero;
+            }
+            Zoom(1f);
+            var title = UiKit.Label(dim.transform, "Title", "NCR  ·  drag to look around", 40, ShopView.Brand, TextAnchor.MiddleCenter, FontStyle.Bold);
+            title.rectTransform.Place(20, 30, 1040, 80);
+            UiKit.Button(dim.transform, "ZoomIn", "+", UiKit.Green, 70, () => Zoom(zoom + 0.5f)).GetComponent<RectTransform>().Place(40, 1736, 200, 150);
+            UiKit.Button(dim.transform, "ZoomOut", "–", UiKit.Purple, 70, () => Zoom(zoom - 0.5f)).GetComponent<RectTransform>().Place(260, 1736, 200, 150);
+            UiKit.Button(dim.transform, "MapClose", "Back to phone", UiKit.Orange, 44, () => Destroy(dim.gameObject)).GetComponent<RectTransform>().Place(480, 1736, 560, 150);
         }
 
         void BuildSettings()
@@ -389,20 +452,21 @@ namespace KadakChai
             music = UiKit.Button(p, "PhoneMusic", "", UiKit.Green, 38, () => { AudioKit.MusicOn = !AudioKit.MusicOn; Sync(); });
             music.GetComponent<RectTransform>().Place(528, 20, 400, 110, SW, ContentH);
             Sync();
-            Row(p, 160, "Battle speed: tap the yellow button in the top-right of the fight.", 26, new Color(1, 1, 1, 0.8f), TextAnchor.MiddleCenter);
-            Row(p, 220, "<b>bitterChai OS 11.0</b>  ·  valid for 11 months", 26, new Color(1, 1, 1, 0.6f), TextAnchor.MiddleCenter);
-            Row(p, 262, "Made by Siddharth Gupta, Dhivesh, Jaideep and Amolika", 26, new Color(1, 1, 1, 0.6f), TextAnchor.MiddleCenter);
+            Row(p, 160, "Battle speed: tap the yellow button in the top-right of the fight.", 32, new Color(1, 1, 1, 0.85f), TextAnchor.MiddleCenter);
+            Row(p, 230, "<b>bitterChai OS 11.0</b>  ·  valid for 11 months", 32, new Color(1, 1, 1, 0.65f), TextAnchor.MiddleCenter);
+            Row(p, 290, "Made by Siddharth Gupta, Dhivesh, Jaideep and Amolika", 32, new Color(1, 1, 1, 0.65f), TextAnchor.MiddleCenter);
         }
 
         void BuildJhatPatClosed()
         {
             var p = ClearPage("jhatpat");
-            var icon = UiKit.Panel(p, "Bhaiya", Color.white);
-            icon.sprite = Art.UI("mystery_box");
+            var icon = UiKit.Panel(p, "Scooty", Color.white);
+            icon.sprite = Art.UI("scooty") ?? Art.UI("mystery_box");
             icon.preserveAspect = true;
-            icon.rectTransform.Place(SW / 2 - 90, 20, 180, 180, SW, ContentH);
-            Row(p, 214, "JhatPat opens after today's event.", 34, ShopView.Brand, TextAnchor.MiddleCenter);
-            Row(p, 264, "Delivery Wale Bhaiya: \"2 minute, sir.\"", 28, new Color(1, 1, 1, 0.8f), TextAnchor.MiddleCenter);
+            icon.rectTransform.Place(SW / 2 - 120, 10, 240, 240, SW, ContentH);
+            StartCoroutine(Bob(icon.rectTransform));
+            Row(p, 262, "Your Delivery Wale Bhaiya is running late.", 40, ShopView.Brand, TextAnchor.MiddleCenter);
+            Row(p, 322, "JhatPat opens after today's event. \"2 minute, sir.\"", 32, new Color(1, 1, 1, 0.85f), TextAnchor.MiddleCenter);
         }
     }
 }

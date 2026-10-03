@@ -10,8 +10,9 @@ namespace KadakChai
     /// The story log, shown as chat bubbles in the phone's Messages app. Story and events arrive on the left,
     /// your wins on the right, notes and day headers in the middle. Bubbles fade in and auto-scroll.
     /// </summary>
-    public class StoryLog : MonoBehaviour
+    public class StoryLog : MonoBehaviour, UnityEngine.EventSystems.IBeginDragHandler
     {
+        bool stickToBottom = true; // follow new messages until the player drags to read older ones
         const int MaxCards = 40;
 
         ScrollRect scroll;
@@ -101,7 +102,8 @@ namespace KadakChai
             }
 
             while (content.childCount > MaxCards) DestroyImmediate(content.GetChild(0).gameObject);
-            if (isActiveAndEnabled) StartCoroutine(FadeInAndScroll(row.gameObject.AddComponent<CanvasGroup>()));
+            if (isActiveAndEnabled) StartCoroutine(FadeIn(row.gameObject.AddComponent<CanvasGroup>()));
+            stickToBottom = true;
             Added?.Invoke();
         }
 
@@ -109,25 +111,32 @@ namespace KadakChai
         public void ScrollToEnd()
         {
             if (!isActiveAndEnabled) return;
+            stickToBottom = true;
             Canvas.ForceUpdateCanvases();
             scroll.verticalNormalizedPosition = 0;
         }
 
-        IEnumerator FadeInAndScroll(CanvasGroup g)
+        IEnumerator FadeIn(CanvasGroup g)
         {
             g.alpha = 0;
-            yield return null; // let layout run
-            Canvas.ForceUpdateCanvases();
-            float start = scroll.verticalNormalizedPosition;
             for (float t = 0; t < 1; t += Time.deltaTime * 4f)
             {
                 if (g == null) yield break;
                 g.alpha = t;
-                scroll.verticalNormalizedPosition = Mathf.Lerp(start, 0, t);
                 yield return null;
             }
             if (g != null) g.alpha = 1;
+        }
+
+        public void OnBeginDrag(UnityEngine.EventSystems.PointerEventData e) => stickToBottom = false;
+
+        void LateUpdate()
+        {
+            // Typewriter text grows bubbles every frame; keep the newest line in view (no fighting coroutines).
+            if (!stickToBottom || content == null) return;
+            Canvas.ForceUpdateCanvases();
             scroll.verticalNormalizedPosition = 0;
+            scroll.velocity = Vector2.zero;
         }
     }
 }

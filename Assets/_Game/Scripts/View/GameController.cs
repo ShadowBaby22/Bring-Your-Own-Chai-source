@@ -282,7 +282,7 @@ namespace KadakChai
                 while (true)
                 {
                     yield return WaitMain(label, run.Kind == DayKind.Boss ? UiKit.Red : UiKit.Green);
-                    AudioKit.Music("battle");
+                    AudioKit.Music(run.S.hp < run.S.maxHp * 0.5f ? "techno" : "battle");
                     var result = run.Fight();
                     yield return battle.Play(result);
                     AudioKit.Music("day");
