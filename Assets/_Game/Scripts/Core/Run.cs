@@ -48,7 +48,9 @@ namespace KadakChai
         public int DefTotal => def + (armour?.data.def ?? 0);
 
         public int XpToNext => 30 + 20 * (level - 1);
-        public bool HasAunty => flags.Contains("aunty");
+        public string companion;            // one per zone (change log): Pinky Aunty, Daaru Uncle, Sheru, Kush
+        public bool HasAunty => companion == "pinky_aunty";
+        public bool HasCompanion => !string.IsNullOrEmpty(companion);
 
         public void AddSkill(SkillData s)
         {
@@ -97,6 +99,10 @@ namespace KadakChai
         public bool UsedFastag { get; private set; }
         /// <summary>Rupees the landlord took this morning (0 if it isn't rent day).</summary>
         public int RentPaid { get; private set; }
+        /// <summary>Companion who joined this morning / left at the last border (null if none).</summary>
+        public string JoinedCompanion { get; private set; }
+        public string LeftCompanion { get; private set; }
+
         /// <summary>Rupees lost to the Robbed status this morning.</summary>
         public int RobbedLoss { get; private set; }
 
@@ -124,6 +130,8 @@ namespace KadakChai
         {
             DayStarted = true;
             ResolveDay();
+            JoinedCompanion = null;
+            if (!string.IsNullOrEmpty(Day.companion) && S.companion != Day.companion) { S.companion = Day.companion; JoinedCompanion = Day.companion; }
             RentPaid = Math.Min(S.rupees, Day.rent);
             S.rupees -= RentPaid;
             RobbedLoss = S.conditions.Contains("robbed") ? Math.Min(S.rupees, Conditions.RobbedPerDay) : 0;
@@ -319,7 +327,13 @@ namespace KadakChai
             ResolveDay();
             S.xp = 30 * S.dayIndex + 20;
             ConsumeLevelUps();
-            if (day > 2) S.flags.Add("aunty");
+            if (day > 2) { S.flags.Add("aunty"); S.companion = "pinky_aunty"; }
+            for (int i = S.dayIndex; i >= 0; i--)  // the current zone's companion, if it has joined by now
+            {
+                var d = GameData.Days[i];
+                if (d.zone != Day.zone) { if (S.companion == "pinky_aunty" && Day.zone != "dilli") S.companion = null; break; }
+                if (!string.IsNullOrEmpty(d.companion)) { S.companion = d.companion; break; }
+            }
             S.rupees = 200 + 120 * S.dayIndex;
             foreach (var s in S.OfferSkills(3, Rng)) S.AddSkill(s);
             S.hp = S.maxHp;
@@ -383,9 +397,11 @@ namespace KadakChai
             string from = Day.zone;
             S.dayIndex++;
             DayStarted = false;
-            Border = null; UsedFastag = false;
+            Border = null; UsedFastag = false; LeftCompanion = null;
             if (!Finished && Day.zone != from)
             {
+                // Everything is temporary: this zone's companion stays behind.
+                LeftCompanion = S.companion; S.companion = null;
                 // Toll Tax at every border: all stats down for a couple of days, unless you have a FASTag.
                 Border = (from, Day.zone);
                 if (S.fastags > 0) { S.fastags--; UsedFastag = true; }

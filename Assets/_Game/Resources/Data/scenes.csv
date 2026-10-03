@@ -24,6 +24,23 @@ metro_intro,jaanu,right,"*Bro.* Can't you see we're having a *moment*?"
 metro_intro,shona,right,"Babe, he's staring. Babe. *BABE.* Do something."
 metro_intro,narrator,,"The doors are blocked. The viewing is in 30 minutes. There is only one way out."
 #
+daaru_uncle_join,daaru_uncle,right,"*Hic.* Beta. You look lost. Everyone in Gurugram is lost. That is the business model."
+daaru_uncle_join,new_kid,left,"Uncle, do you know where Cyber Hub is?"
+daaru_uncle_join,daaru_uncle,right,"Know it? I *sleep* in it. Come. I will protect you. I have bottles."
+#
+sheru_join,narrator,,"A street dog follows Bablu out of the metro. Bablu gives him half a samosa."
+sheru_join,sheru,right,"*Bhow.*"
+sheru_join,new_kid,left,"Okay. You can come. Your name is Sheru now."
+#
+rival_student_join,rival_student,right,"Bablu? From *that* college? I'm Kush. Tier-1. I'm also here for police verification."
+rival_student_join,new_kid,left,"Want to team up?"
+rival_student_join,rival_student,right,"Sure. I'll share my notes. You do the fighting. I'll put it on my LinkedIn."
+#
+aunty_betrayal,rwa_aunty,right,"Beta. The RWA has voted. 47 to 1. The 1 was you."
+aunty_betrayal,new_kid,left,"Aunty! I fixed your WiFi!"
+aunty_betrayal,rwa_aunty,right,"And now it works, so I don't need you. Rules are rules. *No bachelors.*"
+aunty_betrayal,rwa_aunty,right,"And for disrespecting the society notice board... *the head will be shaved.*"
+#
 broker_intro,broker,right,"Sir! Sir! Welcome welcome. Very nice flat, sir. East-facing. Vastu-compliant. Metro walking distance."
 broker_intro,new_kid,left,"The metro is 4 km away. Also, I am a bachelor."
 broker_intro,broker,right,"No problem, sir! For bachelors, rent is double and brokerage is triple. Walking distance for a fit person."

@@ -234,6 +234,7 @@ namespace KadakChai
                 }
                 if (expired.Count > 0)
                     battle.Banner(string.Join(", ", expired.ConvertAll(s => s.shortName)) + (expired.Count > 1 ? " have" : " has") + " *expired*. Everything is temporary.");
+                if (run.LeftCompanion != null) { log.Add(CardText("leave_" + run.LeftCompanion), CardStyle.Note); battle.ShowParty(run.S); }
                 if (run.Border is { } border)
                 {
                     yield return MapView.Cross(phone, border.from, border.to, run.UsedFastag);
@@ -256,6 +257,12 @@ namespace KadakChai
             RefreshHud();
 
             log.Add($"Day {run.DayNumber} of {run.TotalDays}  ·  {GameData.ZoneName(run.Day.zone)}  ·  Khatra {run.Spice}/8", CardStyle.Header);
+            if (run.JoinedCompanion != null)
+            {
+                battle.ShowParty(run.S);
+                yield return vn.Play(GameData.Scene(run.JoinedCompanion + "_join"));
+                log.Add(CardText("join_" + run.JoinedCompanion), CardStyle.Good);
+            }
             if (run.DayNumber > 1 && run.Spice > GameData.Days[run.S.dayIndex - 1].spice)
             {
                 AudioKit.Sfx("boom", 0.6f);

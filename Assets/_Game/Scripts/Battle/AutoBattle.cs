@@ -63,7 +63,7 @@ namespace KadakChai
         readonly List<Combatant> units = new();
         readonly List<Combatant> foes = new();
         readonly List<SkillData> active = new();
-        Combatant hero, aunty;
+        Combatant hero, pet;   // pet = this zone's companion
         ItemData weapon;
         readonly HashSet<string> cond = new();  // Bablu's statuses: the ones he came in with plus any picked up here
         GrapStage stage;
@@ -108,7 +108,7 @@ namespace KadakChai
                 else if (!heroSkipShown) { heroSkipShown = true; Shout(hero, "Odd-Even! Your car stays home this round."); }
                 if (Decided()) break;
 
-                if (aunty != null && round % 3 == 0) AuntyAct();
+                if (pet != null) PetAct();
                 if (Decided()) break;
 
                 if (foeTurn) foreach (var f in foes.ToList()) { if (f.Alive) EnemyAct(f); if (Decided()) break; }
@@ -146,8 +146,8 @@ namespace KadakChai
             int heroMax = (int)Math.Round(s.maxHp * toll);
             hero = AddUnit(new Combatant(units.Count, "new_kid", GameData.HeroName, true, false, Math.Min(s.hp, heroMax), heroMax, s.AtkTotal * toll, s.DefTotal * toll));
             hero.ranged = s.Ranged;
-            if (s.HasAunty && GameData.Combatants.TryGetValue("pinky_aunty", out var ad))
-                aunty = AddUnit(new Combatant(units.Count, ad.id, ad.name, true, true, 1, 1, ad.atk, 0, ad));
+            if (s.HasCompanion && GameData.Combatants.TryGetValue(s.companion, out var ad))
+                pet = AddUnit(new Combatant(units.Count, ad.id, ad.name, true, true, 1, 1, ad.atk, 0, ad));
             float hpMul = 1f + SpiceHp * (spice - 1), atkMul = 1f + SpiceAtk * (spice - 1);
             foreach (var e in enemies)
             {
@@ -317,12 +317,39 @@ namespace KadakChai
             }
         }
 
-        void AuntyAct()
+        /// <summary>The zone companion's move (change log: a different companion in each zone).</summary>
+        void PetAct()
         {
-            if (hero.hp < hero.maxHp * 0.5f)
-                Heal(aunty, hero, (int)Math.Round(hero.maxHp * 0.25f), "Good Morning Flower Image!");
-            else if (FrontFoe() is { } t)
-                Attack(aunty, t, 2f, "Complaint to Society Secretary!", true, typed: false);
+            switch (pet.id)
+            {
+                case "pinky_aunty" when round % 3 == 0:
+                    if (hero.hp < hero.maxHp * 0.5f) Heal(pet, hero, (int)Math.Round(hero.maxHp * 0.25f), "Good Morning Flower Image!");
+                    else if (FrontFoe() is { } t) Attack(pet, t, 2f, "Complaint to Society Secretary!", true, typed: false);
+                    break;
+                case "daaru_uncle" when round % 3 == 0:
+                    if (hero.hp < hero.maxHp * 0.5f) { Heal(pet, hero, (int)Math.Round(hero.maxHp * 0.2f), "Desi tonic! Smells terrible."); break; }
+                    if (Roll(0.1f))
+                    {
+                        int oops = Math.Max(1, (int)Math.Round(hero.maxHp * 0.06f));
+                        hero.hp = Math.Max(1, hero.hp - oops);   // drunk, not deadly
+                        Emit(BattleEventType.Hit, pet, hero, oops, hero.hp, "Oops! Wrong target. Hic.");
+                    }
+                    else if (foes.Where(f => f.Alive).OrderBy(f => f.hp).FirstOrDefault() is { } w)
+                        Attack(pet, w, 1.8f, "Bottle throw!", true, typed: false);
+                    break;
+                case "sheru" when round % 2 == 0:
+                    if (FrontFoe() is { } d)
+                    {
+                        Attack(pet, d, 1.1f, "Bhow! Bite!", false, typed: false);
+                        if (d.Alive && Roll(0.3f)) { d.Add(new StatusEffect(StatusKind.Stunned, 1)); Emit(BattleEventType.Stun, pet, d, label: "Chased off!"); }
+                    }
+                    break;
+                case "rival_student" when round % 3 == 0:
+                    if (hero.hp < hero.maxHp * 0.4f) { Heal(pet, hero, (int)Math.Round(hero.maxHp * 0.2f), "Glucose biscuit. Tier-1 snacks."); break; }
+                    hero.Add(new StatusEffect(StatusKind.AtkUp, 2, 0.25f));
+                    Shout(pet, "Topper notes! +25% ATK. (He'll take the credit.)");
+                    break;
+            }
         }
 
         void EnemyAct(Combatant f)
@@ -378,7 +405,7 @@ namespace KadakChai
 
         // --- Resolution ----------------------------------------------------------
 
-        /// <param name="typed">False for skills and Pinky Aunty: no close/ranged modifiers (GDD: skills have no type).</param>
+        /// <param name="typed">False for skills and companions: no close/ranged modifiers (GDD: skills have no type).</param>
         int Attack(Combatant a, Combatant t, float power, string label, bool big, bool typed = true)
         {
             bool ranged = typed && a.ranged;

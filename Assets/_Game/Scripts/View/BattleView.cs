@@ -16,7 +16,7 @@ namespace KadakChai
         RectTransform area, stage, bgRoot, popups, tickerText, overlay;
         Image bg, bgNext, smog, flash;
         Text roundText, speedText;
-        Puppet hero, aunty;
+        Puppet hero, aunty;   // aunty = the current zone companion's puppet (any companion)
         readonly List<Puppet> enemies = new();
         string zone;
         // "1x" plays at 0.65 of the original pace (playtest: original felt too fast). The speed button cycles
@@ -240,7 +240,8 @@ namespace KadakChai
             hero.Root.Place(150, 330, 250, 330, AW, AH);
             hero.SetHp(s.hp, s.maxHp);
 
-            if (s.HasAunty && aunty == null && GameData.Combatants.TryGetValue("pinky_aunty", out var ad))
+            if (aunty != null && aunty.Id != s.companion) { Destroy(aunty.gameObject); aunty = null; } // companion left or changed
+            if (s.HasCompanion && aunty == null && GameData.Combatants.TryGetValue(s.companion, out var ad))
             {
                 aunty = Puppet.Create(stage, ad.id, ad.name, ad.color, 1, 1, "", false, false);
                 aunty.Root.Place(10, 470, 160, 200, AW, AH);

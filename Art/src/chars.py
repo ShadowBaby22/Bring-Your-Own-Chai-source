@@ -371,11 +371,61 @@ def new_kid_shaved():
     s += hand(398, 474, skin)
     return s
 
+def daaru_uncle():
+    """Gurugram companion: a cheerful drunk with an empty bottle."""
+    skin = '#B07A4F'
+    s = legs('#6d4c41', '#3e2723', spread=40)
+    s += torso('#E0D6C2', belly=True)
+    s += path('M 200 420 L 214 470 L 196 520 M 300 440 L 318 500', 'none', stroke='#a1887f', stroke_width='5')   # torn kurta
+    s += capsule(170, 410, 140, 490, 44, '#E0D6C2') + hand(140, 498, skin)
+    s += head(skin)
+    s += path('M 124 230 Q 100 120 170 100 Q 160 70 210 80 Q 230 50 270 74 Q 320 52 340 90 Q 400 96 404 190 Q 380 150 340 140 L 330 170 L 300 136 L 270 164 L 240 132 L 214 166 L 190 136 L 160 180 Q 140 200 146 236 Z', '#9e9e9e')
+    s += path('M 238 300 Q 262 380 330 384 Q 392 380 404 300 Q 380 330 330 334 Q 270 330 238 300 Z', '#bdbdbd')    # beard
+    s += circle(318, 280, 18, '#e57373', line=False, opacity='0.85')                                              # red nose
+    s += eyes(skin, kind='closed', y=246) + brows('raised') + mouth('grin', y=318)
+    s += capsule(354, 410, 392, 330, 44, '#E0D6C2') + hand(396, 322, skin)
+    s += path('M 386 300 L 398 220 L 418 220 L 430 300 Z', '#66bb6a') + rect(400, 200, 16, 24, 4, '#43a047')     # bottle up high
+    s += text(452, 196, 'hic!', 30, '#5d4037', rot=-14)
+    return s
+
+def sheru():
+    """Noida companion: a desi street dog with a tika."""
+    s = ellipse(262, 470, 150, 82, '#C8A27A')                                                          # body
+    s += path('M 400 440 Q 470 380 440 330 Q 430 380 392 420 Z', '#C8A27A')                            # curly tail
+    for x in (170, 220, 300, 350):
+        s += capsule(x, 520, x, 596, 30, '#C8A27A') + ellipse(x + 6, 600, 24, 12, '#f5f5f5')
+    s += ellipse(250, 492, 70, 36, '#f3e2c7', line=False)                                              # light belly
+    s += circle(150, 330, 92, '#C8A27A')                                                               # head
+    s += path('M 86 278 Q 70 200 110 186 Q 130 236 128 270 Z', '#9c7650') + path('M 196 262 Q 230 200 250 220 Q 236 270 206 290 Z', '#9c7650')  # ears (one up)
+    s += ellipse(96, 360, 50, 36, '#f3e2c7') + circle(64, 350, 14, '#2b2024')                          # snout + nose
+    s += circle(170, 310, 13, '#2b2024', line=False) + circle(174, 305, 4, '#ffffff', line=False)
+    s += circle(122, 306, 11, '#2b2024', line=False) + circle(125, 302, 4, '#ffffff', line=False)
+    s += path('M 80 384 Q 100 410 122 392', 'none') + path('M 92 392 Q 98 430 112 424 Q 120 410 114 396 Z', '#ef5350')  # tongue
+    s += ellipse(148, 262, 8, 14, '#e53935', line=False)                                               # tika
+    s += text(330, 330, 'Bhow!', 34, '#5d4037', rot=10)
+    return s
+
+def rival_student():
+    """Daftar companion: Kush, rival-uni topper. Helps, then takes the credit."""
+    skin = '#E8B98A'
+    s = legs('#263238', '#ffffff')
+    s += torso('#7B1FA2')
+    s += text(262, 470, 'TIER-1', 30, '#FFD54F')
+    s += path('M 150 372 Q 262 330 374 372 L 360 400 Q 262 372 164 400 Z', '#6a1b9a')
+    s += capsule(178, 400, 164, 486, 42, '#7B1FA2') + hand(164, 494, skin)
+    s += rect(108, 430, 70, 90, 6, '#fff8e1') + ''.join(line(118, 450 + i * 14, 168, 450 + i * 14, 3, '#90a4ae') for i in range(4))  # notes
+    s += head(skin)
+    s += path('M 126 236 Q 118 96 262 92 Q 404 94 400 236 Q 380 140 300 132 Q 300 150 262 150 Q 190 148 150 180 Q 136 200 136 236 Z', '#3e2723')
+    s += circle(274, 244, 30, 'none') + circle(344, 244, 30, 'none') + line(304, 244, 314, 244, 6)   # glasses
+    s += eyes(skin, lid=10) + brows('smug') + mouth('smirk')
+    s += capsule(352, 400, 400, 340, 42, '#7B1FA2') + hand(404, 332, skin) + capsule(404, 314, 404, 276, 14, skin)   # finger up: "actually..."
+    return s
+
 SWEAT = (path('M 410 150 Q 426 178 410 194 Q 394 178 410 150 Z', '#7fd3ff') +
          path('M 120 170 Q 132 192 120 204 Q 108 192 120 170 Z', '#7fd3ff') +
          line(420, 250, 450, 240, 6) + line(424, 280, 456, 284, 6))  # pain marks
 
-for fn in [new_kid, pinky_aunty, scooty_uncle, auto_bhaiya, south_delhi_girl, broker, monkey, firecracker, guard, ceo, babu, sector_cabbie, techbro, jaanu, shona, new_kid_shaved]:
+for fn in [new_kid, pinky_aunty, scooty_uncle, auto_bhaiya, south_delhi_girl, broker, monkey, firecracker, guard, ceo, babu, sector_cabbie, techbro, jaanu, shona, new_kid_shaved, daaru_uncle, sheru, rival_student]:
     C[fn.__name__] = fn()
     HURT = True
     C[fn.__name__ + '_hit'] = fn() + SWEAT

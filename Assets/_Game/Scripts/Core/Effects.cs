@@ -63,7 +63,7 @@ namespace KadakChai
                     }
                     case "flag":
                         s.flags.Add(val);
-                        if (val == "aunty") notes.Add("Pinky Aunty joined!");
+                        if (val == "aunty") { s.companion = "pinky_aunty"; notes.Add("Pinky Aunty joined!"); }
                         break;
                     case "skill":
                     {

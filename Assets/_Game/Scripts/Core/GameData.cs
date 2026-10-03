@@ -82,6 +82,7 @@ namespace KadakChai
         public int rent;         // rupees the landlord takes at the start of this day
         public int spice;        // Khatra level 1-8 (Balatro-style ante): scales enemy HP and ATK
         public string bg;        // optional background override (e.g. "metro"); default is the zone's
+        public string companion; // optional: this zone's companion joins today (one per zone, leaves at the border)
     }
 
     /// <summary>One line of a visual-novel scene (scenes.csv).</summary>
