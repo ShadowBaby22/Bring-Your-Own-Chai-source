@@ -28,7 +28,7 @@ Target before submission: every criterion at 7 or higher, and an audience score 
 | aesthetics | 7 | Consistent paper-sticker art, VN portraits, comic popups, the phone UI, chiptune audio, sharp writing for an Indian jury. | Juicier hits, a real sadhu portrait and nursing-home background, readable text sizes. |
 | overall | 7 | Polished and full of content for a jam; text-heavy in the first minute. | A faster hook: the first fight within 30 seconds. |
 
-**Risk outside the criteria:** BYOG's rules say generative AI is "not encouraged", though it isn't banned, and a jury may ask about it. This game was built with heavy help from Claude (the code, and the scripts that draw the SVG art). Decide as a team how to describe that on the submission page before 18:00.
+**Disclosure (not a criterion):** BYOG's FAQ says generative AI is "not encouraged" and asks teams to keep to the spirit of building the game in 72 hours. Ours: the concept, design, story, humour, references and every feature decision come from the team, with original art by Jaideep; the code was written with an AI assistant under the team's direction. Say it plainly on the page (wording in `Docs/SUBMISSION.md`).
 
 ## Round 1 (dry run)
 

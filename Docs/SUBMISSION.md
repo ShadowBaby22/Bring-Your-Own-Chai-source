@@ -49,11 +49,10 @@ Play on your phone or desktop, portrait, in about 15 minutes.
 - Amolika: (role)
 - Made in Unity 6. Fonts and sounds: (list sources if any are external)
 
-## Tools and AI use (pick one wording as a team)
-BYOG's FAQ says generative AI is "not encouraged" but leaves it to the team, in the spirit of "build a game in 72h". Being upfront is safer than being asked.
-- **A, short:** "Built in 72 hours by the team in Unity, with AI coding assistance (Claude). Design, writing direction, playtesting and art direction by the team."
-- **B, detailed:** "Design, story, jokes and art direction: the team. Code and the scripts that draw our SVG art were written with an AI assistant (Claude) under the team's direction. No AI image or music generators were used."
-- Only claim what is true: check the music and sound sources before choosing.
+## Tools and AI use
+BYOG's FAQ says generative AI is "not encouraged" but leaves it to the team, in the spirit of "build a game in 72h". Saying it plainly is better than being asked.
+- **Suggested:** "Concept, game design, story, humour and direction by the team. Original art by Jaideep. Code written with an AI coding assistant (Claude) under the team's direction. Built in Unity during the jam."
+- Check the music and sound-effect sources before submitting, and credit any that are external.
 
 ## Screenshots to capture (phone portrait, 1080x1920)
 1. Title screen
