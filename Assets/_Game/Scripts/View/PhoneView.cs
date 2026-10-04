@@ -22,6 +22,7 @@ namespace KadakChai
         public bool ShopReady { get; set; }
         /// <summary>Called when the player opens JhatPat from the dock while the shop is ready.</summary>
         public Action OpenShop;
+        public Action OpenStickers; // the sticker sheet (Profile > Stickers)
         public Action<string> OnLog; // mirrors log lines (for unread counts)
 
         static readonly (string id, string title)[] Apps =
@@ -416,6 +417,8 @@ namespace KadakChai
             Stat(178, $"DEF {s.DefTotal}  <size=28>({s.def} base{(s.armour != null ? $" + {s.armour.data.def} {s.armour.data.name}" : "")})</size>");
             Stat(232, $"<color=#FFD23F>₹{s.rupees}</color>  <size=28>earned ₹{s.earned}, spent ₹{s.spent}</size>");
             Stat(286, $"<color=#FF8A65>Khatra {(run.Finished ? 8 : run.Spice)}/8</color>  <size=28>{GameData.SpiceName(run.Finished ? 8 : run.Spice)}</size>");
+            var stickers = UiKit.Button(p, "Stickers", $"Stickers\n<size=26>{Album.Count}/{Album.Total}</size>", UiKit.Hex("#FFB300"), 34, () => OpenStickers?.Invoke());
+            stickers.GetComponent<RectTransform>().Place(40, 286, 210, 100, SW, ContentH);
             var foot = UiKit.Label(p, "Foot", s.HasAunty ? "Party: Pinky Aunty (forwards messages every 3 rounds)" : "Party: just you. For now.", 32, new Color(1, 1, 1, 0.8f), TextAnchor.MiddleLeft);
             foot.rectTransform.Place(40, ContentH - 60, SW - 80, 50, SW, ContentH);
         }

@@ -54,8 +54,21 @@ namespace KadakChai
         void Start()
         {
             LoadData();
+            try { Album.Load(PlayerPrefs.GetString("kc_album", "")); } catch { }
+            Album.Save = saved => { try { PlayerPrefs.SetString("kc_album", saved); PlayerPrefs.Save(); } catch { } };
             BuildUI();
             ShowTitle();
+        }
+
+        /// <summary>Unlocks stickers; new ones pop in at the right of the street and get a line in Messages.</summary>
+        void Collect(params string[] ids) => Collect((IEnumerable<string>)ids);
+        void Collect(IEnumerable<string> ids)
+        {
+            var fresh = new List<StickerData>();
+            foreach (var id in ids) { var st = Album.Unlock(id); if (st != null) fresh.Add(st); }
+            if (fresh.Count == 0) return;
+            log.Add($"New sticker{(fresh.Count > 1 ? "s" : "")}: *{string.Join("*, *", fresh.Select(f => f.name))}* ({Album.Count}/{Album.Total}). Your sheet is in *Profile > Stickers*.", CardStyle.Note);
+            StartCoroutine(StickerSheet.Toast(phone, fresh));
         }
 
         // ============================================================== UI construction
@@ -119,6 +132,7 @@ namespace KadakChai
 
             // The hero's phone (bottom half): status bar, stats, apps; the story log lives in its Messages app.
             phoneView = PhoneView.Build(phone);
+            phoneView.OpenStickers = () => StickerSheet.Show(phone);
             phoneView.OpenShop = () => clicked = 2;
             log = phoneView.Log;
 
@@ -241,6 +255,9 @@ namespace KadakChai
 
             var titleOpt = GearButton(p.transform, "TitleOptions");
             titleOpt.GetComponent<RectTransform>().Place(960, 30, 96, 96);
+            var album = UiKit.Button(p.transform, "Stickers", $"Stickers  {Album.Count}/{Album.Total}", UiKit.Hex("#FFB300"), 34, () => StickerSheet.Show(phone));
+            album.GetComponent<RectTransform>().Place(24, 30, 300, 96);
+            UiKit.Outline(album.targetGraphic, Color.black, 4);
         }
 
         // ============================================================== Flow
@@ -262,6 +279,7 @@ namespace KadakChai
             battle.ReviveHero(run.S);
             battle.SetTicker(GameData.RandomCard("news_", run.Rng)?.text ?? "");
 
+            Album.StartRun();
             foreach (var c in DebugStatuses()) run.S.conditions.Add(c); // ?status=shaved,confused (testing)
             int startDay = StartDay();
             if (startDay > 1)
@@ -278,6 +296,7 @@ namespace KadakChai
             {
                 yield return vn.Play(GameData.Scene("intro"));
                 log.Add(CardText("intro"));
+                Collect("bablu");
                 yield return WaitMain("Meet the Astrologer");
                 log.Add(CardText("astro_intro"), CardStyle.Event);
                 yield return SkillPick();
@@ -390,6 +409,7 @@ namespace KadakChai
                     if (result.won)
                     {
                         AudioKit.Sfx("win");
+                        Collect(Album.ForDefeated(enemies.Select(e => e.id)));
                         var win = GameData.CardOrNull(run.WinCardId) ?? GameData.RandomCard("win_", run.Rng);
                         log.Add(win?.text, CardStyle.Good);
                         if (result.xpGained > 0 || result.rupeesGained > 0) { AudioKit.Sfx("coin", 0.7f); log.Add($"+{result.xpGained} EXP   ·   +₹{result.rupeesGained}", CardStyle.Note); }
@@ -458,6 +478,7 @@ namespace KadakChai
         IEnumerator Ending()
         {
             HideButtons();
+            Collect("stamp");
             yield return Stamp();
             yield return vn.Play(GameData.Scene("ending"));
             log.Add(CardText("delivery_end"));
@@ -530,7 +551,7 @@ namespace KadakChai
             int v = !tapped ? 0 : off <= 0.08f ? 2 : off <= 0.2f ? 1 : 0;
             result.text = v == 2 ? "<color=#6D3B1F>KADAK!</color>" : v == 1 ? "<color=#B26A2E>Theek hai.</color>" : tapped ? "<color=#8D6E63>Pheeka...</color>" : "<color=#8D6E63>Chai got cold.</color>";
             AudioKit.Sfx(v == 2 ? "levelup" : v == 1 ? "coin" : "click", 0.8f);
-            if (v == 2) { battle.Celebrate(); battle.Banner("*KADAK!*  +40% ATK for 3 rounds"); }
+            if (v == 2) { battle.Celebrate(); battle.Banner("*KADAK!*  +40% ATK for 3 rounds"); Collect("kadak"); }
             else if (v == 1) battle.Banner("*Theek hai.*  +15% ATK for 2 rounds");
             log.Add(v == 2 ? "You brewed *KADAK chai*: *+40% ATK* for the first 3 rounds." :
                     v == 1 ? "*Theek-thaak* chai: *+15% ATK* for the first 2 rounds. Aim for the dark middle." :
@@ -789,6 +810,7 @@ namespace KadakChai
             yield return new WaitForSeconds(1.2f);
             string killer = run.Killer;
             run.WakeAtNursingHome();
+            Collect("zombie_bablu");
             yield return vn.Play(GameData.Scene("nursing_home"));
             AudioKit.Sfx("heal");
             AudioKit.Music("day");
@@ -815,11 +837,14 @@ namespace KadakChai
             body.rectTransform.Place(60, 170, 800, 900, 920, 1150);
             body.lineSpacing = 1.3f;
 
+            UiKit.Button(p.transform, "Sheet", $"Your Sticker Sheet  ({Album.Count}/{Album.Total})", UiKit.Hex("#FFB300"), 40, () => StickerSheet.Show(phone))
+                .GetComponent<RectTransform>().Place(140, 1420, 800, 130);
             UiKit.Button(p.transform, "Again", "Renew Lease (Play Again)", UiKit.Green, 44, () =>
             {
                 Destroy(p.gameObject);
                 StartCoroutine(RunLoop());
-            }).GetComponent<RectTransform>().Place(140, 1500, 800, 160);
+            }).GetComponent<RectTransform>().Place(140, 1580, 800, 150);
+            StickerSheet.Show(phone);   // the end-of-run payoff: this lease's stickers
         }
 
         Button GearButton(Transform parent, string name)
@@ -870,6 +895,7 @@ namespace KadakChai
         void RefreshHud()
         {
             var s = run.S;
+            Collect(Album.ForState(s));   // friends, a shaved head, the Laathi
             var stage = Aqi.StageFor(s.aqi);
             dayText.text = run.Finished ? "Lease complete" : $"{GameData.ZoneShort(run.Day.zone)}\n<size=28><color=#FFFFFFAA>Day {run.DayNumber} of {run.TotalDays}</color></size>";
             var zi = run.Finished ? null : Art.UI("zone_" + run.Day.zone);

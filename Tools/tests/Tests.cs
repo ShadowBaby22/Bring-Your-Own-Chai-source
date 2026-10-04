@@ -28,7 +28,7 @@ static class Tests
         var groups = new (string name, Action body)[]
         {
             ("data", DataTests), ("art", ArtTests), ("shop", ShopTests), ("days", DayTests),
-            ("nurse", NursingHomeTests), ("battle", BattleTests), ("balance", BalanceTests),
+            ("nurse", NursingHomeTests), ("battle", BattleTests), ("stickers", StickerTests), ("balance", BalanceTests),
         };
         foreach (var (name, body) in groups)
         {
@@ -712,6 +712,60 @@ static class Tests
             Check(res.won && res.rupeesGained > 0 && res.xpGained > 0, $"won={res.won} rs={res.rupeesGained} xp={res.xpGained}");
             Eq(rs + res.rupeesGained, r.S.rupees, "rupees after the win");
         });
+    }
+
+    // --- stickers ----------------------------------------------------------------
+
+    static void StickerTests()
+    {
+        Test("unlocking: new once, then never again; unknown ids are ignored", () =>
+        {
+            Album.Reset();
+            Check(Album.Unlock("broker") != null, "first unlock returned null");
+            Check(Album.Unlock("broker") == null, "second unlock counted as new");
+            Check(Album.Unlock("not_a_sticker") == null, "unknown sticker unlocked");
+            Eq(1, Album.Count, "collected");
+            Check(Album.NewThisRun.Contains("broker"), "not marked NEW");
+            Album.StartRun();
+            Check(Album.NewThisRun.Count == 0 && Album.Has("broker"), "a new run lost the sticker or kept NEW");
+        });
+        Test("the album survives a save and a load (collected across runs)", () =>
+        {
+            Album.Reset();
+            string saved = null;
+            Album.Save = x => saved = x;
+            Album.Unlock("babu"); Album.Unlock("kadak");
+            Album.Save = null;
+            Album.Reset();
+            Album.Load(saved + ",junk");
+            Check(Album.Has("babu") && Album.Has("kadak") && Album.Count == 2, $"loaded '{Album.Serialize()}' from '{saved}'");
+        });
+        Test("beating Lalaji also earns his board", () =>
+        {
+            var ids = Album.ForDefeated(new[] { "ceo" }).ToList();
+            Check(ids.Contains("ceo") && ids.Contains("cfo_bunty") && ids.Contains("cto_pappu"), string.Join(",", ids));
+        });
+        Test("the run state earns friends, the bald head and the Laathi", () =>
+        {
+            var st = new RunState { companion = "sheru" };
+            st.conditions.Add("shaved");
+            st.weapon = new OwnedItem { data = GameData.Items["laathi"], fightsLeft = 3 };
+            var ids = Album.ForState(st).ToList();
+            Check(ids.Contains("sheru") && ids.Contains("bald_bablu") && ids.Contains("laathi"), string.Join(",", ids));
+        });
+        Test("every enemy and companion in days.json has a sticker", () =>
+        {
+            var missing = GameData.Days.SelectMany(d => EnemyIds(d).Concat(string.IsNullOrEmpty(d.companion) ? new string[0] : new[] { d.companion }))
+                                       .Concat(new[] { "pinky_aunty", "cfo_bunty", "cto_pappu" }).Distinct().Where(id => !Album.Exists(id)).ToList();
+            Check(missing.Count == 0, "no sticker for: " + string.Join(", ", missing));
+        });
+        Test("every sticker has its art and its blank (Tools/make_stickers.py)", () =>
+        {
+            string dir = Path.Combine(root, "Assets/_Game/Resources/Art/Stickers");
+            var missing = Album.All.SelectMany(st => new[] { st.id, st.id + "_blank" }).Where(n => !File.Exists(Path.Combine(dir, n + ".png"))).ToList();
+            Check(missing.Count == 0, "missing: " + string.Join(", ", missing));
+        });
+        Album.Reset();
     }
 
     // --- balance -----------------------------------------------------------------
