@@ -91,6 +91,7 @@ namespace KadakChai
 
         public void Bind(Run r) { run = r; unread = 0; Refresh(); }
         public void NewDay() => dayStartedAt = Time.time;
+        int skillsSeenDay = -1;   // the Skills "!" badge (something expires) stops nagging once opened that day
 
         // ------------------------------------------------------------------ status bar
 
@@ -204,6 +205,7 @@ namespace KadakChai
                 BuildJhatPatClosed();
             }
             current = id;
+            if (id == "skills" && run != null) skillsSeenDay = run.DayNumber;
             foreach (var kv in pages) kv.Value.gameObject.SetActive(kv.Key == id);
             foreach (var kv in dock) kv.Value.glow.enabled = kv.Key == id;
             foreach (var (aid, t) in Apps) if (aid == id) title.text = t;
@@ -270,7 +272,7 @@ namespace KadakChai
             SetBadge("messages", unread > 0 ? (unread > 9 ? "9+" : unread.ToString()) : null);
             SetBadge("jhatpat", ShopReady ? "!" : null);
             bool expiring = run != null && (run.S.skills.Exists(o => o.IsLastDay) || run.S.weapon?.IsLastFight == true);
-            SetBadge("skills", expiring ? "!" : null);
+            SetBadge("skills", expiring && skillsSeenDay != run.DayNumber ? "!" : null);   // clears once you've looked today
         }
 
         void SetBadge(string id, string text)

@@ -248,7 +248,7 @@ namespace KadakChai
             onChanged();
             Refresh();
 
-            var dim = UiKit.Panel(transform, "BoxOpen", new Color(0, 0, 0, 0.85f));
+            var dim = UiKit.Panel(transform, "BoxOpen", new Color(0, 0, 0, 0.93f));   // the shop list showed through the reveal text
             dim.rectTransform.Fill();
             var root = dim.rectTransform;
 
