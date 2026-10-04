@@ -28,6 +28,9 @@ Bablu, a Kanpur engineering student, has 11 days to get a police-verification st
 - Phone dock icons (Messages, JhatPat, Skills, Profile, Map, Settings): a row about 85% down.
 - Baba's skill cards: three stacked cards mid-screen; tap one before the countdown ends.
 - Test switches you may use if your persona's goal needs them: `?day=N` starts on day N with matching stats; `?status=shaved,confused` adds statuses.
+- **Always add `?patience=60`** (e.g. `http://localhost:8765/?patience=60`): your clicks lag several seconds, and Baba's real 10-second timer would expire before your tap lands. Judge the timer as if it were 10 s.
+- Boss days open a "Fill the form!" tap-tap: send 15-25 clicks in one `browser_batch` right after pressing Face the Boss. Taps register even if the screenshot looks stale; the result line lands in Messages.
+- Results can show a few seconds late in screenshots (the pane may be throttled). Wait a second and re-screenshot before calling something a bug.
 
 ## Personas
 - **juror**: an industry jury member (mobile and casual designer, 12 years at studios like Zynga and Miniclip). Plays about 6 minutes on desktop, one of 200 entries tonight. Judges the first 60 seconds hard: hook, clarity, theme fit, polish. Will try to reach a boss.
