@@ -581,7 +581,7 @@ namespace KadakChai
             Sync();
             Row(p, 160, "Battle speed: tap the yellow button in the top-right of the fight.", 32, new Color(1, 1, 1, 0.85f), TextAnchor.MiddleCenter);
             Row(p, 230, "<b>bitterChai OS 11.0</b>  ·  valid for 11 months", 32, new Color(1, 1, 1, 0.65f), TextAnchor.MiddleCenter);
-            Row(p, 290, "Made by Siddharth Gupta, Dhivesh, Jaideep and Amolika", 32, new Color(1, 1, 1, 0.65f), TextAnchor.MiddleCenter);
+            Row(p, 290, "Made by Sidd aka Arcadewala, Dhivesh and Jaideep", 32, new Color(1, 1, 1, 0.65f), TextAnchor.MiddleCenter);
         }
 
         void BuildJhatPatClosed()
