@@ -164,6 +164,7 @@ namespace KadakChai
             // and the Dilli street below with Bablu facing down the Babu over a No Bachelors board.
             var p = UiKit.Panel(phone, "Title", UiKit.Hex("#C2185B"));
             p.rectTransform.Fill();
+            p.gameObject.AddComponent<RectMask2D>();   // the street and sunburst are wider than the screen; keep them inside it
             titlePanel = p.gameObject;
             Image Sprite(string name, Sprite sprite, float x, float y, float w, float h, Color? tint = null)
             {
