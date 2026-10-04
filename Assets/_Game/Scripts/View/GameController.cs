@@ -235,6 +235,8 @@ namespace KadakChai
             UiKit.Outline(sign, Color.black, 5);
             var signText = UiKit.Label(sign.transform, "T", "NO\nBACHELORS", 50, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
             signText.rectTransform.Fill(8);
+            signText.horizontalOverflow = HorizontalWrapMode.Overflow;   // never split BACHELORS on narrow phones
+            signText.resizeTextForBestFit = true; signText.resizeTextMinSize = 30; signText.resizeTextMaxSize = 50;
             var signFx = Fx(sign); signFx.sway = 4f; signFx.swaySpeed = 1.3f;
 
             var floor = UiKit.Panel(p.transform, "Floor", new Color(0.07f, 0.05f, 0.12f, 0.92f));
