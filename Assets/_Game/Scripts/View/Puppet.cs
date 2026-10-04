@@ -49,6 +49,7 @@ namespace KadakChai
                 var hl = pills.gameObject.AddComponent<HorizontalLayoutGroup>();
                 hl.spacing = 6; hl.childAlignment = TextAnchor.MiddleCenter;
                 hl.childControlWidth = hl.childControlHeight = true; hl.childForceExpandWidth = hl.childForceExpandHeight = false;
+                pills.gameObject.AddComponent<ContentSizeFitter>().horizontalFit = ContentSizeFitter.FitMode.PreferredSize;   // grow, never squash
             }
             // Head Shaved swaps the whole sprite (a real bald Bablu, not a cap).
             bool bald = set.Contains("shaved") && Art.HasCharacter(Id + "_shaved");
@@ -78,15 +79,18 @@ namespace KadakChai
             if (stars != null) foreach (var st in stars) st.gameObject.SetActive(dizzy);
 
             foreach (Transform c in pills) Destroy(c.gameObject);
-            foreach (var id in set)
+            void Pill(string text)
             {
                 var pill = UiKit.Panel(pills, "Pill", new Color(0.55f, 0.1f, 0.6f, 0.9f), rounded: true);
                 var lg = pill.gameObject.AddComponent<HorizontalLayoutGroup>();
                 lg.padding = new RectOffset(10, 10, 2, 2); lg.childControlWidth = lg.childControlHeight = true;
                 lg.childForceExpandWidth = lg.childForceExpandHeight = false;
-                var t = UiKit.Label(pill.transform, "T", Conditions.Name(id), 20, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+                var t = UiKit.Label(pill.transform, "T", text, 20, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
                 t.horizontalOverflow = HorizontalWrapMode.Overflow;
             }
+            int shown = 0;
+            foreach (var id in set) { if (shown == 2) break; Pill(Conditions.Name(id)); shown++; }
+            if (set.Count > 2) Pill($"+{set.Count - 2}");   // five pills overlapped over Bablu's head; the full list is in Skills
         }
 
         /// <summary>Tints the sprite (zombie green). Hit flashes return to this colour.</summary>

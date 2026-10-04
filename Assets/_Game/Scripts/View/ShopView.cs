@@ -112,13 +112,16 @@ namespace KadakChai
             list = UiKit.Make("List", screen);
             list.Place(0, 336, PW, PH - 336, PW, PH);
 
-            var close = UiKit.Button(root, "ShopClose", "Back to the lease", UiKit.Orange, 46, () => { if (!busy) open = false; });
+            var close = UiKit.Button(root, "ShopClose", "Close JhatPat", UiKit.Orange, 46, () => { if (!busy) open = false; });
             close.GetComponent<RectTransform>().Place(240, 1736, 600, 150);
 
             Refresh();
         }
 
-        string TomorrowText()
+        string TomorrowText() => Tomorrow(run);
+
+        /// <summary>Tomorrow's enemies with their types, and the weapon type that is super effective against them.</summary>
+        public static string Tomorrow(Run run)
         {
             var ids = run.NextEnemyIds();
             string when = run.DayStarted ? "Tomorrow" : "Today";
@@ -126,7 +129,7 @@ namespace KadakChai
                 return run.DayNumber >= run.TotalDays ? "Last day." : $"{when}: no fight. Stock up for later.";
             var parts = ids.Select(id => GameData.Combatants.TryGetValue(id, out var c) ? $"{c.name} ({(c.Ranged ? "Ranged" : "Close")})" : id);
             int ranged = ids.Count(id => GameData.Combatants.TryGetValue(id, out var c) && c.Ranged);
-            string tip = ranged * 2 >= ids.Count ? "*Close* weapons hit ranged enemies 25% harder." : "*Ranged* weapons shoot first and pick off the weakest.";
+            string tip = ranged * 2 >= ids.Count ? "*Close* weapons are *super effective* against ranged enemies (+25%)." : "*Ranged* weapons shoot first and pick off the weakest; close enemies hit ranged heroes 25% harder.";
             return $"{when}: " + string.Join(", ", parts) + ". " + tip;
         }
 
@@ -176,6 +179,8 @@ namespace KadakChai
             string lasts = it.slot switch { "weapon" or "armour" => $"\n<color=#E8590C><b>Lasts {it.fights} fights</b></color>", "pass" => "\n<color=#E8590C><b>One border</b></color>", "insurance" => $"\n<color=#E8590C><b>Expires in {it.fights} days</b></color>", _ => "" };
             var desc = UiKit.Label(card.transform, "Desc", it.desc + lasts, 24, UiKit.Hex("#4E4E4E"), TextAnchor.UpperLeft);
             desc.rectTransform.Place(184, 60, 470, 118, PW - 48, 180);
+            desc.resizeTextForBestFit = true; desc.resizeTextMinSize = 16; desc.resizeTextMaxSize = 24;   // long text shrinks instead of being cut
+            desc.verticalOverflow = VerticalWrapMode.Truncate;
             Buy(card.transform, it.price, false, PW - 48, 180, () => BuyItem(it, card.rectTransform));
         }
 
@@ -243,7 +248,7 @@ namespace KadakChai
             onChanged();
             Refresh();
 
-            var dim = UiKit.Panel(transform, "BoxOpen", new Color(0, 0, 0, 0.85f));
+            var dim = UiKit.Panel(transform, "BoxOpen", new Color(0, 0, 0, 0.93f));   // the shop list showed through the reveal text
             dim.rectTransform.Fill();
             var root = dim.rectTransform;
 
@@ -311,7 +316,7 @@ namespace KadakChai
                 "armour" => run.S.armour != null ? $"Wear (drop {run.S.armour.data.name})" : "Wear",
                 "consumable" => "Drink it",
                 "pass" => "Keep it",
-                _ => "Pop it",
+                _ => "Keep it",
             };
             var keepBtn = UiKit.Button(root, "BoxKeep", keep, UiKit.Green, 38, () => choice = 0);
             int value = run.SellValue(it);

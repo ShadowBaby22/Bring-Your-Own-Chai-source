@@ -6,6 +6,10 @@
 set -euo pipefail
 TARGET="${1:-}"
 [[ "$TARGET" == "staging" || "$TARGET" == "dev" ]] || { echo "usage: $0 staging|dev"; exit 1; }
+# The playtest link only gets builds whose code passes the regression suite (SKIP_TESTS=1 to override).
+if [ "$TARGET" == "staging" ] && [ "${SKIP_TESTS:-0}" != "1" ]; then
+  bash "$(dirname "$0")/test.sh" || { echo "Regression suite failed: not deploying to staging."; exit 1; }
+fi
 cd "$(dirname "$0")/../Builds"
 REPO="ShadowBaby22/Bring-Your-Own-Chai"
 SITE="pages-site"   # a git working copy that only ever holds the built game
@@ -24,7 +28,7 @@ else
 fi
 touch "$SITE/.nojekyll"   # serve files as-is, no Jekyll processing
 cat > "$SITE/README.md" <<'EOF'
-# GRAP Stage 4 (Bring Your Own Chai)
+# KADAK Chai (Bring Your Own Chai)
 
 **Play: https://shadowbaby22.github.io/Bring-Your-Own-Chai/** (phone or desktop, sound on, portrait)
 Work-in-progress build: https://shadowbaby22.github.io/Bring-Your-Own-Chai/dev/

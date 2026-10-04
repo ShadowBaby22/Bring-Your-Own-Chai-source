@@ -16,6 +16,7 @@ namespace KadakChai
         public bool big;                     // skill hit: bigger popup
         public bool ranged;                  // thrown/fired: the view flies a projectile instead of a lunge
         public string projectile;            // Art/UI sprite for the projectile ("item_cork_ball", "shot_ceo")
+        public bool effective;               // a close hit on a ranged target: SUPER EFFECTIVE (+25%)
     }
 
     public class UnitInfo
@@ -55,6 +56,9 @@ namespace KadakChai
         public const float SpiceHp = 0.08f, SpiceAtk = 0.10f;
         public const float RangedPenalty = 0.8f;  // ranged attacks do 20% less damage
         public const float CloseBonus = 1.25f;    // close attacks do 25% more to ranged targets
+        /// <summary>Fight opener: the Kadak brew (fights) or the tap-tap form (bosses). 2 = KADAK / accepted, 1 = theek / mostly, 0 = none.</summary>
+        public const float OpenerKadak = 0.40f, OpenerTheek = 0.15f;
+        public const int OpenerKadakRounds = 3, OpenerTheekRounds = 2;
         static readonly HashSet<string> Uncles = new() { "scooty_uncle", "auto_bhaiya", "guard", "broker", "babu", "sector_cabbie" };
 
         readonly RunState s;
@@ -71,13 +75,15 @@ namespace KadakChai
         bool ignoreAqi;
         int round, shieldHits, spice;
         float scale = 1f;   // per-day enemy multiplier (days.json enemyScale)
+        int opener;         // Kadak opener result: 2 kadak, 1 theek, 0 pheeka
         float dodge;
 
         AutoBattle(RunState s, Random rng, int spice) { this.s = s; this.rng = rng; this.spice = Math.Max(1, spice); }
 
         /// <param name="spice">Khatra level 1-8 of the day: scales enemy HP and ATK.</param>
-        public static BattleResult Simulate(RunState s, List<CombatantData> enemies, Random rng, int spice = 1, float scale = 1f) =>
-            new AutoBattle(s, rng, spice) { scale = scale }.Run(enemies);
+        /// <param name="opener">Kadak opener: 2 = KADAK (+40% ATK for 3 rounds), 1 = theek (+15% for 2), 0 = none.</param>
+        public static BattleResult Simulate(RunState s, List<CombatantData> enemies, Random rng, int spice = 1, float scale = 1f, int opener = 0) =>
+            new AutoBattle(s, rng, spice) { scale = scale, opener = opener }.Run(enemies);
 
         BattleResult Run(List<CombatantData> enemies)
         {
@@ -171,6 +177,9 @@ namespace KadakChai
                 hero.hp = Math.Max(1, hero.hp - g);
                 Emit(BattleEventType.Hit, null, hero, g, hero.hp, "Interrogated");
             }
+
+            if (opener >= 2) { hero.Add(new StatusEffect(StatusKind.AtkUp, OpenerKadakRounds, OpenerKadak)); Shout(hero, $"KADAK! +{OpenerKadak * 100:0}% ATK for {OpenerKadakRounds} rounds."); }
+            else if (opener == 1) { hero.Add(new StatusEffect(StatusKind.AtkUp, OpenerTheekRounds, OpenerTheek)); Shout(hero, $"Theek hai. +{OpenerTheek * 100:0}% ATK for {OpenerTheekRounds} rounds."); }
 
             // Pre-fight gimmicks
             if (foes.Any(f => f.Ai == "firecracker") && stage < GrapStage.Grap4)
@@ -435,6 +444,7 @@ namespace KadakChai
             if (t.Has(StatusKind.Invulnerable)) { Emit(BattleEventType.Immune, a, t, label: "LUNCH BREAK", ranged: ranged, proj: proj); return 0; }
 
             float atk = a.atk * (1f + a.AtkBonus());
+            bool superEffective = typed && !a.ranged && t.ranged;
             if (typed)
             {
                 if (a.ranged) atk *= RangedPenalty;
@@ -449,7 +459,7 @@ namespace KadakChai
             if (t == hero && shieldHits > 0) { dmg = Math.Max(1, dmg / 2); shieldHits--; }
 
             t.hp = Math.Max(0, t.hp - dmg);
-            Emit(BattleEventType.Hit, a, t, dmg, t.hp, label, big, ranged, proj);
+            Emit(BattleEventType.Hit, a, t, dmg, t.hp, label, big, ranged, proj, superEffective);
             if (zombie && a == hero && hero.Alive && hero.hp < hero.maxHp)
                 Heal(hero, hero, Math.Max(1, (int)Math.Round(dmg * KadakChai.Run.ZombieLifesteal)), null);   // zombie lifesteal
             if (t.hp == 0) { if (t == hero) r.killer = a.name; OnZeroHp(t); }
@@ -504,7 +514,7 @@ namespace KadakChai
 
         void Shout(Combatant a, string text) => Emit(BattleEventType.Shout, a, null, label: text);
 
-        void Emit(BattleEventType type, Combatant a = null, Combatant t = null, int amount = 0, int hpAfter = 0, string label = null, bool big = false, bool ranged = false, string proj = null) =>
-            r.events.Add(new BattleEvent { type = type, actor = a?.index ?? -1, target = t?.index ?? -1, amount = amount, hpAfter = hpAfter, label = label, big = big, ranged = ranged, projectile = proj });
+        void Emit(BattleEventType type, Combatant a = null, Combatant t = null, int amount = 0, int hpAfter = 0, string label = null, bool big = false, bool ranged = false, string proj = null, bool effective = false) =>
+            r.events.Add(new BattleEvent { type = type, actor = a?.index ?? -1, target = t?.index ?? -1, amount = amount, hpAfter = hpAfter, label = label, big = big, ranged = ranged, projectile = proj, effective = effective });
     }
 }

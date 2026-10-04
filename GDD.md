@@ -1,4 +1,4 @@
-# GDD: **"GRAP Stage 4"** (working title)
+# GDD: **"KADAK Chai"** (originally "GRAP Stage 4")
 *Game jam entry. Theme: EVERYTHING IS TEMPORARY. Solo dev. Deadline Sunday 4 Oct 2026, 18:00 IST.*
 
 Other title ideas: *"11 Mahine Ka Agreement"*, *"Temporary Diversion"*, *"Work In Progress Since 2009"*

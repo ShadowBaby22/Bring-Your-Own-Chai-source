@@ -1,4 +1,4 @@
-"""Backgrounds for GRAP Stage 4. 1320x820 (wider than the 1080 battle area so it can slide). Ground line ~y 580."""
+"""Backgrounds for KADAK Chai. 1320x820 (wider than the 1080 battle area so it can slide). Ground line ~y 580."""
 import os, sys, random
 
 OUT = '#1d1b22'

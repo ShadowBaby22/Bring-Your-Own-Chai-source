@@ -1,8 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
@@ -53,8 +55,21 @@ namespace KadakChai
         void Start()
         {
             LoadData();
+            try { Album.Load(PlayerPrefs.GetString("kc_album", "")); } catch { }
+            Album.Save = saved => { try { PlayerPrefs.SetString("kc_album", saved); PlayerPrefs.Save(); } catch { } };
             BuildUI();
             ShowTitle();
+        }
+
+        /// <summary>Unlocks stickers; new ones pop in at the right of the street and get a line in Messages.</summary>
+        void Collect(params string[] ids) => Collect((IEnumerable<string>)ids);
+        void Collect(IEnumerable<string> ids)
+        {
+            var fresh = new List<StickerData>();
+            foreach (var id in ids) { var st = Album.Unlock(id); if (st != null) fresh.Add(st); }
+            if (fresh.Count == 0) return;
+            log.Add($"New sticker{(fresh.Count > 1 ? "s" : "")}: *{string.Join("*, *", fresh.Select(f => f.name))}* ({Album.Count}/{Album.Total}). Your sheet is in *Profile > Stickers*.", CardStyle.Note);
+            StartCoroutine(StickerSheet.Toast(phone, fresh));
         }
 
         // ============================================================== UI construction
@@ -81,6 +96,7 @@ namespace KadakChai
             // The "phone": always 9:16, letterboxed on desktop.
             phone = UiKit.Make("Phone", canvasGo.transform);
             phone.Fill();
+            phone.gameObject.AddComponent<RectMask2D>();   // on desktop, nothing slides in over the side bars
             var fitter = phone.gameObject.AddComponent<AspectRatioFitter>();
             fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
             fitter.aspectRatio = UiKit.W / UiKit.H;
@@ -118,6 +134,7 @@ namespace KadakChai
 
             // The hero's phone (bottom half): status bar, stats, apps; the story log lives in its Messages app.
             phoneView = PhoneView.Build(phone);
+            phoneView.OpenStickers = () => StickerSheet.Show(phone);
             phoneView.OpenShop = () => clicked = 2;
             log = phoneView.Log;
 
@@ -145,32 +162,105 @@ namespace KadakChai
 
         void ShowTitle()
         {
-            var p = UiKit.Panel(phone, "Title", new Color(0.08f, 0.08f, 0.12f, 1f));
+            // A Bollywood-poster title: pink sky, a spinning sunburst, a chunky KADAK logo with a steaming chai,
+            // and the Dilli street below with Bablu facing down the Babu over a No Bachelors board.
+            var p = UiKit.Panel(phone, "Title", UiKit.Hex("#C2185B"));
             p.rectTransform.Fill();
+            p.gameObject.AddComponent<RectMask2D>();   // the street and sunburst are wider than the screen; keep them inside it
             titlePanel = p.gameObject;
+            Image Sprite(string name, Sprite sprite, float x, float y, float w, float h, Color? tint = null)
+            {
+                var img = UiKit.Panel(p.transform, name, tint ?? Color.white);
+                img.sprite = sprite;
+                img.preserveAspect = true;
+                img.raycastTarget = false;
+                img.rectTransform.Place(x, y, w, h);
+                return img;
+            }
+            TitleFx Fx(Component c) => c.gameObject.AddComponent<TitleFx>();
 
-            var title = UiKit.Label(p.transform, "Title", "GRAP STAGE 4", 120, UiKit.Orange, TextAnchor.MiddleCenter, FontStyle.Bold);
-            title.rectTransform.Place(40, 420, 1000, 300);
-            title.gameObject.AddComponent<TextFx>().wave = 6f;
-            UiKit.Outline(title, Color.black, 5);
-            var sub = UiKit.Label(p.transform, "Sub", "Bablu. 11 days. One stamp. No Bachelors.\n<i>Everything is temporary.</i>", 44, Color.white);
-            sub.rectTransform.Place(60, 740, 960, 200);
-            var metro = UiKit.Label(p.transform, "Metro", "\"Agla station: Temporary. Darwaze baayi taraf khulenge.\"", 32, new Color(1, 1, 1, 0.6f));
-            metro.rectTransform.Place(60, 1000, 960, 120);
+            var burst = Sprite("Burst", Art.UI("burst"), -110, -140, 1300, 1300, new Color(1f, 0.82f, 0.2f, 0.5f));
+            Fx(burst).spin = 9f;
 
-            var info = Resources.Load<TextAsset>("build_info");
-            var ver = UiKit.Label(p.transform, "Build", info != null ? info.text : "editor", 26, new Color(1, 1, 1, 0.35f));
-            ver.rectTransform.Place(60, 1840, 960, 50);
+            var street = Sprite("Street", Art.Background("dilli").sprite, -345, 700, 1771, 1100);
+            street.preserveAspect = false;
+            var streetFx = Fx(street); streetFx.drift = 140f; streetFx.driftSpeed = 0.12f;
 
-            var titleOpt = GearButton(p.transform, "TitleOptions");
-            titleOpt.GetComponent<RectTransform>().Place(960, 30, 96, 96);
+            foreach (var (x, y, size, ph) in new[] { (120f, 250f, 70f, 0f), (900f, 210f, 90f, 0.8f), (160f, 650f, 60f, 1.6f), (930f, 640f, 70f, 2.4f), (520f, 160f, 50f, 1.1f) })
+            {
+                var star = Sprite("Star", Art.UI("star"), x, y, size, size, new Color(1f, 0.95f, 0.6f, 1f));
+                var fx = Fx(star); fx.twinkle = 2.2f; fx.phase = ph; fx.spin = 30f;
+            }
 
-            var start = UiKit.Button(p.transform, "Start", "Sign the Agreement", UiKit.Green, 52, () =>
+            var kadak = UiKit.Label(p.transform, "Kadak", "KADAK", 250, UiKit.Hex("#FFE14D"), TextAnchor.MiddleCenter, FontStyle.Bold);
+            kadak.rectTransform.Place(20, 250, 1040, 330);
+            kadak.rectTransform.localRotation = Quaternion.Euler(0, 0, 4f);
+            var shadow = kadak.gameObject.AddComponent<Shadow>();
+            shadow.effectColor = UiKit.Hex("#311B92"); shadow.effectDistance = new Vector2(14, -14);
+            UiKit.Outline(kadak, Color.black, 7);
+            kadak.gameObject.AddComponent<TextFx>().wave = 7f;
+            var kadakFx = Fx(kadak); kadakFx.popDelay = 0.15f; kadakFx.sway = 1.5f;
+
+            var badge = UiKit.Panel(p.transform, "ChaiBadge", UiKit.Hex("#00897B"), rounded: true);
+            badge.rectTransform.Place(300, 575, 420, 160);
+            badge.rectTransform.localRotation = Quaternion.Euler(0, 0, -5f);
+            UiKit.Outline(badge, Color.black, 5);
+            var chai = UiKit.Label(badge.transform, "Chai", "Chai", 120, UiKit.Cream, TextAnchor.MiddleCenter, FontStyle.BoldAndItalic);
+            chai.rectTransform.Fill(4);
+            UiKit.Outline(chai, Color.black, 4);
+            var badgeFx = Fx(badge); badgeFx.popDelay = 0.45f; badgeFx.sway = 3f; badgeFx.swaySpeed = 2.2f;
+
+            var cup = Sprite("Cup", Art.UI("item_cutting_chai"), 735, 545, 210, 210);
+            var cupFx = Fx(cup); cupFx.popDelay = 0.7f; cupFx.sway = 7f; cupFx.swaySpeed = 2.6f;
+            for (int i = 0; i < 3; i++)
+            {
+                var steam = Sprite("Steam", Art.Dot, 805 + i * 28, 575, 36, 36, new Color(1, 1, 1, 0.85f));
+                var fx = Fx(steam); fx.rise = 60f; fx.riseTime = 2.1f; fx.phase = i * 0.7f; fx.drift = 10f; fx.driftSpeed = 3f;
+            }
+
+            var ribbon = UiKit.Panel(p.transform, "Ribbon", new Color(0.07f, 0.05f, 0.12f, 0.88f), rounded: true);
+            ribbon.rectTransform.Place(80, 775, 920, 170);
+            var tag = UiKit.Label(ribbon.transform, "Tag", "Bablu. 11 days. One stamp. <b>No Bachelors.</b>\n<color=#FFE14D><i>Everything is temporary.</i></color>", 44, Color.white);
+            tag.rectTransform.Fill(10);
+
+            var hero = Sprite("Bablu", Art.Character("new_kid").sprite, 40, 1035, 350, 440);
+            var heroFx = Fx(hero); heroFx.bob = 10f; heroFx.bobSpeed = 3f;
+            var babu = Sprite("Babu", Art.Character("babu").sprite, 690, 1035, 350, 440);
+            babu.rectTransform.localScale = new Vector3(-1, 1, 1);   // face Bablu
+            var babuFx = Fx(babu); babuFx.bob = 6f; babuFx.bobSpeed = 2f; babuFx.phase = 1f;
+
+            var sign = UiKit.Panel(p.transform, "NoBachelors", UiKit.Red, rounded: true);
+            sign.rectTransform.Place(395, 1110, 290, 190);
+            sign.rectTransform.localRotation = Quaternion.Euler(0, 0, -7f);
+            UiKit.Outline(sign, Color.black, 5);
+            var signText = UiKit.Label(sign.transform, "T", "NO\nBACHELORS", 50, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            signText.rectTransform.Fill(8);
+            var signFx = Fx(sign); signFx.sway = 4f; signFx.swaySpeed = 1.3f;
+
+            var floor = UiKit.Panel(p.transform, "Floor", new Color(0.07f, 0.05f, 0.12f, 0.92f));
+            floor.rectTransform.Place(0, 1530, 1080, 390);
+
+            var start = UiKit.Button(p.transform, "Start", "Sign the Agreement", UiKit.Green, 56, () =>
             {
                 Destroy(titlePanel);
                 StartCoroutine(RunLoop());
             });
-            start.GetComponent<RectTransform>().Place(190, 1400, 700, 170);
+            start.GetComponent<RectTransform>().Place(140, 1575, 800, 175);
+            UiKit.Outline(start.targetGraphic, Color.black, 5);
+            var startFx = Fx(start); startFx.pulse = 0.035f; startFx.pulseSpeed = 4f;
+
+            var metro = UiKit.Label(p.transform, "Metro", "\"Agla station: Temporary. Darwaze baayi taraf khulenge.\"\n<size=26><i>Next station: Temporary. Doors will open on the left.</i></size>", 30, new Color(1, 1, 1, 0.75f));
+            metro.rectTransform.Place(40, 1762, 1000, 90);
+
+            var info = Resources.Load<TextAsset>("build_info");
+            var ver = UiKit.Label(p.transform, "Build", info != null ? info.text : "editor", 24, new Color(1, 1, 1, 0.35f));
+            ver.rectTransform.Place(60, 1850, 960, 50);
+
+            var titleOpt = GearButton(p.transform, "TitleOptions");
+            titleOpt.GetComponent<RectTransform>().Place(960, 30, 96, 96);
+            var album = UiKit.Button(p.transform, "Stickers", $"Stickers  {Album.Count}/{Album.Total}", UiKit.Hex("#FFB300"), 34, () => StickerSheet.Show(phone));
+            album.GetComponent<RectTransform>().Place(24, 30, 300, 96);
+            UiKit.Outline(album.targetGraphic, Color.black, 4);
         }
 
         // ============================================================== Flow
@@ -192,6 +282,7 @@ namespace KadakChai
             battle.ReviveHero(run.S);
             battle.SetTicker(GameData.RandomCard("news_", run.Rng)?.text ?? "");
 
+            Album.StartRun();
             foreach (var c in DebugStatuses()) run.S.conditions.Add(c); // ?status=shaved,confused (testing)
             int startDay = StartDay();
             if (startDay > 1)
@@ -208,10 +299,12 @@ namespace KadakChai
             {
                 yield return vn.Play(GameData.Scene("intro"));
                 log.Add(CardText("intro"));
+                Collect("bablu");
                 yield return WaitMain("Meet the Astrologer");
                 log.Add(CardText("astro_intro"), CardStyle.Event);
                 yield return SkillPick();
                 log.Add(CardText("jhatpat_intro"), CardStyle.Event);
+                log.Add("*KHATRA* (danger) climbs from 1/8 to 8/8: enemies get tougher every day. The day's *AQI* sets Delhi's *GRAP* smog alert, and each stage bends the fight rules.", CardStyle.Note);
                 run.RestockShop();
                 yield return WaitNext("Start Day 1  >");
             }
@@ -225,7 +318,19 @@ namespace KadakChai
                 if (lastDay) { run.EndDay(); break; }
 
                 run.RestockShop();
-                yield return WaitNext("Next Day  >");
+                var tomorrow = GameData.Days[run.S.dayIndex + 1];
+                if (tomorrow.type == "boss")
+                {
+                    var names = (tomorrow.enemies ?? new string[0]).Select(id => GameData.Combatants.TryGetValue(id, out var c) ? c.name : id);
+                    log.Add($"*Tomorrow: BOSS FIGHT* with *{string.Join(", ", names)}*. Heal up and gear up at *JhatPat* now: there is no shop between you and the boss.", CardStyle.Bad);
+                    phoneView.ShowApp("messages");
+                    yield return WaitNext("Next Day: BOSS  >", UiKit.Red);
+                }
+                else
+                {
+                    log.Add(ShopView.Tomorrow(run), CardStyle.Note);   // tomorrow's types + what's super effective
+                    yield return WaitNext("Next Day  >");
+                }
                 var expired = run.EndDay();
                 foreach (var s in expired)
                 {
@@ -251,12 +356,13 @@ namespace KadakChai
         {
             bool stageChanged = run.BeginDay();
             phoneView.NewDay();
+            phoneView.ShowApp("messages");   // the day's story lands in Messages; don't hide it behind another app
             var stage = Aqi.StageFor(run.S.aqi);
             battle.SetZone(string.IsNullOrEmpty(run.Day.bg) ? run.Day.zone : run.Day.bg, run.DayInZone);
             battle.SetAqi(run.S.aqi);
             RefreshHud();
 
-            log.Add($"Day {run.DayNumber} of {run.TotalDays}  ·  {GameData.ZoneName(run.Day.zone)}  ·  Khatra {run.Spice}/8", CardStyle.Header);
+            log.Add($"Day {run.DayNumber} of {run.TotalDays}  ·  {GameData.ZoneShort(run.Day.zone)}  ·  Khatra {run.Spice}/8", CardStyle.Header);
             if (run.JoinedCompanion != null)
             {
                 battle.ShowParty(run.S);
@@ -292,15 +398,27 @@ namespace KadakChai
                 {
                     yield return WaitMain(label, run.Kind == DayKind.Boss ? UiKit.Red : UiKit.Green);
                     AudioKit.Music(run.S.hp < run.S.maxHp * 0.5f ? "techno" : "battle");
-                    var result = run.Fight();
+                    int opener = 0;
+                    if (run.Kind == DayKind.Boss) yield return FormMeter(enemies[0].id, v => opener = v);   // bosses: tap-tap
+                    else yield return KadakMeter(v => opener = v);
+                    var result = run.Fight(opener);
+                    battle.HeroHp = phoneView.ShowLiveHp;
                     yield return battle.Play(result);
+                    battle.HeroHp = null;
+                    battle.HideRound();
                     foreach (var c in result.inflicted)
                         log.Add($"*{GameData.HeroName}* is now *{Conditions.Name(c)}*: {Conditions.All[c].desc} It lasts until you drink *Pudin Hara* (JhatPat).", CardStyle.Bad);
+                    if (result.inflicted.Count > 0)
+                    {
+                        var c0 = result.inflicted[0];
+                        battle.Banner($"*{Conditions.Name(c0).ToUpper()}!*  {Conditions.All[c0].desc.Split('.')[0]}. Cure: Pudin Hara");
+                    }
                     AudioKit.Music("day");
 
                     if (result.won)
                     {
                         AudioKit.Sfx("win");
+                        Collect(Album.ForDefeated(enemies.Select(e => e.id)));
                         var win = GameData.CardOrNull(run.WinCardId) ?? GameData.RandomCard("win_", run.Rng);
                         log.Add(win?.text, CardStyle.Good);
                         if (result.xpGained > 0 || result.rupeesGained > 0) { AudioKit.Sfx("coin", 0.7f); log.Add($"+{result.xpGained} EXP   ·   +₹{result.rupeesGained}", CardStyle.Note); }
@@ -344,7 +462,7 @@ namespace KadakChai
                     yield return WaitChoice(card.choiceA, card.choiceB);
                     var (text, notes) = run.Choose(clicked);
                     log.Add(text, CardStyle.Good);
-                    if (notes.Count > 0) log.Add(string.Join("   ·   ", notes), CardStyle.Note);
+                    if (notes.Count > 0) { log.Add(string.Join("   ·   ", notes), CardStyle.Note); battle.Banner(string.Join("  ·  ", notes)); }
                     battle.ShowParty(run.S);
                     battle.SetAqi(run.S.aqi);
                 }
@@ -360,6 +478,7 @@ namespace KadakChai
                 log.Add($"Level up! You are now Lv {run.S.level - n + 1}.", CardStyle.Note);
                 log.Add(CardText("baba_"), CardStyle.Event);
                 RefreshHud();
+                yield return new WaitForSecondsRealtime(1.2f);   // let the level-up banner and confetti finish
                 yield return SkillPick();
             }
             battle.RefreshHero(run.S);
@@ -368,6 +487,7 @@ namespace KadakChai
         IEnumerator Ending()
         {
             HideButtons();
+            Collect("stamp");
             yield return Stamp();
             yield return vn.Play(GameData.Scene("ending"));
             log.Add(CardText("delivery_end"));
@@ -376,6 +496,183 @@ namespace KadakChai
         }
 
         // ============================================================== Overlays
+
+        /// <summary>
+        /// Kadak opener: one tap before every fight. Stop the needle in the dark middle for KADAK chai
+        /// (+40% ATK for 3 rounds), near it for theek-thaak (+15% for 2), anywhere else for pheeka (nothing).
+        /// Reports 2, 1 or 0. No tap within 6 seconds counts as pheeka, so it can never block the game.
+        /// </summary>
+        IEnumerator KadakMeter(System.Action<int> done)
+        {
+            HideButtons();
+            bool tapped = false;
+            var overlay = UiKit.Panel(phone, "KadakMeter", new Color(0, 0, 0, 0.45f));
+            overlay.rectTransform.Fill();
+            var catcher = overlay.gameObject.AddComponent<Button>();
+            catcher.transition = Selectable.Transition.None;
+            catcher.onClick.AddListener(() => tapped = true);
+            var counter = TapCounter(() => tapped = true);
+
+            var card = UiKit.Panel(overlay.transform, "Card", UiKit.Cream, rounded: true);
+            card.rectTransform.Place(60, 1150, 960, 560);
+            card.raycastTarget = false;
+            UiKit.Outline(card, Color.black, 5);
+            var head = UiKit.Label(card.transform, "Head", "Brew it <color=#6D3B1F>KADAK!</color>", 64, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            head.rectTransform.Place(20, 24, 920, 90, 960, 560);
+            var sub = UiKit.Label(card.transform, "Sub", "Tap when the glass hits the dark middle\n<b>KADAK = +40% ATK</b> for 3 rounds  ·  theek = +15% for 2", 30, UiKit.Ink);
+            sub.rectTransform.Place(20, 108, 920, 96, 960, 560);
+
+            var bar = UiKit.Panel(card.transform, "Bar", UiKit.Hex("#F3E1B9"), rounded: true);
+            bar.rectTransform.Place(70, 228, 820, 110, 960, 560);
+            bar.raycastTarget = false;
+            UiKit.Outline(bar, Color.black, 4);
+            Image Zone(string name, float half, Color c)
+            {
+                var z = UiKit.Panel(bar.transform, name, c);
+                z.raycastTarget = false;
+                z.rectTransform.anchorMin = new Vector2(0.5f - half, 0.08f);
+                z.rectTransform.anchorMax = new Vector2(0.5f + half, 0.92f);
+                z.rectTransform.offsetMin = z.rectTransform.offsetMax = Vector2.zero;
+                return z;
+            }
+            Zone("Theek", 0.2f, UiKit.Hex("#D9A066"));
+            Zone("Kadak", 0.08f, UiKit.Hex("#6D3B1F"));
+            var tick = UiKit.Panel(bar.transform, "Glass", Color.white);
+            tick.sprite = Art.UI("item_cutting_chai");
+            tick.preserveAspect = true;
+            tick.raycastTarget = false;
+            var trt = tick.rectTransform;
+            trt.sizeDelta = new Vector2(120, 150);
+            var labels = UiKit.Label(card.transform, "Zones", "<color=#A1887F>pheeka = weak</color>   ·   <color=#B26A2E>theek = okay</color>   ·   <color=#6D3B1F><b>KADAK = extra strong</b></color>", 30, UiKit.Ink);
+            labels.rectTransform.Place(40, 350, 880, 50, 960, 560);
+            var result = UiKit.Label(card.transform, "Result", "", 72, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            result.rectTransform.Place(20, 420, 920, 110, 960, 560);
+
+            float t = 0, x = 0;
+            while (!tapped && t < 6f)
+            {
+                t += Time.unscaledDeltaTime;
+                x = Mathf.PingPong(t * 1.15f, 1f);
+                trt.anchorMin = trt.anchorMax = new Vector2(x, 0.5f);
+                trt.anchoredPosition = Vector2.zero;
+                yield return null;
+            }
+            counter.Disable(); counter.Dispose();
+            float off = Mathf.Abs(x - 0.5f);
+            int v = !tapped ? 0 : off <= 0.08f ? 2 : off <= 0.2f ? 1 : 0;
+            result.text = v == 2 ? "<color=#6D3B1F>KADAK!</color>" : v == 1 ? "<color=#B26A2E>Theek hai.</color>" : tapped ? "<color=#8D6E63>Pheeka...</color>" : "<color=#8D6E63>Chai got cold.</color>";
+            AudioKit.Sfx(v == 2 ? "levelup" : v == 1 ? "coin" : "click", 0.8f);
+            if (v == 2) { battle.Celebrate(); battle.Banner("*KADAK!*  +40% ATK for 3 rounds"); Collect("kadak"); }
+            else if (v == 1) battle.Banner("*Theek hai.*  +15% ATK for 2 rounds");
+            log.Add(v == 2 ? "You brewed *KADAK chai*: *+40% ATK* for the first 3 rounds." :
+                    v == 1 ? "*Theek-thaak* chai: *+15% ATK* for the first 2 rounds. Aim for the dark middle." :
+                    tapped ? "*Pheeka* (weak) brew. No boost this fight. Tap when the glass is in the dark middle." :
+                             "The chai got cold. No boost this fight.", v == 2 ? CardStyle.Good : CardStyle.Note);
+            yield return new WaitForSecondsRealtime(1.3f);
+            Destroy(overlay.gameObject);
+            done(v);
+        }
+
+        /// <summary>
+        /// Counts every press of the mouse or any finger straight from the Input System, so very fast taps are never
+        /// merged (UI clicks can drop a press and release that land in the same frame). A phone browser may also send a
+        /// fake mouse click after each touch, so mouse presses right after a touch are ignored. Dispose it when done.
+        /// </summary>
+        static InputAction TapCounter(System.Action onTap)
+        {
+            float lastTouch = -10f;
+            var a = new InputAction("Tap", InputActionType.PassThrough);
+            a.AddBinding("<Mouse>/leftButton");
+            a.AddBinding("<Touchscreen>/touch*/press");
+            a.performed += ctx =>
+            {
+                if (!ctx.ReadValueAsButton()) return;
+                bool touch = ctx.control.device is Touchscreen;
+                if (touch) lastTouch = Time.unscaledTime;
+                else if (Time.unscaledTime - lastTouch < 0.6f) return;
+                onTap();
+            };
+            a.Enable();
+            return a;
+        }
+
+        /// <summary>
+        /// Boss days: tap-tap as fast as you can to fill the boss's form (the original GDD's "Form Filling").
+        /// 20+ taps in 4 seconds = FORM ACCEPTED (the KADAK boost), 10+ = mostly filled (the theek boost),
+        /// fewer = come back tomorrow (no boost). The clock starts on the first tap; no tap in 8 s counts as none.
+        /// </summary>
+        IEnumerator FormMeter(string bossId, System.Action<int> done)
+        {
+            HideButtons();
+            var (title, fields) = bossId switch
+            {
+                "broker" => ("Fill the Broker's documents!", new[] { "Aadhaar copy", "PAN copy", "Salary slip (you're an intern)", "Four months' deposit" }),
+                "ceo" => ("Fill Lalaji's appraisal form!", new[] { "Loyalty out of 10: 10", "Weekends: available", "We are family: agree", "Salary: blessings" }),
+                "babu" => ("Fill the form in triplicate!", new[] { "Original", "Photocopy 1", "Photocopy 2", "Self-attested, with your soul" }),
+                _ => ("Fill the form!", new[] { "Name", "Address", "Signature", "Signature again" }),
+            };
+            const int Goal = 20, Okay = 10;
+            const float Window = 4f;
+            int taps = 0;
+            var overlay = UiKit.Panel(phone, "FormMeter", new Color(0, 0, 0, 0.45f));
+            overlay.rectTransform.Fill();
+            var counter = TapCounter(() => { taps++; AudioKit.Sfx("click", 0.5f); });   // the overlay just blocks other buttons
+
+            var card = UiKit.Panel(overlay.transform, "Card", UiKit.Cream, rounded: true);
+            card.rectTransform.Place(60, 1080, 960, 640);
+            card.raycastTarget = false;
+            UiKit.Outline(card, Color.black, 5);
+            var head = UiKit.Label(card.transform, "Head", title, 54, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            head.rectTransform.Place(20, 20, 920, 80, 960, 640);
+            var sub = UiKit.Label(card.transform, "Sub", "<b>Tap anywhere, fast!</b>  20 taps in 4 s = FORM ACCEPTED (+40% ATK)", 28, UiKit.Ink);
+            sub.rectTransform.Place(20, 96, 920, 50, 960, 640);
+            var ticks = new List<Text>();
+            for (int i = 0; i < fields.Length; i++)
+            {
+                var row = UiKit.Label(card.transform, "Field" + i, "", 32, UiKit.Ink, TextAnchor.MiddleLeft);
+                row.rectTransform.Place(80, 160 + i * 64, 800, 56, 960, 640);
+                ticks.Add(row);
+            }
+            var barBg = UiKit.Panel(card.transform, "Bar", UiKit.Hex("#E0D3B8"), rounded: true);
+            barBg.raycastTarget = false;
+            barBg.rectTransform.Place(70, 432, 820, 50, 960, 640);
+            var bar = UiKit.Panel(barBg.transform, "Fill", UiKit.Green, rounded: true);
+            bar.raycastTarget = false;
+            bar.rectTransform.anchorMin = Vector2.zero; bar.rectTransform.anchorMax = new Vector2(0, 1);
+            bar.rectTransform.offsetMin = bar.rectTransform.offsetMax = Vector2.zero;
+            var clock = UiKit.Label(card.transform, "Clock", "", 30, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            clock.rectTransform.Place(20, 488, 920, 46, 960, 640);
+            var result = UiKit.Label(card.transform, "Result", "", 66, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            result.rectTransform.Place(20, 534, 920, 96, 960, 640);
+
+            float t = 0, idle = 0;
+            while (true)
+            {
+                if (taps > 0) { t += Time.unscaledDeltaTime; if (t >= Window) break; }
+                else { idle += Time.unscaledDeltaTime; if (idle >= 8f) break; }
+                for (int i = 0; i < ticks.Count; i++)
+                {
+                    bool filled = taps >= (i + 1) * Goal / ticks.Count;
+                    ticks[i].text = (filled ? "<color=#2E7D32><b>[x]</b></color>  " : "[  ]  ") + fields[i];
+                }
+                bar.rectTransform.anchorMax = new Vector2(Mathf.Clamp01((float)taps / Goal), 1);
+                clock.text = taps == 0 ? "The clock starts on your first tap" : $"{taps} taps  ·  {Mathf.Max(0, Window - t):0.0}s left";
+                yield return null;
+            }
+            counter.Disable(); counter.Dispose();
+            int v = taps >= Goal ? 2 : taps >= Okay ? 1 : 0;
+            result.text = v == 2 ? "<color=#2E7D32>FORM ACCEPTED!</color>" : v == 1 ? "<color=#B26A2E>Mostly filled.</color>" : "<color=#8D6E63>Come back tomorrow.</color>";
+            clock.text = $"{taps} taps";
+            AudioKit.Sfx(v == 2 ? "levelup" : v == 1 ? "coin" : "click", 0.8f);
+            if (v == 2) { battle.Celebrate(); battle.Banner("*FORM ACCEPTED!*  +40% ATK for 3 rounds"); }
+            else if (v == 1) battle.Banner("*Mostly filled.*  +15% ATK for 2 rounds");
+            log.Add(v == 2 ? $"*Form accepted* ({taps} taps): *+40% ATK* for the first 3 rounds." :
+                    v == 1 ? $"Form *mostly filled* ({taps} taps): *+15% ATK* for the first 2 rounds. 20 taps gets it accepted." :
+                             "\"Come back tomorrow.\" No boost this fight. Tap fast next time: 20 taps in 4 seconds.", v == 2 ? CardStyle.Good : CardStyle.Note);
+            yield return new WaitForSecondsRealtime(1.3f);
+            Destroy(overlay.gameObject);
+            done(v);
+        }
 
         IEnumerator SkillPick()
         {
@@ -389,7 +686,7 @@ namespace KadakChai
             head.rectTransform.Place(40, 230, 1000, 220);
 
             // 10-second timer: Baba doesn't wait (change log).
-            const float Patience = 10f;
+            float Patience = BabaPatience();
             var barBg = UiKit.Panel(overlay.transform, "TimerBg", new Color(1, 1, 1, 0.15f), rounded: true);
             barBg.rectTransform.Place(140, 470, 800, 34);
             var bar = UiKit.Panel(barBg.transform, "Timer", UiKit.Orange, rounded: true);
@@ -436,6 +733,9 @@ namespace KadakChai
                 rt.localScale = Vector3.one;
                 AudioKit.Sfx("card", 0.6f);
             }
+            // A beat to read the cards before Baba's patience starts running out.
+            timerText.text = "Baba is reading your palm...";
+            for (float g = 0; g < 1.5f && picked < 0; g += Time.unscaledDeltaTime) yield return null;
             float left = Patience;
             int lastTick = -1;
             while (picked < 0 && left > 0)
@@ -464,7 +764,8 @@ namespace KadakChai
                     case Blessing.Granted:
                         AudioKit.Sfx("levelup", 0.7f);
                         yield return BlessingReveal(overlay.rectTransform, card, "BLESSED!", UiKit.Green);
-                        log.Add($"New skill: *{skill.name}* (lease: {skill.lease} days)", CardStyle.Good);
+                        yield return Learned(overlay.transform, skill);
+                        log.Add($"*{GameData.HeroName}* learned *{skill.name}*! {skill.desc} (lease: {skill.lease} days)", CardStyle.Good);
                         break;
                     case Blessing.Fizzled:
                         AudioKit.Sfx("lose", 0.6f);
@@ -481,6 +782,29 @@ namespace KadakChai
             }
             Destroy(overlay.gameObject);
             RefreshHud();
+        }
+
+        /// <summary>A Pokemon-style text box: "Bablu learned PRESSURE HORN!" with the move's icon.</summary>
+        IEnumerator Learned(Transform overlay, SkillData skill)
+        {
+            var box = UiKit.Panel(overlay, "Learned", UiKit.Cream, rounded: true);
+            box.rectTransform.Place(50, 1560, 980, 200);
+            UiKit.Outline(box, Color.black, 6);
+            var icon = UiKit.Panel(box.transform, "Icon", Color.white);
+            icon.sprite = Art.UI("skill_" + skill.id);
+            icon.preserveAspect = true;
+            icon.raycastTarget = false;
+            icon.rectTransform.Place(20, 20, 160, 160, 980, 200);
+            if (icon.sprite == null) icon.enabled = false;
+            var t = UiKit.Label(box.transform, "Text", $"<b>{GameData.HeroName}</b> learned <b><color=#E8590C>{skill.name.ToUpper()}</color></b>!", 42, UiKit.Ink, TextAnchor.MiddleLeft);
+            t.rectTransform.Place(200, 14, 760, 70, 980, 200);
+            t.resizeTextForBestFit = true; t.resizeTextMinSize = 26; t.resizeTextMaxSize = 42; t.verticalOverflow = VerticalWrapMode.Truncate;
+            t.gameObject.AddComponent<TextFx>().StartReveal(90f);
+            var sub = UiKit.Label(box.transform, "Sub", $"{skill.desc}  Lease: {skill.lease} days.", 28, UiKit.Ink, TextAnchor.UpperLeft);
+            sub.rectTransform.Place(200, 88, 760, 100, 980, 200);
+            sub.resizeTextForBestFit = true; sub.resizeTextMinSize = 18; sub.resizeTextMaxSize = 28; sub.verticalOverflow = VerticalWrapMode.Truncate;
+            AudioKit.Sfx("levelup", 0.5f);
+            yield return new WaitForSecondsRealtime(1.6f);
         }
 
         /// <summary>Big comic word over the picked card (or the middle of the screen).</summary>
@@ -622,15 +946,18 @@ namespace KadakChai
             yield return new WaitForSeconds(1.2f);
             string killer = run.Killer;
             run.WakeAtNursingHome();
-            yield return vn.Play(GameData.Scene("nursing_home"));
-            AudioKit.Sfx("heal");
-            AudioKit.Music("day");
-            log.Add($"Knocked out by *{killer}*. *{GameData.HeroName}* wakes up at *Amma's Nursing Home*. Amma's bill: *₹{Run.NursingHomeBill}*. The sadhu's jadi-booti makes him a *Zombie* for the next fight.", CardStyle.Bad);
-            battle.ClearEnemies();
+            battle.ClearEnemies();                 // the scene shouldn't play over the frozen fight
             battle.ReviveHero(run.S);
             battle.ShowParty(run.S);
             battle.SetZone(string.IsNullOrEmpty(run.Day.bg) ? run.Day.zone : run.Day.bg, run.DayInZone);
             RefreshHud();
+            vn.HeroPortrait = run.S.conditions.Contains("shaved") ? "new_kid_shaved" : null;
+            yield return vn.Play(GameData.Scene("nursing_home"));
+            AudioKit.Sfx("heal");
+            AudioKit.Music("day");
+            log.Add($"Knocked out by *{killer}*. *{GameData.HeroName}* wakes up at *Amma's Nursing Home*. Amma's bill: *₹{Run.NursingHomeBill}*. The Vaidya's jadi-booti cures every status and makes him a *Zombie* for the next fight.", CardStyle.Bad);
+            log.Add($"*Amma's blessing:* enemies are *{run.MercyPercent}% weaker* until {GameData.HeroName} gets past Day {run.S.furthestDay + 1}. \"Kha le beta, phir ladna.\"", CardStyle.Good);
+            Collect("zombie_bablu");   // after the scene and the story lines, so it doesn't pop up under the dialogue
             battle.Banner($"*JADI-BOOTI ZOMBIE!* Back to Day {run.DayNumber}.");
             yield return WaitMain($"Back to Day {run.DayNumber}  >", UiKit.Hex("#7CB342"));
         }
@@ -647,11 +974,14 @@ namespace KadakChai
             body.rectTransform.Place(60, 170, 800, 900, 920, 1150);
             body.lineSpacing = 1.3f;
 
+            UiKit.Button(p.transform, "Sheet", $"Your Sticker Sheet  ({Album.Count}/{Album.Total})", UiKit.Hex("#FFB300"), 40, () => StickerSheet.Show(phone))
+                .GetComponent<RectTransform>().Place(140, 1420, 800, 130);
             UiKit.Button(p.transform, "Again", "Renew Lease (Play Again)", UiKit.Green, 44, () =>
             {
                 Destroy(p.gameObject);
                 StartCoroutine(RunLoop());
-            }).GetComponent<RectTransform>().Place(140, 1500, 800, 160);
+            }).GetComponent<RectTransform>().Place(140, 1580, 800, 150);
+            StickerSheet.Show(phone);   // the end-of-run payoff: this lease's stickers
         }
 
         Button GearButton(Transform parent, string name)
@@ -702,6 +1032,8 @@ namespace KadakChai
         void RefreshHud()
         {
             var s = run.S;
+            Collect(Album.ForState(s));   // friends, a shaved head, the Laathi
+            if (vn != null) vn.HeroPortrait = s.conditions.Contains("shaved") ? "new_kid_shaved" : null;   // scenes show the real Bablu
             var stage = Aqi.StageFor(s.aqi);
             dayText.text = run.Finished ? "Lease complete" : $"{GameData.ZoneShort(run.Day.zone)}\n<size=28><color=#FFFFFFAA>Day {run.DayNumber} of {run.TotalDays}</color></size>";
             var zi = run.Finished ? null : Art.UI("zone_" + run.Day.zone);
@@ -732,13 +1064,13 @@ namespace KadakChai
         }
 
         /// <summary>Main button plus the JhatPat button beside it. Opening the shop doesn't advance the day.</summary>
-        IEnumerator WaitNext(string label)
+        IEnumerator WaitNext(string label, Color? color = null)
         {
             while (true)
             {
                 HideButtons();
                 mainButton.SetText(label);
-                mainButton.targetGraphic.color = UiKit.Green;
+                mainButton.targetGraphic.color = color ?? UiKit.Green;
                 mainButton.GetComponent<RectTransform>().Place(380, 1736, 670, 150);
                 mainButton.gameObject.SetActive(true);
                 shopButton.SetText($"JhatPat\n<size=30>₹{run.S.rupees}</size>");
@@ -786,6 +1118,16 @@ namespace KadakChai
             if (m.Success) foreach (var id in m.Groups[1].Value.Split(',')) if (Conditions.All.ContainsKey(id)) yield return id;
 #endif
             yield break;
+        }
+
+        /// <summary>Baba's timer: 10 s. Testing only: ?patience=60 in the WebGL URL gives slow testers (and playtest agents) time.</summary>
+        static float BabaPatience()
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            var m = System.Text.RegularExpressions.Regex.Match(Application.absoluteURL ?? "", @"[?&]patience=(\d+)");
+            if (m.Success) return Mathf.Clamp(int.Parse(m.Groups[1].Value), 3, 120);
+#endif
+            return 10f;
         }
 
         int StartDay()

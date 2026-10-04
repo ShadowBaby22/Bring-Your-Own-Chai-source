@@ -10,7 +10,7 @@ namespace KadakChai
     /// The story log, shown as chat bubbles in the phone's Messages app. Story and events arrive on the left,
     /// your wins on the right, notes and day headers in the middle. Bubbles fade in and auto-scroll.
     /// </summary>
-    public class StoryLog : MonoBehaviour, UnityEngine.EventSystems.IBeginDragHandler
+    public class StoryLog : MonoBehaviour, UnityEngine.EventSystems.IBeginDragHandler, UnityEngine.EventSystems.IEndDragHandler, UnityEngine.EventSystems.IScrollHandler
     {
         bool stickToBottom = true; // follow new messages until the player drags to read older ones
         const int MaxCards = 40;
@@ -129,6 +129,15 @@ namespace KadakChai
         }
 
         public void OnBeginDrag(UnityEngine.EventSystems.PointerEventData e) => stickToBottom = false;
+        // Back at the bottom after a drag or the mouse wheel: follow new messages again.
+        public void OnEndDrag(UnityEngine.EventSystems.PointerEventData e) { if (AtBottom) stickToBottom = true; }
+        /// <summary>The mouse wheel on desktop: it used to snap straight back to the newest line every frame.</summary>
+        public void OnScroll(UnityEngine.EventSystems.PointerEventData e)
+        {
+            if (e.scrollDelta.y > 0.01f) stickToBottom = false;
+            else if (AtBottom) stickToBottom = true;
+        }
+        bool AtBottom => scroll == null || scroll.verticalNormalizedPosition <= 0.02f;
 
         void LateUpdate()
         {

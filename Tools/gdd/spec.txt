@@ -1,5 +1,5 @@
 TITLE|Bring Your Own Chai
-P|Live GDD for GRAP Stage 4, our game for the Everything Is Temporary jam. This tab is the source of truth: edit it directly and keep it current. Dhivesh's edit notes and reference images are in the Edits tab.
+P|Live GDD for KADAK Chai, our game for the Everything Is Temporary jam. This tab is the source of truth: edit it directly and keep it current. Dhivesh's edit notes and reference images are in the Edits tab.
 H1|Status and links
 B|**Play the current build:** https://shadowbaby22.github.io/Bring-Your-Own-Chai/ (phone or desktop, tap once for sound)
 B|**Deadline:** Sunday 4 October, 18:00 IST. We aim to submit on itch.io by 16:30 to leave a buffer.

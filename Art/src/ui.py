@@ -242,6 +242,15 @@ def pudin_hara():
     s += path('M 176 60 Q 210 40 226 66 Q 206 84 176 60 Z', '#43a047') + path('M 186 92 Q 222 84 230 112 Q 204 120 186 92 Z', '#43a047')
     return s
 
+def health_insurance():
+    # A blue insurance card with a red cross: "AIIMS revives him once".
+    s = rect(34, 64, 188, 128, 18, '#1e88e5') + rect(34, 92, 188, 22, 0, '#1565c0')
+    s += rect(52, 128, 96, 12, 4, '#bbdefb') + rect(52, 150, 70, 12, 4, '#bbdefb')
+    s += rect(150, 120, 56, 56, 12, '#ffffff')
+    s += rect(171, 128, 14, 40, 3, '#e53935') + rect(158, 141, 40, 14, 3, '#e53935')
+    s += text(128, 86, 'INSURED', 22, '#ffffff')
+    return s
+
 def cond_overlay_svg(inner):
     return (f'<svg xmlns="http://www.w3.org/2000/svg" width="512" height="640" viewBox="0 0 512 640">{inner}</svg>')
 
@@ -427,6 +436,7 @@ open(os.path.join(out, 'scooty.svg'), 'w').write(sticker(scooty()))
 open(os.path.join(out, 'khatra.svg'), 'w').write(sticker(khatra()))
 open(os.path.join(out, 'star.svg'), 'w').write(sticker(star()))
 open(os.path.join(out, 'item_pudin_hara.svg'), 'w').write(sticker(pudin_hara()))
+open(os.path.join(out, 'item_health_insurance.svg'), 'w').write(sticker(health_insurance()))
 os.makedirs(os.path.join(out, 'overlays'), exist_ok=True)   # 512x640, drawn over the hero sprite
 open(os.path.join(out, 'overlays', 'cond_shaved.svg'), 'w').write(cond_overlay_svg(cond_shaved()))
 open(os.path.join(out, 'overlays', 'cond_confused.svg'), 'w').write(cond_overlay_svg(cond_confused()))

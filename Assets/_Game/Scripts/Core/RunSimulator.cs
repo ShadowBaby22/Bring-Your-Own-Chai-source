@@ -9,12 +9,23 @@ namespace KadakChai
     /// Plays N full runs with a random policy and reports difficulty per day.
     /// Run from the Unity menu (Kadak Chai > Simulate 500 Runs) after changing numbers in the JSON.
     /// </summary>
+    /// <summary>Raw numbers from RunSimulator.Simulate, for the regression tests' balance checks.</summary>
+    public class SimStats
+    {
+        public int runs, clears, cleanClears, faints, laathis;
+        public int[] reached, deaths;
+        public float FinishedPct => 100f * clears / Math.Max(1, runs);
+        public float CleanWinPct => 100f * cleanClears / Math.Max(1, runs);
+        public float FaintsPerRun => (float)faints / Math.Max(1, runs);
+        public float FaintPct(int dayIndex) => 100f * deaths[dayIndex] / Math.Max(1, reached[dayIndex]);
+    }
+
     public static class RunSimulator
     {
 
         /// <summary>Plays N full runs. Death is permanent (Health Insurance revives once), so this reports how
         /// often runs clear and where Bablu dies. shop = false is a player who never opens JhatPat.</summary>
-        public static string Simulate(int runs, int seed = 1, bool shop = true)
+        public static string Simulate(int runs, int seed = 1, bool shop = true, SimStats stats = null)
         {
             int days = GameData.Days.Count;
             var deaths = new int[days];
@@ -47,7 +58,7 @@ namespace KadakChai
                         BattleResult res;
                         do
                         {
-                            res = run.Fight();
+                            res = run.Fight(PlayerOpener(rng));
                             rounds[d].Add(res.rounds);
                             fightSeconds[d].Add(EstimateSeconds(res));
                             if (res.revived) revives[d]++;
@@ -72,6 +83,12 @@ namespace KadakChai
                 if (run.Finished && run.S.faints == 0) cleanClears++;
                 faintTotal += run.S.faints;
                 earned.Add(run.S.earned);
+            }
+
+            if (stats != null)
+            {
+                stats.runs = runs; stats.clears = clears; stats.cleanClears = cleanClears; stats.faints = faintTotal;
+                stats.laathis = laathis; stats.reached = reached; stats.deaths = deaths;
             }
 
             var sb = new StringBuilder();
@@ -130,6 +147,9 @@ namespace KadakChai
             if (ids.Count == 0) return 0;
             return (float)ids.Count(id => GameData.Combatants.TryGetValue(id, out var c) && c.Ranged) / ids.Count;
         }
+
+        /// <summary>How a typical player does on the Kadak meter: 35% KADAK, 45% theek, 20% pheeka.</summary>
+        public static int PlayerOpener(Random rng) { double r = rng.NextDouble(); return r < 0.35 ? 2 : r < 0.80 ? 1 : 0; }
 
         static void PickSkill(Run run, Random rng)
         {

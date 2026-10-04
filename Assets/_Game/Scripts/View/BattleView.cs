@@ -17,6 +17,8 @@ namespace KadakChai
         Image bg, bgNext, smog, flash;
         Text roundText, speedText;
         Puppet hero, aunty;   // aunty = the current zone companion's puppet (any companion)
+        /// <summary>Bablu's HP after each hit or heal during playback (the phone header follows it live).</summary>
+        public System.Action<int> HeroHp;
         readonly List<Puppet> enemies = new();
         string zone;
         // "1x" plays at 0.65 of the original pace (playtest: original felt too fast). The speed button cycles
@@ -102,7 +104,8 @@ namespace KadakChai
         void ApplySpeed()
         {
             speed = BasePace * Speeds[speedIndex];
-            speedText.text = Speeds[speedIndex].ToString("0.##") + "x";
+            speedText.text = "<size=20>SPEED</size>\n" + Speeds[speedIndex].ToString("0.##") + "x";
+            speedText.lineSpacing = 0.8f;
         }
 
         // ============================================================ juice primitives
@@ -284,6 +287,9 @@ namespace KadakChai
             yield return new WaitForSecondsRealtime(delay);
             if (p != null) Fx.Burst(this, popups, p.PointIn(popups, 0.5f, 0.02f), new Color(0.85f, 0.8f, 0.72f, 0.9f), 10, 260, 34, 0.5f, 200);
         }
+
+        /// <summary>Clears "Round N/15" once a fight is over (it lingered through the post-fight scenes).</summary>
+        public void HideRound() => roundText.text = "";
 
         public void ClearEnemies()
         {
@@ -481,6 +487,7 @@ namespace KadakChai
         public IEnumerator Play(BattleResult r)
         {
             bool techno = false; // switch to Delhi techno once the hero drops below 50% HP (change log 19:21)
+            bool effectiveShownHero = false, effectiveShownFoe = false;   // teach close-beats-ranged once per side per fight
             int enemiesLeft = 0;
             foreach (var u in r.units) if (!u.isPlayerSide) enemiesLeft++;
 
@@ -506,9 +513,15 @@ namespace KadakChai
                         {
                             target.Hit(speed, e.big);
                             target.SetHp(e.hpAfter);
+                            if (targetIsHero) HeroHp?.Invoke(e.hpAfter);
                             var at = target.PointIn(popups, 0.5f, 0.5f);
                             Fx.Burst(this, popups, at, e.big ? new Color(1f, 0.85f, 0.2f) : Color.white, e.big ? 16 : 7, e.big ? 900 : 550, e.big ? 26 : 18, 0.45f);
                             ImpactNumber(target, e.amount, e.big, targetIsHero);
+                            if (e.effective && !(targetIsHero ? effectiveShownFoe : effectiveShownHero))
+                            {
+                                if (targetIsHero) effectiveShownFoe = true; else effectiveShownHero = true;
+                                Popup("SUPER EFFECTIVE!", target, new Color(1f, 0.85f, 0.2f), 40, 120, true);
+                            }
                         }
                         PlayHitSound(e);
                         if (e.big)
@@ -533,6 +546,7 @@ namespace KadakChai
 
                     case BattleEventType.Heal:
                         target?.SetHp(e.hpAfter);
+                        if (targetIsHero) HeroHp?.Invoke(e.hpAfter);
                         if (target != null)
                         {
                             Popup("+" + e.amount, target, new Color(0.45f, 1f, 0.5f), 52);
@@ -607,6 +621,7 @@ namespace KadakChai
 
                     case BattleEventType.Revive:
                         target?.SetHp(e.hpAfter);
+                        if (targetIsHero) HeroHp?.Invoke(e.hpAfter);
                         Flash(new Color(1f, 0.9f, 0.3f, 0.5f), 0.3f);
                         Shake(16, 0.4f);
                         if (target != null) yield return target.StandUp(speed);

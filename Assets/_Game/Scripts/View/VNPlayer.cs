@@ -146,9 +146,12 @@ namespace KadakChai
             fx.StartReveal(45f);
         }
 
+        /// <summary>Bablu's current look for scene portraits ("new_kid_shaved" once shaved); null = the normal sprite.</summary>
+        public string HeroPortrait;
+
         IEnumerator SlideIn(Image img, string id, float dir)
         {
-            img.sprite = Art.Character(id).sprite;
+            img.sprite = Art.Character(id == "new_kid" && !string.IsNullOrEmpty(HeroPortrait) ? HeroPortrait : id).sprite;
             img.enabled = true;
             var rt = img.rectTransform;
             Vector2 home = rt.anchoredPosition;

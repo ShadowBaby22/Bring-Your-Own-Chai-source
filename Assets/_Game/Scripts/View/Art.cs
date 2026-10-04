@@ -26,6 +26,8 @@ namespace KadakChai
 
         /// <summary>UI/effect art from Resources/Art/UI (burst, dmg1, dmg2). Null if missing.</summary>
         public static Sprite UI(string name) => Load("Art/UI/" + name);
+        /// <summary>Sticker-sheet art from Resources/Art/Stickers (Tools/make_stickers.py). Null if missing.</summary>
+        public static Sprite Sticker(string name) => Load("Art/Stickers/" + name);
 
         public static bool HasCharacter(string id) => !string.IsNullOrEmpty(id) && Load("Art/Characters/" + id) != null;
 
