@@ -470,6 +470,7 @@ namespace KadakChai
             root.sizeDelta = new Vector2(460, 200);
             root.anchoredPosition = over.HeadPosition(popups) + new Vector2(Random.Range(-30f, 30f), 70);
             root.localRotation = Quaternion.Euler(0, 0, Random.Range(-10f, 10f));
+            root.gameObject.AddComponent<ClampInside>();   // bursts over fighters at the edge ("CTO!") stay on screen
             var burst = Art.UI("burst");
             if (burst != null)
             {
@@ -753,8 +754,9 @@ namespace KadakChai
             if (shaky) t.gameObject.AddComponent<TextFx>().shake = 2.5f;
             UiKit.Outline(t, new Color(0, 0, 0, 0.85f), 3);
             var rt = t.rectTransform;
-            rt.sizeDelta = new Vector2(600, 100);
+            rt.sizeDelta = new Vector2(Mathf.Min(t.preferredWidth + 24, 1040), 100);   // as wide as the text, so the clamp is exact
             rt.anchoredPosition = over.HeadPosition(popups) + new Vector2(Random.Range(-25f, 25f), 30 + extraY);
+            t.gameObject.AddComponent<ClampInside>();   // long lines over a fighter near the edge ("Meter se nahi jayenge!") stay on screen
             rt.localRotation = Quaternion.Euler(0, 0, Random.Range(-8f, 8f));
             StartCoroutine(FloatAway(rt, t));
         }
