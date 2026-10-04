@@ -4,6 +4,7 @@ using System.Linq;
 using System.IO;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
@@ -504,6 +505,7 @@ namespace KadakChai
             var catcher = overlay.gameObject.AddComponent<Button>();
             catcher.transition = Selectable.Transition.None;
             catcher.onClick.AddListener(() => tapped = true);
+            var counter = TapCounter(() => tapped = true);
 
             var card = UiKit.Panel(overlay.transform, "Card", UiKit.Cream, rounded: true);
             card.rectTransform.Place(60, 1150, 960, 560);
@@ -549,6 +551,7 @@ namespace KadakChai
                 trt.anchoredPosition = Vector2.zero;
                 yield return null;
             }
+            counter.Disable(); counter.Dispose();
             float off = Mathf.Abs(x - 0.5f);
             int v = !tapped ? 0 : off <= 0.08f ? 2 : off <= 0.2f ? 1 : 0;
             result.text = v == 2 ? "<color=#6D3B1F>KADAK!</color>" : v == 1 ? "<color=#B26A2E>Theek hai.</color>" : tapped ? "<color=#8D6E63>Pheeka...</color>" : "<color=#8D6E63>Chai got cold.</color>";
@@ -565,9 +568,32 @@ namespace KadakChai
         }
 
         /// <summary>
+        /// Counts every press of the mouse or any finger straight from the Input System, so very fast taps are never
+        /// merged (UI clicks can drop a press and release that land in the same frame). A phone browser may also send a
+        /// fake mouse click after each touch, so mouse presses right after a touch are ignored. Dispose it when done.
+        /// </summary>
+        static InputAction TapCounter(System.Action onTap)
+        {
+            float lastTouch = -10f;
+            var a = new InputAction("Tap", InputActionType.PassThrough);
+            a.AddBinding("<Mouse>/leftButton");
+            a.AddBinding("<Touchscreen>/touch*/press");
+            a.performed += ctx =>
+            {
+                if (!ctx.ReadValueAsButton()) return;
+                bool touch = ctx.control.device is Touchscreen;
+                if (touch) lastTouch = Time.unscaledTime;
+                else if (Time.unscaledTime - lastTouch < 0.6f) return;
+                onTap();
+            };
+            a.Enable();
+            return a;
+        }
+
+        /// <summary>
         /// Boss days: tap-tap as fast as you can to fill the boss's form (the original GDD's "Form Filling").
         /// 20+ taps in 4 seconds = FORM ACCEPTED (the KADAK boost), 10+ = mostly filled (the theek boost),
-        /// fewer = come back tomorrow (no boost). The clock starts on the first tap; no tap in 6 s counts as none.
+        /// fewer = come back tomorrow (no boost). The clock starts on the first tap; no tap in 8 s counts as none.
         /// </summary>
         IEnumerator FormMeter(string bossId, System.Action<int> done)
         {
@@ -584,9 +610,7 @@ namespace KadakChai
             int taps = 0;
             var overlay = UiKit.Panel(phone, "FormMeter", new Color(0, 0, 0, 0.45f));
             overlay.rectTransform.Fill();
-            var catcher = overlay.gameObject.AddComponent<Button>();
-            catcher.transition = Selectable.Transition.None;
-            catcher.onClick.AddListener(() => { taps++; AudioKit.Sfx("click", 0.5f); });
+            var counter = TapCounter(() => { taps++; AudioKit.Sfx("click", 0.5f); });   // the overlay just blocks other buttons
 
             var card = UiKit.Panel(overlay.transform, "Card", UiKit.Cream, rounded: true);
             card.rectTransform.Place(60, 1080, 960, 640);
@@ -619,7 +643,7 @@ namespace KadakChai
             while (true)
             {
                 if (taps > 0) { t += Time.unscaledDeltaTime; if (t >= Window) break; }
-                else { idle += Time.unscaledDeltaTime; if (idle >= 6f) break; }
+                else { idle += Time.unscaledDeltaTime; if (idle >= 8f) break; }
                 for (int i = 0; i < ticks.Count; i++)
                 {
                     bool filled = taps >= (i + 1) * Goal / ticks.Count;
@@ -629,6 +653,7 @@ namespace KadakChai
                 clock.text = taps == 0 ? "The clock starts on your first tap" : $"{taps} taps  ·  {Mathf.Max(0, Window - t):0.0}s left";
                 yield return null;
             }
+            counter.Disable(); counter.Dispose();
             int v = taps >= Goal ? 2 : taps >= Okay ? 1 : 0;
             result.text = v == 2 ? "<color=#2E7D32>FORM ACCEPTED!</color>" : v == 1 ? "<color=#B26A2E>Mostly filled.</color>" : "<color=#8D6E63>Come back tomorrow.</color>";
             clock.text = $"{taps} taps";
