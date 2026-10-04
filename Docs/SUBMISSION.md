@@ -51,15 +51,14 @@ Play on your phone or desktop, portrait, in about 15 minutes.
 - The gear at the top right turns music and sound on or off. The yellow button changes battle speed.
 
 ## Credits
-- Siddharth Gupta: lead engineer
-- Dhivesh: (role)
-- Jaideep: UI/UX
-- Amolika: (role)
-- Made in Unity 6. Fonts and sounds: (list sources if any are external)
+- Sidd aka Arcadewala: programming, game design, level design, core loop, art style
+- Dhivesh: narrative testing
+- Jaideep: Dilli background
+- Made in Unity 6 for BYOG 2026.
 
 ## Tools and AI use
 BYOG's FAQ says generative AI is "not encouraged" but leaves it to the team, in the spirit of "build a game in 72h". Saying it plainly is better than being asked.
-- **Suggested:** "Concept, game design, story, humour and direction by the team. Original art by Jaideep. Code written with an AI coding assistant (Claude) under the team's direction. Built in Unity during the jam."
+- **Suggested:** "Made in 72 hours for BYOG 2026. Code and most art (drawn from code) were made with an AI coding assistant (Claude) under Sidd's direction; the Dilli background is hand-drawn by Jaideep."
 - Check the music and sound-effect sources before submitting, and credit any that are external.
 
 ## Screenshots to capture (phone portrait, 1080x1920)
