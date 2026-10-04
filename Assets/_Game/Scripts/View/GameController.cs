@@ -393,7 +393,8 @@ namespace KadakChai
                     yield return WaitMain(label, run.Kind == DayKind.Boss ? UiKit.Red : UiKit.Green);
                     AudioKit.Music(run.S.hp < run.S.maxHp * 0.5f ? "techno" : "battle");
                     int opener = 0;
-                    yield return KadakMeter(v => opener = v);
+                    if (run.Kind == DayKind.Boss) yield return FormMeter(enemies[0].id, v => opener = v);   // bosses: tap-tap
+                    else yield return KadakMeter(v => opener = v);
                     var result = run.Fight(opener);
                     battle.HeroHp = phoneView.ShowLiveHp;
                     yield return battle.Play(result);
@@ -558,6 +559,85 @@ namespace KadakChai
                     v == 1 ? "*Theek-thaak* chai: *+15% ATK* for the first 2 rounds. Aim for the dark middle." :
                     tapped ? "*Pheeka* (weak) brew. No boost this fight. Tap when the glass is in the dark middle." :
                              "The chai got cold. No boost this fight.", v == 2 ? CardStyle.Good : CardStyle.Note);
+            yield return new WaitForSecondsRealtime(1.3f);
+            Destroy(overlay.gameObject);
+            done(v);
+        }
+
+        /// <summary>
+        /// Boss days: tap-tap as fast as you can to fill the boss's form (the original GDD's "Form Filling").
+        /// 20+ taps in 4 seconds = FORM ACCEPTED (the KADAK boost), 10+ = mostly filled (the theek boost),
+        /// fewer = come back tomorrow (no boost). The clock starts on the first tap; no tap in 6 s counts as none.
+        /// </summary>
+        IEnumerator FormMeter(string bossId, System.Action<int> done)
+        {
+            HideButtons();
+            var (title, fields) = bossId switch
+            {
+                "broker" => ("Fill the Broker's documents!", new[] { "Aadhaar copy", "PAN copy", "Salary slip (you're an intern)", "Four months' deposit" }),
+                "ceo" => ("Fill Lalaji's appraisal form!", new[] { "Loyalty out of 10: 10", "Weekends: available", "We are family: agree", "Salary: blessings" }),
+                "babu" => ("Fill the form in triplicate!", new[] { "Original", "Photocopy 1", "Photocopy 2", "Self-attested, with your soul" }),
+                _ => ("Fill the form!", new[] { "Name", "Address", "Signature", "Signature again" }),
+            };
+            const int Goal = 20, Okay = 10;
+            const float Window = 4f;
+            int taps = 0;
+            var overlay = UiKit.Panel(phone, "FormMeter", new Color(0, 0, 0, 0.45f));
+            overlay.rectTransform.Fill();
+            var catcher = overlay.gameObject.AddComponent<Button>();
+            catcher.transition = Selectable.Transition.None;
+            catcher.onClick.AddListener(() => { taps++; AudioKit.Sfx("click", 0.5f); });
+
+            var card = UiKit.Panel(overlay.transform, "Card", UiKit.Cream, rounded: true);
+            card.rectTransform.Place(60, 1080, 960, 640);
+            card.raycastTarget = false;
+            UiKit.Outline(card, Color.black, 5);
+            var head = UiKit.Label(card.transform, "Head", title, 54, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            head.rectTransform.Place(20, 20, 920, 80, 960, 640);
+            var sub = UiKit.Label(card.transform, "Sub", "<b>Tap anywhere, fast!</b>  20 taps in 4 s = FORM ACCEPTED (+40% ATK)", 28, UiKit.Ink);
+            sub.rectTransform.Place(20, 96, 920, 50, 960, 640);
+            var ticks = new List<Text>();
+            for (int i = 0; i < fields.Length; i++)
+            {
+                var row = UiKit.Label(card.transform, "Field" + i, "", 32, UiKit.Ink, TextAnchor.MiddleLeft);
+                row.rectTransform.Place(80, 160 + i * 64, 800, 56, 960, 640);
+                ticks.Add(row);
+            }
+            var barBg = UiKit.Panel(card.transform, "Bar", UiKit.Hex("#E0D3B8"), rounded: true);
+            barBg.raycastTarget = false;
+            barBg.rectTransform.Place(70, 432, 820, 50, 960, 640);
+            var bar = UiKit.Panel(barBg.transform, "Fill", UiKit.Green, rounded: true);
+            bar.raycastTarget = false;
+            bar.rectTransform.anchorMin = Vector2.zero; bar.rectTransform.anchorMax = new Vector2(0, 1);
+            bar.rectTransform.offsetMin = bar.rectTransform.offsetMax = Vector2.zero;
+            var clock = UiKit.Label(card.transform, "Clock", "", 30, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            clock.rectTransform.Place(20, 488, 920, 46, 960, 640);
+            var result = UiKit.Label(card.transform, "Result", "", 66, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            result.rectTransform.Place(20, 534, 920, 96, 960, 640);
+
+            float t = 0, idle = 0;
+            while (true)
+            {
+                if (taps > 0) { t += Time.unscaledDeltaTime; if (t >= Window) break; }
+                else { idle += Time.unscaledDeltaTime; if (idle >= 6f) break; }
+                for (int i = 0; i < ticks.Count; i++)
+                {
+                    bool filled = taps >= (i + 1) * Goal / ticks.Count;
+                    ticks[i].text = (filled ? "<color=#2E7D32><b>[x]</b></color>  " : "[  ]  ") + fields[i];
+                }
+                bar.rectTransform.anchorMax = new Vector2(Mathf.Clamp01((float)taps / Goal), 1);
+                clock.text = taps == 0 ? "The clock starts on your first tap" : $"{taps} taps  ·  {Mathf.Max(0, Window - t):0.0}s left";
+                yield return null;
+            }
+            int v = taps >= Goal ? 2 : taps >= Okay ? 1 : 0;
+            result.text = v == 2 ? "<color=#2E7D32>FORM ACCEPTED!</color>" : v == 1 ? "<color=#B26A2E>Mostly filled.</color>" : "<color=#8D6E63>Come back tomorrow.</color>";
+            clock.text = $"{taps} taps";
+            AudioKit.Sfx(v == 2 ? "levelup" : v == 1 ? "coin" : "click", 0.8f);
+            if (v == 2) { battle.Celebrate(); battle.Banner("*FORM ACCEPTED!*  +40% ATK for 3 rounds"); }
+            else if (v == 1) battle.Banner("*Mostly filled.*  +15% ATK for 2 rounds");
+            log.Add(v == 2 ? $"*Form accepted* ({taps} taps): *+40% ATK* for the first 3 rounds." :
+                    v == 1 ? $"Form *mostly filled* ({taps} taps): *+15% ATK* for the first 2 rounds. 20 taps gets it accepted." :
+                             "\"Come back tomorrow.\" No boost this fight. Tap fast next time: 20 taps in 4 seconds.", v == 2 ? CardStyle.Good : CardStyle.Note);
             yield return new WaitForSecondsRealtime(1.3f);
             Destroy(overlay.gameObject);
             done(v);

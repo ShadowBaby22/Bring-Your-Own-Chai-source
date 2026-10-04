@@ -55,7 +55,7 @@ namespace KadakChai
         public const float SpiceHp = 0.08f, SpiceAtk = 0.10f;
         public const float RangedPenalty = 0.8f;  // ranged attacks do 20% less damage
         public const float CloseBonus = 1.25f;    // close attacks do 25% more to ranged targets
-        /// <summary>Kadak opener (one tap before each fight): 2 = KADAK chai, 1 = theek-thaak, 0 = pheeka.</summary>
+        /// <summary>Fight opener: the Kadak brew (fights) or the tap-tap form (bosses). 2 = KADAK / accepted, 1 = theek / mostly, 0 = none.</summary>
         public const float OpenerKadak = 0.40f, OpenerTheek = 0.15f;
         public const int OpenerKadakRounds = 3, OpenerTheekRounds = 2;
         static readonly HashSet<string> Uncles = new() { "scooty_uncle", "auto_bhaiya", "guard", "broker", "babu", "sector_cabbie" };
@@ -177,8 +177,8 @@ namespace KadakChai
                 Emit(BattleEventType.Hit, null, hero, g, hero.hp, "Interrogated");
             }
 
-            if (opener >= 2) { hero.Add(new StatusEffect(StatusKind.AtkUp, OpenerKadakRounds, OpenerKadak)); Shout(hero, $"KADAK BREW! +{OpenerKadak * 100:0}% ATK for {OpenerKadakRounds} rounds."); }
-            else if (opener == 1) { hero.Add(new StatusEffect(StatusKind.AtkUp, OpenerTheekRounds, OpenerTheek)); Shout(hero, $"Theek-thaak brew. +{OpenerTheek * 100:0}% ATK for {OpenerTheekRounds} rounds."); }
+            if (opener >= 2) { hero.Add(new StatusEffect(StatusKind.AtkUp, OpenerKadakRounds, OpenerKadak)); Shout(hero, $"KADAK! +{OpenerKadak * 100:0}% ATK for {OpenerKadakRounds} rounds."); }
+            else if (opener == 1) { hero.Add(new StatusEffect(StatusKind.AtkUp, OpenerTheekRounds, OpenerTheek)); Shout(hero, $"Theek hai. +{OpenerTheek * 100:0}% ATK for {OpenerTheekRounds} rounds."); }
 
             // Pre-fight gimmicks
             if (foes.Any(f => f.Ai == "firecracker") && stage < GrapStage.Grap4)
