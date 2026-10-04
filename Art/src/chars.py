@@ -98,6 +98,8 @@ def sticker(inner, shadow=True):
 
 # ---------------------------------------------------------------- characters
 C = {}
+ARMED = False   # Bablu variants without the diploma (a weapon is drawn in his hand)
+VN = False      # friends' scene portraits: the scene mirrors the right-hand speaker, so their text is pre-mirrored
 
 def new_kid():
     skin = '#D9A066'
@@ -112,7 +114,8 @@ def new_kid():
     s += eyes(skin) + brows('worried') + mouth('wavy') + blush()
     s += path('M 404 150 Q 418 176 404 190 Q 390 176 404 150 Z', '#7fd3ff')                   # sweat drop
     s += capsule(350, 400, 394, 470, 44, '#2BB3A3')
-    s += f'<g transform="rotate(-18 420 452)">' + rect(370, 432, 110, 40, 12, '#fff8e1') + rect(418, 428, 14, 48, 4, '#e53935') + '</g>'
+    if not ARMED:   # the diploma; with a weapon equipped, the weapon is drawn in this hand instead
+        s += f'<g transform="rotate(-18 420 452)">' + rect(370, 432, 110, 40, 12, '#fff8e1') + rect(418, 428, 14, 48, 4, '#e53935') + '</g>'
     s += hand(398, 474, skin)
     return s
 
@@ -352,7 +355,8 @@ def new_kid_shaved():
     s += path('M 404 150 Q 418 176 404 190 Q 390 176 404 150 Z', '#7fd3ff')
     s += eyes(skin) + brows('worried') + mouth('wavy') + blush()
     s += capsule(350, 400, 394, 470, 44, '#2BB3A3')
-    s += f'<g transform="rotate(-18 420 452)">' + rect(370, 432, 110, 40, 12, '#fff8e1') + rect(418, 428, 14, 48, 4, '#e53935') + '</g>'
+    if not ARMED:   # the diploma; with a weapon equipped, the weapon is drawn in this hand instead
+        s += f'<g transform="rotate(-18 420 452)">' + rect(370, 432, 110, 40, 12, '#fff8e1') + rect(418, 428, 14, 48, 4, '#e53935') + '</g>'
     s += hand(398, 474, skin)
     return s
 
@@ -370,7 +374,7 @@ def daaru_uncle():
     s += eyes(skin, kind='closed', y=246) + brows('raised') + mouth('grin', y=318)
     s += capsule(354, 410, 392, 330, 44, '#E0D6C2') + hand(396, 322, skin)
     s += path('M 386 300 L 398 220 L 418 220 L 430 300 Z', '#66bb6a') + rect(400, 200, 16, 24, 4, '#43a047')     # bottle up high
-    s += text(452, 196, 'hic!', 30, '#5d4037', rot=-14)
+    s += text(452, 196, 'hic!', 30, '#5d4037', rot=-14, mirror=VN)
     return s
 
 def sheru():
@@ -387,7 +391,7 @@ def sheru():
     s += circle(122, 306, 11, '#2b2024', line=False) + circle(125, 302, 4, '#ffffff', line=False)
     s += path('M 80 384 Q 100 410 122 392', 'none') + path('M 92 392 Q 98 430 112 424 Q 120 410 114 396 Z', '#ef5350')  # tongue
     s += ellipse(148, 262, 8, 14, '#e53935', line=False)                                               # tika
-    s += text(330, 330, 'Bhow!', 34, '#5d4037', rot=10)
+    s += text(330, 330, 'Bhow!', 34, '#5d4037', rot=10, mirror=VN)
     return s
 
 def rival_student():
@@ -395,7 +399,7 @@ def rival_student():
     skin = '#E8B98A'
     s = legs('#263238', '#ffffff')
     s += torso('#7B1FA2')
-    s += text(262, 470, 'TIER-1', 30, '#FFD54F')
+    s += text(262, 470, 'IIIT', 34, '#FFD54F', mirror=VN)
     s += path('M 150 372 Q 262 330 374 372 L 360 400 Q 262 372 164 400 Z', '#6a1b9a')
     s += capsule(178, 400, 164, 486, 42, '#7B1FA2') + hand(164, 494, skin)
     s += rect(108, 430, 70, 90, 6, '#fff8e1') + ''.join(line(118, 450 + i * 14, 168, 450 + i * 14, 3, '#90a4ae') for i in range(4))  # notes
@@ -464,6 +468,19 @@ for fn in [new_kid, pinky_aunty, scooty_uncle, auto_bhaiya, south_delhi_girl, br
     HURT = True
     C[fn.__name__ + '_hit'] = fn() + SWEAT
     HURT = False
+
+# Armed Bablu (no diploma) and friends' scene portraits (text reads right when mirrored)
+ARMED = True
+for fn in [new_kid, new_kid_shaved]:
+    C[fn.__name__ + '_armed'] = fn()
+    HURT = True
+    C[fn.__name__ + '_armed_hit'] = fn() + SWEAT
+    HURT = False
+ARMED = False
+VN = True
+for fn in [daaru_uncle, sheru, rival_student]:
+    C[fn.__name__ + '_vn'] = fn()
+VN = False
 
 out = sys.argv[1]
 os.makedirs(out, exist_ok=True)

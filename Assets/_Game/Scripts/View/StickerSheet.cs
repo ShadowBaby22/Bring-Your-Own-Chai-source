@@ -42,6 +42,7 @@ namespace KadakChai
             sub.rectTransform.Place(560, 34, 430, 110, CW, CH);
             UiKit.Outline(sub, new Color(0, 0, 0, 0.75f), 3);
 
+            var labels = new List<System.Action>();   // drawn after every sticker so a sticker below never covers them
             const int Cols = 5;
             float cellW = (CW - 60) / Cols, cellH = 268, top = 168;
             for (int i = 0; i < Album.All.Length; i++)
@@ -60,10 +61,17 @@ namespace KadakChai
                 img.rectTransform.localRotation = Quaternion.Euler(0, 0, ((i * 37) % 13) - 6);
                 if (img.sprite == null) img.color = new Color(1, 1, 1, have ? 0.9f : 0.5f);
 
-                var label = UiKit.Label(card.transform, "Label", have ? st.name : st.how, have ? 27 : 25,
-                                        have ? Color.white : new Color(1, 1, 1, 0.92f), TextAnchor.UpperCenter, have ? FontStyle.Bold : FontStyle.Italic);
-                label.rectTransform.Place(cx - cellW / 2 + 4, cy + size / 2 - 6, cellW - 8, 56, CW, CH);
-                UiKit.Outline(label, new Color(0, 0, 0, 0.8f), 2);
+                float lx = cx - cellW / 2 + 4, ly = cy + size / 2 - 10;
+                string ltext = have ? st.name : st.how;
+                labels.Add(() =>
+                {
+                    var strip = UiKit.Panel(card.transform, "LabelBg", new Color(0, 0, 0, 0.55f), rounded: true);
+                    strip.raycastTarget = false;
+                    strip.rectTransform.Place(lx, ly, cellW - 8, 58, CW, CH);
+                    var label = UiKit.Label(strip.transform, "Label", ltext, have ? 26 : 24, Color.white, TextAnchor.MiddleCenter, have ? FontStyle.Bold : FontStyle.Italic);
+                    label.rectTransform.Fill(4);
+                    label.resizeTextForBestFit = true; label.resizeTextMinSize = 16; label.resizeTextMaxSize = have ? 26 : 24;
+                });
 
                 if (have && Album.NewThisRun.Contains(st.id))
                 {
@@ -74,6 +82,8 @@ namespace KadakChai
                     bt.rectTransform.Fill();
                 }
             }
+
+            foreach (var draw in labels) draw();
 
             var prompt = UiKit.Label(overlay.transform, "Prompt", Album.Count < Album.Total
                 ? "<b>Screenshot this sheet to keep it!</b>\nStickers stay across runs. The white ones are still out there."

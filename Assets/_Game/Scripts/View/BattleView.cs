@@ -331,6 +331,7 @@ namespace KadakChai
             var sprite = id == null ? null : Art.UI("item_" + id);
             held.sprite = sprite;
             held.enabled = sprite != null;
+            hero.SetArmed(sprite != null);   // the diploma goes away while he holds a weapon
         }
 
         /// <summary>Restore puppets after a lost fight so the retry starts clean.</summary>

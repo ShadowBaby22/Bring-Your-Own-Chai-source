@@ -36,9 +36,20 @@ namespace KadakChai
         bool dizzy, flipping;
 
         /// <summary>Lasting statuses on the hero: bald sprite (Head Shaved), orbiting dizzy stars (Confused), pills.</summary>
+        /// <summary>With a weapon equipped Bablu uses the "_armed" art: no diploma, the weapon goes in that hand.</summary>
+        public void SetArmed(bool armed)
+        {
+            if (armed == Armed) return;
+            Armed = armed;
+            SetConditions(lastConditions);
+        }
+        public bool Armed { get; private set; }
+        HashSet<string> lastConditions = new();
+
         public void SetConditions(IEnumerable<string> ids)
         {
             var set = new HashSet<string>(ids);
+            lastConditions = new HashSet<string>(set);
             if (pills == null)
             {
                 pills = UiKit.Make("Pills", Root);
@@ -53,8 +64,10 @@ namespace KadakChai
             }
             // Head Shaved swaps the whole sprite (a real bald Bablu, not a cap).
             bool bald = set.Contains("shaved") && Art.HasCharacter(Id + "_shaved");
-            var n = bald ? Art.Character(Id + "_shaved").sprite : Art.Character(Id).sprite;
-            var h = bald ? Art.Pose(Id + "_shaved", "hit") : Art.Pose(Id, "hit");
+            string look = bald ? Id + "_shaved" : Id;
+            if (Armed && Art.HasCharacter(look + "_armed")) look += "_armed";
+            var n = Art.Character(look).sprite;
+            var h = Art.Pose(look, "hit");
             if (n != normalSprite)
             {
                 bool wasHurt = baseSprite == hurtSprite && hurtSprite != null;
