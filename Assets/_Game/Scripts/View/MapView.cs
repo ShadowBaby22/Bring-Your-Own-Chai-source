@@ -12,6 +12,19 @@ namespace KadakChai
     /// </summary>
     public static class MapView
     {
+        /// <summary>A drifting smog haze over a map image (matches the hazy Dilli background); markers drawn later stay on top.</summary>
+        public static void AddSmog(Transform map, float alpha = 0.8f)
+        {
+            var sprite = Art.UI("smog");
+            if (sprite == null) return;
+            var smog = UiKit.Panel(map, "Smog", new Color(1, 1, 1, alpha));
+            smog.sprite = sprite;
+            smog.raycastTarget = false;
+            smog.rectTransform.Fill(-40);   // a little larger than the map so the drift never shows an edge
+            var fx = smog.gameObject.AddComponent<TitleFx>();
+            fx.drift = 30f; fx.driftSpeed = 0.15f;
+        }
+
         const float MX = 40, MY = 300, MS = 1000; // where the map sits on the phone
 
         public static readonly Dictionary<string, Vector2> Cities = new()
@@ -46,6 +59,7 @@ namespace KadakChai
             map.sprite = Art.UI("map");
             map.preserveAspect = true;
             map.rectTransform.Place(MX, MY, MS, MS);
+            AddSmog(map.transform);
             if (map.sprite == null) // no art yet: plain blobs
             {
                 map.color = new Color(0.85f, 0.8f, 0.68f);

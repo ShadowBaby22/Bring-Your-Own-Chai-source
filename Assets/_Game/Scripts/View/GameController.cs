@@ -220,7 +220,7 @@ namespace KadakChai
 
             var ribbon = UiKit.Panel(p.transform, "Ribbon", new Color(0.07f, 0.05f, 0.12f, 0.88f), rounded: true);
             ribbon.rectTransform.Place(80, 775, 920, 170);
-            var tag = UiKit.Label(ribbon.transform, "Tag", "Bablu. 11 days. One stamp. <b>No Bachelors.</b>\n<color=#FFE14D><i>Everything is temporary.</i></color>", 44, Color.white);
+            var tag = UiKit.Label(ribbon.transform, "Tag", "<b>Start playing before</b>\n<color=#FFE14D><b><i>the chai gets cold.</i></b></color>", 46, Color.white);
             tag.rectTransform.Fill(10);
 
             var hero = Sprite("Bablu", Art.Character("new_kid").sprite, 40, 1035, 350, 440);
@@ -233,8 +233,9 @@ namespace KadakChai
             sign.rectTransform.Place(395, 1110, 290, 190);
             sign.rectTransform.localRotation = Quaternion.Euler(0, 0, -7f);
             UiKit.Outline(sign, Color.black, 5);
-            var signText = UiKit.Label(sign.transform, "T", "NO\nBACHELORS", 50, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            var signText = UiKit.Label(sign.transform, "T", "NO\nBACHELORS", 46, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
             signText.rectTransform.Fill(8);
+            signText.horizontalOverflow = HorizontalWrapMode.Overflow;   // never split BACHELORS on narrow phones
             var signFx = Fx(sign); signFx.sway = 4f; signFx.swaySpeed = 1.3f;
 
             var floor = UiKit.Panel(p.transform, "Floor", new Color(0.07f, 0.05f, 0.12f, 0.92f));
@@ -249,7 +250,7 @@ namespace KadakChai
             UiKit.Outline(start.targetGraphic, Color.black, 5);
             var startFx = Fx(start); startFx.pulse = 0.035f; startFx.pulseSpeed = 4f;
 
-            var metro = UiKit.Label(p.transform, "Metro", "\"Agla station: Temporary. Darwaze baayi taraf khulenge.\"\n<size=26><i>Next station: Temporary. Doors will open on the left.</i></size>", 30, new Color(1, 1, 1, 0.75f));
+            var metro = UiKit.Label(p.transform, "Metro", "\"Platform 16. Mind the gap, don't forget to mask up.\"", 30, new Color(1, 1, 1, 0.75f));
             metro.rectTransform.Place(40, 1762, 1000, 90);
 
             var info = Resources.Load<TextAsset>("build_info");
@@ -297,7 +298,9 @@ namespace KadakChai
             }
             else
             {
+                battle.SetZone("metro", 0);   // the train from Kanpur
                 yield return vn.Play(GameData.Scene("intro"));
+                battle.SetZone(run.Day.zone, 0);
                 log.Add(CardText("intro"));
                 Collect("bablu");
                 yield return WaitMain("Meet the Astrologer");

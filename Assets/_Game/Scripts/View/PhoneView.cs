@@ -490,6 +490,7 @@ namespace KadakChai
             map.sprite = Art.UI("map");
             map.preserveAspect = true;
             map.rectTransform.Place(mx, my, size, size, SW, ContentH);
+            MapView.AddSmog(map.transform);
             var tap = map.gameObject.AddComponent<Button>();
             tap.onClick.AddListener(OpenBigMap);
             var hint = UiKit.Label(p, "Hint", "Tap the map\nto zoom", 30, new Color(1, 1, 1, 0.8f), TextAnchor.LowerRight, FontStyle.Bold);
@@ -533,6 +534,7 @@ namespace KadakChai
             img.preserveAspect = true;
             img.raycastTarget = false;
             img.rectTransform.Fill();
+            MapView.AddSmog(img.transform);
             if (run != null && !run.Finished && MapView.Cities.TryGetValue(run.Day.zone, out var c))
             {
                 var m = UiKit.Panel(content, "Marker", Color.white);

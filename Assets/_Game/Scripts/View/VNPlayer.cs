@@ -151,7 +151,10 @@ namespace KadakChai
 
         IEnumerator SlideIn(Image img, string id, float dir)
         {
-            img.sprite = Art.Character(id == "new_kid" && !string.IsNullOrEmpty(HeroPortrait) ? HeroPortrait : id).sprite;
+            if (id == "new_kid" && !string.IsNullOrEmpty(HeroPortrait)) id = HeroPortrait;
+            // The right-hand portrait is mirrored to face Bablu; friends have a "_vn" version whose text reads right that way.
+            if (img == rightImg && Art.HasCharacter(id + "_vn")) id += "_vn";
+            img.sprite = Art.Character(id).sprite;
             img.enabled = true;
             var rt = img.rectTransform;
             Vector2 home = rt.anchoredPosition;

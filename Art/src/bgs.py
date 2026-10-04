@@ -85,6 +85,12 @@ def noida():
     for x0, w, h in [(40, 200, 420), (270, 160, 340), (1040, 240, 460)]:
         s += rect(x0, 580 - h, w, h, '#7fb3c8') + windows(x0 + 10, 600 - h, w - 20, h - 60, 5, 10, '#5a8ca3', lit='#d6eef7')
     s += rect(1060, 98, 200, 40, '#263238', rx=6) + text(1160, 128, 'IT PARK 62', 26, '#80deea')
+    # electric poles with sagging, tangled wires (drawn before the signs, so the signs sit in front)
+    for px in (150, 1000):
+        s += rect(px - 7, 330, 14, 250, '#6d4c41') + rect(px - 34, 336, 68, 8, '#5d4037')
+    for i in range(5):
+        y0 = 340 + i * 7
+        s += path(f'M -20 {y0 + 20} Q 75 {y0 + 50} 150 {y0} Q 575 {y0 + 90 + i * 8} 1000 {y0} Q 1160 {y0 + 60} 1340 {y0 + 10}', 'none', stroke='#212121', stroke_width='3')
     # half-built flyover, rebar sticking out
     s += rect(380, 300, 470, 46, '#c9c2b8') + rect(380, 340, 470, 12, '#a8a197')
     for px in (450, 720):
@@ -106,6 +112,23 @@ def noida():
     s += rect(0, 580, W, 30, '#9e9e9e') + rect(0, 606, W, 14, '#66bb6a', line=False)
     s += rect(0, 620, W, 210, '#7d7a76', line=False)
     s += ''.join(rect(30 + i * 220, 712, 120, 10, '#ffffff', line=False, opacity='0.8') for i in range(7))
+    # potholes (permanent)
+    for cx, cy, rx, ry in [(300, 676, 62, 14), (840, 772, 54, 13), (1110, 660, 40, 10), (560, 790, 34, 9)]:
+        s += f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}" fill="#4a4744" stroke="{OUT}" stroke-width="3"/>'
+        s += f'<ellipse cx="{cx}" cy="{cy - 3}" rx="{rx * 0.7:.0f}" ry="{ry * 0.5:.0f}" fill="#3a3734"/>'
+        s += line(cx + rx - 6, cy, cx + rx + 26, cy - 8, 3, '#3a3734') + line(cx - rx + 4, cy + 2, cx - rx - 20, cy + 10, 3, '#3a3734')
+    # two goons on the footpath with folded arms (background flavour, flat and muted)
+    def goon(x, sitting=False):
+        g = ''
+        if not sitting:
+            g += rect(x - 6, 548, 10, 52, '#4e4b48', rx=4) + rect(x + 6, 548, 10, 52, '#4e4b48', rx=4)                 # legs
+        g += rect(x - 14, 496, 40, 58, '#7b6f66', rx=12)                                                                   # kurta
+        g += rect(x - 16, 510, 44, 14, '#5d534c', rx=6)                                                                    # folded arms
+        g += circle(x + 6, 482, 17, '#a1806a')                                                                              # head
+        g += path(f'M {x - 12} 474 Q {x + 6} 456 {x + 24} 474 L {x + 30} 478 L {x - 12} 478 Z', '#37474f')                # cap
+        g += line(x - 2, 489, x + 14, 489, 3, '#3e2723')                                                                    # moustache
+        return g
+    s += goon(690) + goon(760)
     # stray dog, sitting
     s += path('M 1180 600 Q 1176 560 1200 548 L 1206 530 L 1216 546 Q 1240 548 1238 576 L 1244 600 Z', '#a1887f') + circle(1218, 556, 3, OUT, line=False)
     return svg(s)
@@ -133,7 +156,7 @@ def gurugram():
     s += rect(30, 330, 170, 120, '#263238', rx=8) + text(115, 372, 'SURGE', 26, '#ffeb3b') + text(115, 420, '3.2x', 40, '#ffffff')
     s += line(115, 450, 115, 580, 8, '#757575')
     # palm trees in planters
-    for px in (330, 880):
+    for px in (330, 1010):   # the right palm stays clear of the mall sign ('since 2012' must read)
         s += rect(px - 10, 470, 20, 110, '#8d6e63') + rect(px - 34, 560, 68, 22, '#bcaaa4')
         for a in (-170, -135, -100, -65, -30, 5):
             s += f'<g transform="rotate({a} {px} 466)"><ellipse cx="{px + 58}" cy="466" rx="62" ry="15" fill="#43a047" stroke="{OUT}" stroke-width="4"/><line x1="{px}" y1="466" x2="{px + 112}" y2="466" stroke="#2e7d32" stroke-width="3"/></g>'
