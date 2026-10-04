@@ -21,11 +21,11 @@ Staging (what the team saw yesterday): https://shadowbaby22.github.io/Bring-Your
 | `feature/round2-fixes` | The brew result is visible and logged; Baba never gives two duds in a row or repeats an offer |
 | `feature/round3-fixes` (**PR #5**) | The meter states its payoff; event results and new statuses get banners; "SPEED 2x"; glosses for a world jury; Health Insurance icon; "Keep it" / "Close JhatPat" |
 
-`feature/round3-fixes` contains every branch above, so **one merge ships all of it.**
+`feature/boss-form` (PR #6) contains every branch above plus this morning's work (stickers, boss tap-tap, Pokemon feel, ID card), so **one merge ships all of it.**
 
 ## Ship it (about 10 minutes)
 1. Play the dev link on your phone for 3 minutes. If anything is wrong, tell Claude before merging.
-2. Merge **PR #5** (https://github.com/ShadowBaby22/Bring-Your-Own-Chai-source/pull/5) and close PR #4 as included.
+2. Merge **PR #6** (https://github.com/ShadowBaby22/Bring-Your-Own-Chai-source/pull/6), the one PR with everything, and close PR #4 and PR #5 as included.
 3. Ask Claude to "push to staging": it fast-forwards `staging`, runs the test suite, and deploys. `Builds/WebGL` already holds this exact build.
 
 ## Scores so far (Docs/playtests/SCOREBOARD.md)

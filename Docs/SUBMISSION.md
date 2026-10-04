@@ -23,6 +23,8 @@ Eleven days, one police-verification stamp, zero bachelors allowed. In Delhi NCR
 - **Even losing is temporary.** Faint, and you wake at Amma's Nursing Home one day back, as a Jadi-Booti Zombie, and that day gets a little easier each time.
 - **The phone is the whole world.** Story, shop, skills, profile and map all live on Bablu's phone.
 - **The air changes the rules.** The day's AQI sets a GRAP stage; at GRAP 4, odd-even decides who may attack.
+- **Fill the form!** Every boss demands paperwork: tap as fast as you can to fill the Broker's documents, Lalaji's appraisal form or the Babu's triplicate.
+- **A sticker sheet to keep.** Every enemy, friend and disaster becomes a sticker, collected across runs; the white cut-outs show what you haven't met yet.
 
 ## Description
 Bablu, 21, from Kanpur: B.Tech third year, four backlogs. His Gurugram internship starts in 11 days, the hostel wants his room back, and every society in NCR says **No Bachelors** unless he gets police verification stamped at the Sarkari Daftar.
