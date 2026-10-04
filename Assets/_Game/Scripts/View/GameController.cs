@@ -684,7 +684,7 @@ namespace KadakChai
             head.rectTransform.Place(40, 230, 1000, 220);
 
             // 10-second timer: Baba doesn't wait (change log).
-            const float Patience = 10f;
+            float Patience = BabaPatience();
             var barBg = UiKit.Panel(overlay.transform, "TimerBg", new Color(1, 1, 1, 0.15f), rounded: true);
             barBg.rectTransform.Place(140, 470, 800, 34);
             var bar = UiKit.Panel(barBg.transform, "Timer", UiKit.Orange, rounded: true);
@@ -1110,6 +1110,16 @@ namespace KadakChai
             if (m.Success) foreach (var id in m.Groups[1].Value.Split(',')) if (Conditions.All.ContainsKey(id)) yield return id;
 #endif
             yield break;
+        }
+
+        /// <summary>Baba's timer: 10 s. Testing only: ?patience=60 in the WebGL URL gives slow testers (and playtest agents) time.</summary>
+        static float BabaPatience()
+        {
+#if UNITY_WEBGL && !UNITY_EDITOR
+            var m = System.Text.RegularExpressions.Regex.Match(Application.absoluteURL ?? "", @"[?&]patience=(\d+)");
+            if (m.Success) return Mathf.Clamp(int.Parse(m.Groups[1].Value), 3, 120);
+#endif
+            return 10f;
         }
 
         int StartDay()
