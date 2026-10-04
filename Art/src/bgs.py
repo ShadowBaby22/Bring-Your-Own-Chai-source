@@ -117,7 +117,7 @@ def noida():
         s += f'<ellipse cx="{cx}" cy="{cy}" rx="{rx}" ry="{ry}" fill="#4a4744" stroke="{OUT}" stroke-width="3"/>'
         s += f'<ellipse cx="{cx}" cy="{cy - 3}" rx="{rx * 0.7:.0f}" ry="{ry * 0.5:.0f}" fill="#3a3734"/>'
         s += line(cx + rx - 6, cy, cx + rx + 26, cy - 8, 3, '#3a3734') + line(cx - rx + 4, cy + 2, cx - rx - 20, cy + 10, 3, '#3a3734')
-    # goons on the footpath: one on a parked bike, one with folded arms (background flavour, flat and muted)
+    # two goons on the footpath with folded arms (background flavour, flat and muted)
     def goon(x, sitting=False):
         g = ''
         if not sitting:
@@ -128,9 +128,7 @@ def noida():
         g += path(f'M {x - 12} 474 Q {x + 6} 456 {x + 24} 474 L {x + 30} 478 L {x - 12} 478 Z', '#37474f')                # cap
         g += line(x - 2, 489, x + 14, 489, 3, '#3e2723')                                                                    # moustache
         return g
-    s += circle(640, 592, 15, '#424242') + circle(716, 592, 15, '#424242')                                                 # bike wheels
-    s += path('M 640 590 L 664 562 L 700 562 L 716 590', 'none', stroke='#b71c1c', stroke_width='9') + rect(660, 552, 44, 12, '#212121', rx=5)
-    s += goon(674, sitting=True) + goon(760)
+    s += goon(690) + goon(760)
     # stray dog, sitting
     s += path('M 1180 600 Q 1176 560 1200 548 L 1206 530 L 1216 546 Q 1240 548 1238 576 L 1244 600 Z', '#a1887f') + circle(1218, 556, 3, OUT, line=False)
     return svg(s)
