@@ -1,11 +1,11 @@
 """Backgrounds for KADAK Chai. 1320x820 (wider than the 1080 battle area so it can slide). Ground line ~y 580."""
 import os, sys, random
 
-OUT = '#1d1b22'
+OUT = '#2a2622'
 W, H = 1320, 820
 random.seed(11)
 
-def attrs(line, k, sw=4):
+def attrs(line, k, sw=3):
     d = {'stroke': OUT, 'stroke-width': sw, 'stroke-linejoin': 'round', 'stroke-linecap': 'round'} if line else {}
     for x, v in k.items(): d[x.replace('_', '-')] = v
     return ' '.join(f'{x}="{v}"' for x, v in d.items())
@@ -18,7 +18,29 @@ def text(x, y, s, size, fill, anchor='middle', weight='900', rot=0, family='Aria
 def sky(top, bottom):
     return (f'<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="{top}"/><stop offset="1" stop-color="{bottom}"/></linearGradient></defs>'
             f'<rect width="{W}" height="{H}" fill="url(#sky)"/>')
-def svg(inner): return f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">{inner}</svg>'
+HAND = True   # match Jaideep's hand-drawn, smoggy Dilli: wobbly ink, muted colour, warm haze, paper grain
+
+def svg(inner, haze=0.55):
+    if not HAND:
+        return f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">{inner}</svg>'
+    defs = ('<defs>'
+            '<filter id="hand" x="0" y="0" width="100%" height="100%">'
+            '<feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="4" result="n"/>'
+            '<feDisplacementMap in="SourceGraphic" in2="n" scale="3.2" xChannelSelector="R" yChannelSelector="G" result="d"/>'
+            '<feColorMatrix in="d" type="saturate" values="0.72"/></filter>'
+            '<filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="1" seed="9"/>'
+            '<feColorMatrix type="matrix" values="0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.25  0 0 0 0.06 0"/></filter>'
+            '<linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">'
+            '<stop offset="0" stop-color="#ffd9a8" stop-opacity="0"/>'
+            '<stop offset="0.45" stop-color="#ffd9a8" stop-opacity="0.18"/>'
+            f'<stop offset="0.7" stop-color="#d8c8b0" stop-opacity="{haze}"/>'
+            '<stop offset="0.76" stop-color="#cfc2ad" stop-opacity="0.25"/>'
+            '<stop offset="1" stop-color="#bdb3a5" stop-opacity="0"/></linearGradient>'
+            '</defs>')
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" width="{W}" height="{H}" viewBox="0 0 {W} {H}">{defs}'
+            f'<g filter="url(#hand)">{inner}</g>'
+            f'<rect width="{W}" height="{H}" fill="url(#haze)"/>'
+            f'<rect width="{W}" height="{H}" filter="url(#grain)"/></svg>')
 
 def skyline(color, base, hmin, hmax, opacity):
     s, x = '', -20
@@ -79,7 +101,7 @@ def dilli():
 
 # ------------------------------------------------------------------ NOIDA
 def noida():
-    s = sky('#b7c6d4', '#e2e6ea')
+    s = sky('#ffcf8d', '#efd9bc')
     s += skyline('#a7b4c0', 500, 100, 220, '0.6')
     # glass IT towers
     for x0, w, h in [(40, 200, 420), (270, 160, 340), (1040, 240, 460)]:
@@ -135,7 +157,7 @@ def noida():
 
 # ------------------------------------------------------------------ GURUGRAM
 def gurugram():
-    s = sky('#a9c4dc', '#e4ecf2')
+    s = sky('#ffcf8d', '#f1dcc0')
     s += skyline('#9fb3c6', 470, 160, 300, '0.55')
     # glass towers of Cyber City, with diagonal reflections
     for x0, w, h, col in [(-20, 230, 500, '#4f86b3'), (220, 180, 420, '#6fa3c9'), (880, 210, 470, '#5b8fbb'), (1100, 240, 540, '#3f77a6')]:
