@@ -940,8 +940,8 @@ namespace KadakChai
             yield return new WaitForSeconds(1.2f);
             string killer = run.Killer;
             run.WakeAtNursingHome();
-            Collect("zombie_bablu");
             yield return vn.Play(GameData.Scene("nursing_home"));
+            Collect("zombie_bablu");   // after the scene, so the sticker doesn't pop up under the dialogue
             AudioKit.Sfx("heal");
             AudioKit.Music("day");
             log.Add($"Knocked out by *{killer}*. *{GameData.HeroName}* wakes up at *Amma's Nursing Home*. Amma's bill: *₹{Run.NursingHomeBill}*. The Vaidya's jadi-booti cures every status and makes him a *Zombie* for the next fight.", CardStyle.Bad);
