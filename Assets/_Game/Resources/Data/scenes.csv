@@ -2,10 +2,11 @@ scene,speaker,side,text
 # Visual-novel scenes. speaker = a combatant id (new_kid, pinky_aunty, broker, ceo, babu, ...) or narrator.
 # side = left / right (default: new_kid left, everyone else right). *stars* highlight words. Tap advances.
 #
-intro,narrator,,"Meet *Bablu*. 21. B.Tech, third year. Four backlogs (exams to retake). Gurugram internship. Accommodation: *""figure it out""*."
-intro,narrator,,"Delhi NCR. Population: yes. Air quality: also yes."
-intro,new_kid,left,"Every society gate has the same board. *NO BACHELORS*. Some add *NO NON-VEG*. One just says *NO*."
-intro,narrator,,"No bachelor rents anything without *police verification*, stamped at the *Sarkari Daftar* (the government office). The internship starts in *11 days*."
+intro,narrator,,"Kanpur Shatabdi. Six hours late. Meet *Bablu*: 21, B.Tech third year, four backlogs (exams to retake), one suitcase."
+intro,new_kid,left,"Gurugram internship letter! Stipend: ₹8,000. Accommodation: *""figure it out""*."
+intro,narrator,,"Agla station: *New Delhi*. Population: yes. Air quality: also yes."
+intro,new_kid,left,"Plan: a flat in *Noida*. Cheaper rent, only two hours from the office. But every society gate says *NO BACHELORS*."
+intro,narrator,,"No bachelor rents without *police verification*, stamped at the *Sarkari Daftar* (the government office). The internship starts in *11 days*."
 intro,new_kid,left,"One flat. One stamp. 11 days. How hard can it be?"
 #
 aunty_join,pinky_aunty,right,"A *bachelor*? At MY gate? I am Pinky. RWA WhatsApp admin. I wrote that board myself."
