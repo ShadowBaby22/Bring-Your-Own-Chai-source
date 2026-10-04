@@ -38,6 +38,10 @@ Open the build (staging, or the `kadak-chai-webgl` localhost preview), set a pho
 | 8b | `/?day=9&status=shaved,confused,robbed,bitten,lost` | Open the Skills app | The list scrolls with "swipe up for more" and never covers the dock; the Messages chips show "5 statuses" |
 | 9 | `/?day=11` | Face the Boss, win | "VALID FOR 11 MONTHS" stamp, ending scene |
 | 10 | `/?day=11&status=bitten,grilled,cringe,shaved,cancelled,confused,lost` | Face the Boss, lose | Amma's Nursing Home scene, green zombie Bablu at full HP, ₹100 less, "Back to Day N"; the retry starts with the zombie still green |
+| 11 | `/` | Title, then **Stickers** (top-left) | The sheet: collected stickers in colour, the rest as white cut-outs with hints, "Screenshot this sheet"; Close works |
+| 12 | `/?day=4` | Face the Boss, tap fast | "Fill the Broker's documents!": the clock starts on the first tap, fields tick off, then FORM ACCEPTED / Mostly filled / Come back tomorrow, and a line in Messages |
+| 13 | `/?patience=60` | Pick a Baba card | "BLESSED!", then "Bablu learned ...!" with the move icon (patience is test-only; players get 10 s) |
+| 14 | `/?day=4` | Win | "NEW STICKER!" pops in at the right (The Broker), and Profile > Stickers shows it |
 
 Close the pane when done.
 
