@@ -385,42 +385,98 @@ namespace KadakChai
             }
         }
 
+        /// <summary>
+        /// Profile: Bablu's college ID card (Jaideep's design, 04 Oct): a tilted paper card over the page with a
+        /// paper-clipped sepia photo, his signature, and stats with the gear bonuses in green and penalties in red.
+        /// Drop Resources/Art/UI/id_card.png in to replace the drawn card background.
+        /// </summary>
         void BuildProfile(RunState s)
         {
             var p = ClearPage("profile");
-            Card(p, 8, ContentH - 16, new Color(0, 0, 0, 0.35f));
-            // Portrait matches Bablu's real state (change log): hurt face + bruises at low HP, plus his statuses.
-            float hpr = s.maxHp > 0 ? (float)s.hp / s.maxHp : 1;
-            var face = UiKit.Panel(p, "Face", Color.white);
-            string who = s.conditions.Contains("shaved") ? "new_kid_shaved" : "new_kid";
-            face.sprite = (hpr < 0.33f ? Art.Pose(who, "hit") : null) ?? Art.Character(who).sprite;
-            face.preserveAspect = true;
-            face.rectTransform.Place(40, 20, 200, 250, SW, ContentH);
-            void Layer(string sprite, bool on)
+            const float CW = 948, CH = 590;
+            var cardArt = Art.UI("id_card");
+            var card = UiKit.Panel(p, "IdCard", cardArt != null ? Color.white : UiKit.Hex("#F3E3C3"), rounded: cardArt == null);
+            if (cardArt != null) card.sprite = cardArt;
+            card.rectTransform.Place(30, -100, CW, CH, SW, ContentH);   // covers the page title: the card is the page
+            card.rectTransform.localRotation = Quaternion.Euler(0, 0, 1.5f);
+            if (cardArt == null)
             {
-                if (!on || Art.UI(sprite) == null) return;
-                var l = UiKit.Panel(face.transform, sprite, Color.white);
-                l.sprite = Art.UI(sprite); l.preserveAspect = true; l.raycastTarget = false; l.rectTransform.Fill();
+                UiKit.Outline(card, UiKit.Hex("#3E2C1C"), 5);
+                var sh = card.gameObject.AddComponent<Shadow>();
+                sh.effectColor = new Color(0, 0, 0, 0.45f); sh.effectDistance = new Vector2(10, -12);
             }
-            Layer(hpr > 0.66f ? null : hpr > 0.33f ? "dmg1" : "dmg2", hpr <= 0.66f);
-            Layer("cond_confused", s.conditions.Contains("confused"));
-            float x = 270;
-            Text Stat(float y, string label)
+            Text Txt(string text, float x, float y, float w, float h, int size, Color color, FontStyle style = FontStyle.Normal, TextAnchor anchor = TextAnchor.MiddleLeft)
             {
-                var t = UiKit.Label(p, "Stat", label, 38, Color.white, TextAnchor.MiddleLeft, FontStyle.Bold);
-                t.rectTransform.Place(x, y, SW - x - 30, 52, SW, ContentH);
+                var t = UiKit.Label(card.transform, "T", text, size, color, anchor, style);
+                t.rectTransform.Place(x, y, w, h, CW, CH);
                 return t;
             }
-            Stat(16, GameData.HeroName + "  ·  <color=#FFD23F>Lv " + s.level + "</color>  <size=26>B.Tech, 4 backlogs</size>");
-            Stat(70, $"EXP {s.xp}/{s.XpToNext}   HP {s.hp}/{s.maxHp}");
-            Stat(124, $"ATK {s.AtkTotal}  <size=28>({s.atk} base{(s.weapon != null ? $" + {s.weapon.data.atk} {s.weapon.data.name}" : "")})</size>");
-            Stat(178, $"DEF {s.DefTotal}  <size=28>({s.def} base{(s.armour != null ? $" + {s.armour.data.def} {s.armour.data.name}" : "")})</size>");
-            Stat(232, $"<color=#FFD23F>₹{s.rupees}</color>  <size=28>earned ₹{s.earned}, spent ₹{s.spent}</size>");
-            Stat(286, $"<color=#FF8A65>Khatra {(run.Finished ? 8 : run.Spice)}/8</color>  <size=28>{GameData.SpiceName(run.Finished ? 8 : run.Spice)}</size>");
-            var stickers = UiKit.Button(p, "Stickers", $"Stickers\n<size=26>{Album.Count}/{Album.Total}</size>", UiKit.Hex("#FFB300"), 34, () => OpenStickers?.Invoke());
-            stickers.GetComponent<RectTransform>().Place(40, 286, 210, 100, SW, ContentH);
-            var foot = UiKit.Label(p, "Foot", s.HasAunty ? "Party: Pinky Aunty (forwards messages every 3 rounds)" : "Party: just you. For now.", 32, new Color(1, 1, 1, 0.8f), TextAnchor.MiddleLeft);
-            foot.rectTransform.Place(40, ContentH - 60, SW - 80, 50, SW, ContentH);
+            var ink = UiKit.Hex("#2B2118");
+
+            // The photo: white frame, sepia Bablu (hurt face below a third of his HP, bald once shaved), a paperclip.
+            float hpr = s.maxHp > 0 ? (float)s.hp / s.maxHp : 1;
+            string who = s.conditions.Contains("shaved") ? "new_kid_shaved" : "new_kid";
+            var frame = UiKit.Panel(card.transform, "Photo", Color.white);
+            frame.raycastTarget = false;
+            frame.rectTransform.Place(36, 40, 300, 330, CW, CH);
+            frame.rectTransform.localRotation = Quaternion.Euler(0, 0, -4f);
+            UiKit.Outline(frame, new Color(0, 0, 0, 0.35f), 3);
+            var window = UiKit.Make("Window", frame.transform);
+            window.Fill(14);
+            window.gameObject.AddComponent<RectMask2D>();
+            var bg = UiKit.Panel(window, "Bg", UiKit.Hex("#E9DCC1"));
+            bg.raycastTarget = false; bg.rectTransform.Fill();
+            var photo = UiKit.Panel(window, "Bablu", Color.white);
+            photo.sprite = (hpr < 0.33f ? Art.UI("id_" + who + "_hit") : null) ?? Art.UI("id_" + who) ?? Art.Character(who).sprite;
+            photo.preserveAspect = true;
+            photo.raycastTarget = false;
+            photo.rectTransform.anchorMin = new Vector2(-0.2f, -0.75f);   // larger than the window and pinned high: head and shoulders
+            photo.rectTransform.anchorMax = new Vector2(1.2f, 1.0f);
+            photo.rectTransform.offsetMin = photo.rectTransform.offsetMax = Vector2.zero;
+            var clip = UiKit.Panel(card.transform, "Paperclip", Color.white);
+            clip.sprite = Art.UI("paperclip");
+            clip.preserveAspect = true;
+            clip.raycastTarget = false;
+            clip.rectTransform.Place(14, 4, 110, 170, CW, CH);
+            if (clip.sprite == null) clip.enabled = false;
+            var sign = Txt(GameData.HeroName, 50, 300, 320, 100, 72, UiKit.Hex("#6A1B9A"), FontStyle.BoldAndItalic, TextAnchor.MiddleCenter);
+            sign.rectTransform.localRotation = Quaternion.Euler(0, 0, 12f);
+            var stroke = UiKit.Panel(card.transform, "SignStroke", UiKit.Hex("#6A1B9A"));
+            stroke.raycastTarget = false;
+            stroke.rectTransform.Place(60, 370, 300, 7, CW, CH);
+            stroke.rectTransform.localRotation = Quaternion.Euler(0, 0, 9f);
+
+            // Who he is
+            Txt("Student", 40, 410, 300, 60, 46, ink, FontStyle.Bold);
+            Txt("B. Tech  <size=28>(4 backlogs)</size>", 80, 464, 320, 56, 40, ink, FontStyle.Italic);
+
+            // Stats: labels bold, values handwritten-ish; bonuses green, penalties red
+            Txt("Profile", 380, 34, 400, 84, 68, ink, FontStyle.Bold);
+            var lv = UiKit.Panel(card.transform, "LvStamp", new Color(0.83f, 0.18f, 0.18f, 0.9f), rounded: true);
+            lv.raycastTarget = false;
+            lv.rectTransform.Place(770, 40, 140, 70, CW, CH);
+            lv.rectTransform.localRotation = Quaternion.Euler(0, 0, -10f);
+            var lvt = UiKit.Label(lv.transform, "T", "LV " + s.level, 40, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            lvt.rectTransform.Fill();
+            string Mod(int v) => v == 0 ? "" : v > 0 ? $" <color=#2E7D32>(+{v})</color>" : $" <color=#C62828>({v})</color>";
+            float toll = s.tollDays > 0 ? 1f - RunState.TollPenalty : 1f;
+            int atkGear = s.weapon?.data.atk ?? 0, defGear = s.armour?.data.def ?? 0;
+            int atkPen = Mathf.RoundToInt(s.AtkTotal * toll) - s.AtkTotal - (s.conditions.Contains("cancelled") ? Mathf.RoundToInt(s.AtkTotal * (1 - Conditions.CancelledAtk)) : 0);
+            int defPen = Mathf.RoundToInt(s.DefTotal * toll) - s.DefTotal - (s.conditions.Contains("shaved") ? Mathf.RoundToInt(s.DefTotal * (1 - Conditions.ShavedDef)) : 0);
+            Txt("EXP", 390, 130, 200, 46, 36, ink, FontStyle.Bold);
+            Txt($"{s.xp}/{s.XpToNext}", 390, 170, 220, 50, 38, ink, FontStyle.Italic);
+            Txt("HP", 630, 130, 200, 46, 36, ink, FontStyle.Bold);
+            Txt($"{s.hp}/{s.maxHp}", 630, 170, 260, 50, 38, hpr < 0.33f ? UiKit.Hex("#C62828") : ink, FontStyle.Italic);
+            Txt("ATK", 390, 236, 200, 46, 36, ink, FontStyle.Bold);
+            Txt($"{s.atk}{Mod(atkGear)}{Mod(atkPen)}", 390, 276, 240, 50, 38, ink, FontStyle.Italic);
+            Txt("DEF", 630, 236, 200, 46, 36, ink, FontStyle.Bold);
+            Txt($"{s.def}{Mod(defGear)}{Mod(defPen)}", 630, 276, 260, 50, 38, ink, FontStyle.Italic);
+            int party = 1 + (s.HasCompanion ? 1 : 0);
+            Txt($"₹{s.rupees}", 600, 360, 320, 70, 60, ink, FontStyle.Bold, TextAnchor.MiddleRight);
+            Txt($"Party: {party:00}" + (s.HasCompanion ? $"  <size=24>(+{GameData.SpeakerName(s.companion)})</size>" : ""), 470, 428, 450, 46, 32, ink, FontStyle.Italic, TextAnchor.MiddleRight);
+
+            var stickers = UiKit.Button(card.transform, "Stickers", $"Stickers  {Album.Count}/{Album.Total}", UiKit.Hex("#FFB300"), 32, () => OpenStickers?.Invoke());
+            stickers.GetComponent<RectTransform>().Place(620, 490, 300, 70, CW, CH);
         }
 
         void BuildMap()

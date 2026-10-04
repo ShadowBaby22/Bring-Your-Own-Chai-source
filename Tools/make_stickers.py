@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Builds the sticker-sheet art from the game art: a die-cut sticker (thick white border) and a white blank
+"""Builds art derived from the game art: the Profile ID card's sepia photos and paperclip, and for the sticker
+sheet a die-cut sticker (thick white border) and a white blank
 (the cut-out shape, white fill, thin grey edge) for every sticker in Album.cs.
 
     python3 Tools/make_stickers.py
@@ -8,7 +9,7 @@ Re-run it after replacing character or icon art (e.g. Jaideep's originals) so th
 Output: Assets/_Game/Resources/Art/Stickers/{id}.png and {id}_blank.png (+ .meta for new files).
 """
 import os, re, uuid
-from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont, ImageOps
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ART = os.path.join(ROOT, 'Assets/_Game/Resources/Art')
@@ -98,8 +99,38 @@ def write_meta(png):
     open(meta, 'w').write(re.sub(r'^guid: .*$', 'guid: ' + uuid.uuid4().hex, text, count=1, flags=re.M))
 
 
+def id_photo(src):
+    """Sepia ID-card photo of Bablu (Profile app)."""
+    im = Image.open(src).convert('RGBA')
+    im = im.crop(im.getbbox())
+    gray = ImageOps.grayscale(im)
+    sep = ImageOps.colorize(gray, black='#3b2a1a', white='#f6ead2').convert('RGBA')
+    sep.putalpha(im.split()[3])
+    return fit(sep, 320)
+
+
+def paperclip():
+    w, h = 120, 230
+    im = Image.new('RGBA', (w, h), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    col = (232, 163, 61, 255)
+    d.rounded_rectangle((8, 8, w - 8, h - 8), radius=52, outline=col, width=12)
+    d.rounded_rectangle((32, 40, w - 32, h - 50), radius=28, outline=col, width=12)
+    d.rectangle((0, h // 2 - 10, 30, h // 2 + 30), fill=(0, 0, 0, 0))       # open end of the outer loop
+    d.rectangle((40, h - 70, 80, h - 40), fill=(0, 0, 0, 0))                 # open end of the inner loop
+    return im.rotate(-28, expand=True, resample=Image.BICUBIC)
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
+    ui = os.path.join(ART, 'UI')
+    for name in ('new_kid', 'new_kid_hit', 'new_kid_shaved', 'new_kid_shaved_hit'):
+        path = os.path.join(ui, 'id_' + name + '.png')
+        id_photo(CHAR(name)).save(path, optimize=True)
+        write_meta(path)
+    clip = os.path.join(ui, 'paperclip.png')
+    paperclip().save(clip, optimize=True)
+    write_meta(clip)
     for sid, (src, kind) in STICKERS.items():
         if kind == 'stamp':
             art = fit(stamp())
