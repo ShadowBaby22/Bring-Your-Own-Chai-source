@@ -161,12 +161,21 @@ namespace KadakChai
                 p.damage.enabled = false;
             }
 
-            var name = UiKit.Label(root, "Name", displayName, 30, Color.white, TextAnchor.LowerCenter, FontStyle.Bold);
-            name.rectTransform.anchorMin = new Vector2(0.5f, 1); name.rectTransform.anchorMax = new Vector2(0.5f, 1);
-            name.rectTransform.pivot = new Vector2(0.5f, 0);
-            name.rectTransform.sizeDelta = new Vector2(420, 80);
-            name.rectTransform.anchoredPosition = new Vector2(0, 4);
-            UiKit.Outline(name, new Color(0, 0, 0, 0.8f), 2);
+            // Name on a dark pill (readable over any background sign), nudged inside the screen near the edges.
+            var tag = UiKit.Panel(root, "NameTag", new Color(0, 0, 0, 0.6f), rounded: true);
+            tag.raycastTarget = false;
+            tag.rectTransform.anchorMin = tag.rectTransform.anchorMax = new Vector2(0.5f, 1);
+            tag.rectTransform.pivot = new Vector2(0.5f, 0);
+            tag.rectTransform.anchoredPosition = new Vector2(0, 8);
+            var tagLayout = tag.gameObject.AddComponent<HorizontalLayoutGroup>();
+            tagLayout.padding = new RectOffset(14, 14, 4, 4);
+            tagLayout.childControlWidth = tagLayout.childControlHeight = true;
+            tagLayout.childForceExpandWidth = tagLayout.childForceExpandHeight = false;
+            var tagFit = tag.gameObject.AddComponent<ContentSizeFitter>();
+            tagFit.horizontalFit = tagFit.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            tag.gameObject.AddComponent<ClampInside>();
+            var name = UiKit.Label(tag.transform, "Name", displayName, 28, Color.white, TextAnchor.MiddleCenter, FontStyle.Bold);
+            name.horizontalOverflow = HorizontalWrapMode.Overflow;
 
             if (showHp)
             {
