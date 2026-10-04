@@ -179,6 +179,8 @@ namespace KadakChai
             string lasts = it.slot switch { "weapon" or "armour" => $"\n<color=#E8590C><b>Lasts {it.fights} fights</b></color>", "pass" => "\n<color=#E8590C><b>One border</b></color>", "insurance" => $"\n<color=#E8590C><b>Expires in {it.fights} days</b></color>", _ => "" };
             var desc = UiKit.Label(card.transform, "Desc", it.desc + lasts, 24, UiKit.Hex("#4E4E4E"), TextAnchor.UpperLeft);
             desc.rectTransform.Place(184, 60, 470, 118, PW - 48, 180);
+            desc.resizeTextForBestFit = true; desc.resizeTextMinSize = 16; desc.resizeTextMaxSize = 24;   // long text shrinks instead of being cut
+            desc.verticalOverflow = VerticalWrapMode.Truncate;
             Buy(card.transform, it.price, false, PW - 48, 180, () => BuyItem(it, card.rectTransform));
         }
 

@@ -94,7 +94,7 @@ namespace KadakChai
             var st = fresh[0];
             var root = UiKit.Panel(parent, "StickerToast", new Color(0, 0, 0, 0.7f), rounded: true);
             root.raycastTarget = false;
-            root.rectTransform.Place(720, 250, 330, 360);
+            root.rectTransform.Place(730, 930, 330, 360);   // over the phone's corner: clear of Skip >> and enemy names
             var img = UiKit.Panel(root.transform, "Art", Color.white);
             img.sprite = Art.Sticker(st.id);
             img.preserveAspect = true;

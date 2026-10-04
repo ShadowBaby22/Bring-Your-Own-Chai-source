@@ -288,6 +288,9 @@ namespace KadakChai
             if (p != null) Fx.Burst(this, popups, p.PointIn(popups, 0.5f, 0.02f), new Color(0.85f, 0.8f, 0.72f, 0.9f), 10, 260, 34, 0.5f, 200);
         }
 
+        /// <summary>Clears "Round N/15" once a fight is over (it lingered through the post-fight scenes).</summary>
+        public void HideRound() => roundText.text = "";
+
         public void ClearEnemies()
         {
             foreach (var e in enemies) if (e != null) Destroy(e.gameObject);

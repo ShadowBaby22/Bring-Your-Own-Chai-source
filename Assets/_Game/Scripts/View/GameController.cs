@@ -96,6 +96,7 @@ namespace KadakChai
             // The "phone": always 9:16, letterboxed on desktop.
             phone = UiKit.Make("Phone", canvasGo.transform);
             phone.Fill();
+            phone.gameObject.AddComponent<RectMask2D>();   // on desktop, nothing slides in over the side bars
             var fitter = phone.gameObject.AddComponent<AspectRatioFitter>();
             fitter.aspectMode = AspectRatioFitter.AspectMode.FitInParent;
             fitter.aspectRatio = UiKit.W / UiKit.H;
@@ -361,7 +362,7 @@ namespace KadakChai
             battle.SetAqi(run.S.aqi);
             RefreshHud();
 
-            log.Add($"Day {run.DayNumber} of {run.TotalDays}  ·  {GameData.ZoneName(run.Day.zone)}  ·  Khatra {run.Spice}/8", CardStyle.Header);
+            log.Add($"Day {run.DayNumber} of {run.TotalDays}  ·  {GameData.ZoneShort(run.Day.zone)}  ·  Khatra {run.Spice}/8", CardStyle.Header);
             if (run.JoinedCompanion != null)
             {
                 battle.ShowParty(run.S);
@@ -404,6 +405,7 @@ namespace KadakChai
                     battle.HeroHp = phoneView.ShowLiveHp;
                     yield return battle.Play(result);
                     battle.HeroHp = null;
+                    battle.HideRound();
                     foreach (var c in result.inflicted)
                         log.Add($"*{GameData.HeroName}* is now *{Conditions.Name(c)}*: {Conditions.All[c].desc} It lasts until you drink *Pudin Hara* (JhatPat).", CardStyle.Bad);
                     if (result.inflicted.Count > 0)
@@ -794,9 +796,13 @@ namespace KadakChai
             icon.raycastTarget = false;
             icon.rectTransform.Place(20, 20, 160, 160, 980, 200);
             if (icon.sprite == null) icon.enabled = false;
-            var t = UiKit.Label(box.transform, "Text", $"<b>{GameData.HeroName}</b> learned <b><color=#E8590C>{skill.name.ToUpper()}</color></b>!\n<size=30>{skill.desc}  ·  lease {skill.lease} days</size>", 44, UiKit.Ink, TextAnchor.MiddleLeft);
-            t.rectTransform.Place(200, 10, 760, 180, 980, 200);
+            var t = UiKit.Label(box.transform, "Text", $"<b>{GameData.HeroName}</b> learned <b><color=#E8590C>{skill.name.ToUpper()}</color></b>!", 42, UiKit.Ink, TextAnchor.MiddleLeft);
+            t.rectTransform.Place(200, 14, 760, 70, 980, 200);
+            t.resizeTextForBestFit = true; t.resizeTextMinSize = 26; t.resizeTextMaxSize = 42; t.verticalOverflow = VerticalWrapMode.Truncate;
             t.gameObject.AddComponent<TextFx>().StartReveal(90f);
+            var sub = UiKit.Label(box.transform, "Sub", $"{skill.desc}  Lease: {skill.lease} days.", 28, UiKit.Ink, TextAnchor.UpperLeft);
+            sub.rectTransform.Place(200, 88, 760, 100, 980, 200);
+            sub.resizeTextForBestFit = true; sub.resizeTextMinSize = 18; sub.resizeTextMaxSize = 28; sub.verticalOverflow = VerticalWrapMode.Truncate;
             AudioKit.Sfx("levelup", 0.5f);
             yield return new WaitForSecondsRealtime(1.6f);
         }
@@ -940,17 +946,18 @@ namespace KadakChai
             yield return new WaitForSeconds(1.2f);
             string killer = run.Killer;
             run.WakeAtNursingHome();
-            yield return vn.Play(GameData.Scene("nursing_home"));
-            Collect("zombie_bablu");   // after the scene, so the sticker doesn't pop up under the dialogue
-            AudioKit.Sfx("heal");
-            AudioKit.Music("day");
-            log.Add($"Knocked out by *{killer}*. *{GameData.HeroName}* wakes up at *Amma's Nursing Home*. Amma's bill: *₹{Run.NursingHomeBill}*. The Vaidya's jadi-booti cures every status and makes him a *Zombie* for the next fight.", CardStyle.Bad);
-            log.Add($"*Amma's blessing:* enemies are *{run.MercyPercent}% weaker* until {GameData.HeroName} gets past Day {run.S.furthestDay + 1}. \"Kha le beta, phir ladna.\"", CardStyle.Good);
-            battle.ClearEnemies();
+            battle.ClearEnemies();                 // the scene shouldn't play over the frozen fight
             battle.ReviveHero(run.S);
             battle.ShowParty(run.S);
             battle.SetZone(string.IsNullOrEmpty(run.Day.bg) ? run.Day.zone : run.Day.bg, run.DayInZone);
             RefreshHud();
+            vn.HeroPortrait = run.S.conditions.Contains("shaved") ? "new_kid_shaved" : null;
+            yield return vn.Play(GameData.Scene("nursing_home"));
+            AudioKit.Sfx("heal");
+            AudioKit.Music("day");
+            log.Add($"Knocked out by *{killer}*. *{GameData.HeroName}* wakes up at *Amma's Nursing Home*. Amma's bill: *₹{Run.NursingHomeBill}*. The Vaidya's jadi-booti cures every status and makes him a *Zombie* for the next fight.", CardStyle.Bad);
+            log.Add($"*Amma's blessing:* enemies are *{run.MercyPercent}% weaker* until {GameData.HeroName} gets past Day {run.S.furthestDay + 1}. \"Kha le beta, phir ladna.\"", CardStyle.Good);
+            Collect("zombie_bablu");   // after the scene and the story lines, so it doesn't pop up under the dialogue
             battle.Banner($"*JADI-BOOTI ZOMBIE!* Back to Day {run.DayNumber}.");
             yield return WaitMain($"Back to Day {run.DayNumber}  >", UiKit.Hex("#7CB342"));
         }
@@ -1026,6 +1033,7 @@ namespace KadakChai
         {
             var s = run.S;
             Collect(Album.ForState(s));   // friends, a shaved head, the Laathi
+            if (vn != null) vn.HeroPortrait = s.conditions.Contains("shaved") ? "new_kid_shaved" : null;   // scenes show the real Bablu
             var stage = Aqi.StageFor(s.aqi);
             dayText.text = run.Finished ? "Lease complete" : $"{GameData.ZoneShort(run.Day.zone)}\n<size=28><color=#FFFFFFAA>Day {run.DayNumber} of {run.TotalDays}</color></size>";
             var zi = run.Finished ? null : Art.UI("zone_" + run.Day.zone);
