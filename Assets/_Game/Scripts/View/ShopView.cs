@@ -118,7 +118,10 @@ namespace KadakChai
             Refresh();
         }
 
-        string TomorrowText()
+        string TomorrowText() => Tomorrow(run);
+
+        /// <summary>Tomorrow's enemies with their types, and the weapon type that is super effective against them.</summary>
+        public static string Tomorrow(Run run)
         {
             var ids = run.NextEnemyIds();
             string when = run.DayStarted ? "Tomorrow" : "Today";
@@ -126,7 +129,7 @@ namespace KadakChai
                 return run.DayNumber >= run.TotalDays ? "Last day." : $"{when}: no fight. Stock up for later.";
             var parts = ids.Select(id => GameData.Combatants.TryGetValue(id, out var c) ? $"{c.name} ({(c.Ranged ? "Ranged" : "Close")})" : id);
             int ranged = ids.Count(id => GameData.Combatants.TryGetValue(id, out var c) && c.Ranged);
-            string tip = ranged * 2 >= ids.Count ? "*Close* weapons hit ranged enemies 25% harder." : "*Ranged* weapons shoot first and pick off the weakest.";
+            string tip = ranged * 2 >= ids.Count ? "*Close* weapons are *super effective* against ranged enemies (+25%)." : "*Ranged* weapons shoot first and pick off the weakest; close enemies hit ranged heroes 25% harder.";
             return $"{when}: " + string.Join(", ", parts) + ". " + tip;
         }
 

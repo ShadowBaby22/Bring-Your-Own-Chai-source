@@ -325,7 +325,11 @@ namespace KadakChai
                     phoneView.ShowApp("messages");
                     yield return WaitNext("Next Day: BOSS  >", UiKit.Red);
                 }
-                else yield return WaitNext("Next Day  >");
+                else
+                {
+                    log.Add(ShopView.Tomorrow(run), CardStyle.Note);   // tomorrow's types + what's super effective
+                    yield return WaitNext("Next Day  >");
+                }
                 var expired = run.EndDay();
                 foreach (var s in expired)
                 {
@@ -758,7 +762,8 @@ namespace KadakChai
                     case Blessing.Granted:
                         AudioKit.Sfx("levelup", 0.7f);
                         yield return BlessingReveal(overlay.rectTransform, card, "BLESSED!", UiKit.Green);
-                        log.Add($"New skill: *{skill.name}* (lease: {skill.lease} days)", CardStyle.Good);
+                        yield return Learned(overlay.transform, skill);
+                        log.Add($"*{GameData.HeroName}* learned *{skill.name}*! {skill.desc} (lease: {skill.lease} days)", CardStyle.Good);
                         break;
                     case Blessing.Fizzled:
                         AudioKit.Sfx("lose", 0.6f);
@@ -775,6 +780,25 @@ namespace KadakChai
             }
             Destroy(overlay.gameObject);
             RefreshHud();
+        }
+
+        /// <summary>A Pokemon-style text box: "Bablu learned PRESSURE HORN!" with the move's icon.</summary>
+        IEnumerator Learned(Transform overlay, SkillData skill)
+        {
+            var box = UiKit.Panel(overlay, "Learned", UiKit.Cream, rounded: true);
+            box.rectTransform.Place(50, 1560, 980, 200);
+            UiKit.Outline(box, Color.black, 6);
+            var icon = UiKit.Panel(box.transform, "Icon", Color.white);
+            icon.sprite = Art.UI("skill_" + skill.id);
+            icon.preserveAspect = true;
+            icon.raycastTarget = false;
+            icon.rectTransform.Place(20, 20, 160, 160, 980, 200);
+            if (icon.sprite == null) icon.enabled = false;
+            var t = UiKit.Label(box.transform, "Text", $"<b>{GameData.HeroName}</b> learned <b><color=#E8590C>{skill.name.ToUpper()}</color></b>!\n<size=30>{skill.desc}  ·  lease {skill.lease} days</size>", 44, UiKit.Ink, TextAnchor.MiddleLeft);
+            t.rectTransform.Place(200, 10, 760, 180, 980, 200);
+            t.gameObject.AddComponent<TextFx>().StartReveal(90f);
+            AudioKit.Sfx("levelup", 0.5f);
+            yield return new WaitForSecondsRealtime(1.6f);
         }
 
         /// <summary>Big comic word over the picked card (or the middle of the screen).</summary>

@@ -16,6 +16,7 @@ namespace KadakChai
         public bool big;                     // skill hit: bigger popup
         public bool ranged;                  // thrown/fired: the view flies a projectile instead of a lunge
         public string projectile;            // Art/UI sprite for the projectile ("item_cork_ball", "shot_ceo")
+        public bool effective;               // a close hit on a ranged target: SUPER EFFECTIVE (+25%)
     }
 
     public class UnitInfo
@@ -443,6 +444,7 @@ namespace KadakChai
             if (t.Has(StatusKind.Invulnerable)) { Emit(BattleEventType.Immune, a, t, label: "LUNCH BREAK", ranged: ranged, proj: proj); return 0; }
 
             float atk = a.atk * (1f + a.AtkBonus());
+            bool superEffective = typed && !a.ranged && t.ranged;
             if (typed)
             {
                 if (a.ranged) atk *= RangedPenalty;
@@ -457,7 +459,7 @@ namespace KadakChai
             if (t == hero && shieldHits > 0) { dmg = Math.Max(1, dmg / 2); shieldHits--; }
 
             t.hp = Math.Max(0, t.hp - dmg);
-            Emit(BattleEventType.Hit, a, t, dmg, t.hp, label, big, ranged, proj);
+            Emit(BattleEventType.Hit, a, t, dmg, t.hp, label, big, ranged, proj, superEffective);
             if (zombie && a == hero && hero.Alive && hero.hp < hero.maxHp)
                 Heal(hero, hero, Math.Max(1, (int)Math.Round(dmg * KadakChai.Run.ZombieLifesteal)), null);   // zombie lifesteal
             if (t.hp == 0) { if (t == hero) r.killer = a.name; OnZeroHp(t); }
@@ -512,7 +514,7 @@ namespace KadakChai
 
         void Shout(Combatant a, string text) => Emit(BattleEventType.Shout, a, null, label: text);
 
-        void Emit(BattleEventType type, Combatant a = null, Combatant t = null, int amount = 0, int hpAfter = 0, string label = null, bool big = false, bool ranged = false, string proj = null) =>
-            r.events.Add(new BattleEvent { type = type, actor = a?.index ?? -1, target = t?.index ?? -1, amount = amount, hpAfter = hpAfter, label = label, big = big, ranged = ranged, projectile = proj });
+        void Emit(BattleEventType type, Combatant a = null, Combatant t = null, int amount = 0, int hpAfter = 0, string label = null, bool big = false, bool ranged = false, string proj = null, bool effective = false) =>
+            r.events.Add(new BattleEvent { type = type, actor = a?.index ?? -1, target = t?.index ?? -1, amount = amount, hpAfter = hpAfter, label = label, big = big, ranged = ranged, projectile = proj, effective = effective });
     }
 }

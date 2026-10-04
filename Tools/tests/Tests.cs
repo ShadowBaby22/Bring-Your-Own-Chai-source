@@ -704,6 +704,18 @@ static class Tests
             Check(Shouts(1, "Theek hai"), "no theek shout");
             Check(!Shouts(0, "KADAK!") && !Shouts(0, "Theek hai"), "pheeka still got a buff");
         });
+        Test("close hits on ranged enemies are SUPER EFFECTIVE; hits on close enemies aren't", () =>
+        {
+            bool HeroEffective(string enemy)
+            {
+                var res = AutoBattle.Simulate(new RunState(), new List<CombatantData> { GameData.Combatants[enemy] }, new Random(2), 1);
+                int h = HeroIndex(res);
+                return res.events.Any(e => e.type == BattleEventType.Hit && e.actor == h && e.effective);
+            }
+            Check(GameData.Combatants["south_delhi_girl"].Ranged && !GameData.Combatants["broker"].Ranged, "test enemies changed type");
+            Check(HeroEffective("south_delhi_girl"), "no SUPER EFFECTIVE hit on a ranged enemy");
+            Check(!HeroEffective("broker"), "SUPER EFFECTIVE on a close enemy");
+        });
         Test("a won fight pays rupees and EXP", () =>
         {
             var r = RunOn(0); Buff(r.S);

@@ -484,6 +484,7 @@ namespace KadakChai
         public IEnumerator Play(BattleResult r)
         {
             bool techno = false; // switch to Delhi techno once the hero drops below 50% HP (change log 19:21)
+            bool effectiveShownHero = false, effectiveShownFoe = false;   // teach close-beats-ranged once per side per fight
             int enemiesLeft = 0;
             foreach (var u in r.units) if (!u.isPlayerSide) enemiesLeft++;
 
@@ -513,6 +514,11 @@ namespace KadakChai
                             var at = target.PointIn(popups, 0.5f, 0.5f);
                             Fx.Burst(this, popups, at, e.big ? new Color(1f, 0.85f, 0.2f) : Color.white, e.big ? 16 : 7, e.big ? 900 : 550, e.big ? 26 : 18, 0.45f);
                             ImpactNumber(target, e.amount, e.big, targetIsHero);
+                            if (e.effective && !(targetIsHero ? effectiveShownFoe : effectiveShownHero))
+                            {
+                                if (targetIsHero) effectiveShownFoe = true; else effectiveShownHero = true;
+                                Popup("SUPER EFFECTIVE!", target, new Color(1f, 0.85f, 0.2f), 40, 120, true);
+                            }
                         }
                         PlayHitSound(e);
                         if (e.big)
