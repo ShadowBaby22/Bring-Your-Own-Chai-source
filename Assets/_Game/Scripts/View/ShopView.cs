@@ -210,6 +210,44 @@ namespace KadakChai
 
         void BuyItem(ItemData it, RectTransform card)
         {
+            if (busy) return;
+            var held = it.slot == "weapon" ? run.S.weapon : it.slot == "armour" ? run.S.armour : null;
+            if (held != null && run.CanAfford(it.price)) { StartCoroutine(ConfirmReplace(it, held, card)); return; }   // never replace gear silently
+            DoBuy(it, card);
+        }
+
+        /// <summary>"Replace your Racket?" before a purchase would throw away the weapon or armour Bablu holds.</summary>
+        IEnumerator ConfirmReplace(ItemData it, OwnedItem held, RectTransform card)
+        {
+            busy = true;
+            int choice = -1;
+            var dim = UiKit.Panel(transform, "ConfirmReplace", new Color(0, 0, 0, 0.8f));
+            dim.rectTransform.Fill();
+            var box = UiKit.Panel(dim.transform, "Box", UiKit.Cream, rounded: true);
+            box.rectTransform.Place(80, 640, 920, 560);
+            UiKit.Outline(box, Color.black, 5);
+            bool weapon = it.slot == "weapon";
+            int oldStat = weapon ? held.data.atk : held.data.def, newStat = weapon ? it.atk : it.def;
+            string stat = weapon ? "ATK" : "DEF";
+            string diff = newStat > oldStat ? $"<color=#2E7D32>+{newStat - oldStat} {stat}</color>" : newStat < oldStat ? $"<color=#C62828>{newStat - oldStat} {stat}</color>" : $"same {stat}";
+            var head = UiKit.Label(box.transform, "Head", $"Replace your {held.data.name}?", 52, UiKit.Ink, TextAnchor.MiddleCenter, FontStyle.Bold);
+            head.rectTransform.Place(20, 30, 880, 90, 920, 560);
+            var body = UiKit.Label(box.transform, "Body",
+                $"Bablu can hold one {(weapon ? "weapon" : "armour")}. Your <b>{held.data.name}</b> ({held.fightsLeft} fight{(held.fightsLeft == 1 ? "" : "s")} left) will be <b>gone</b>.\n" +
+                $"<b>{it.name}</b> for ₹{it.price}: {diff}, lasts {it.fights} fights.", 34, UiKit.Ink, TextAnchor.MiddleCenter);
+            body.rectTransform.Place(40, 130, 840, 230, 920, 560);
+            var yes = UiKit.Button(box.transform, "Replace", $"Replace (₹{it.price})", UiKit.Orange, 38, () => choice = 1);
+            yes.GetComponent<RectTransform>().Place(40, 400, 400, 120, 920, 560);
+            var no = UiKit.Button(box.transform, "Keep", $"Keep my {held.data.name}", UiKit.Green, 34, () => choice = 0);
+            no.GetComponent<RectTransform>().Place(480, 400, 400, 120, 920, 560);
+            while (choice < 0) yield return null;
+            Destroy(dim.gameObject);
+            busy = false;
+            if (choice == 1) DoBuy(it, card);
+        }
+
+        void DoBuy(ItemData it, RectTransform card)
+        {
             var notes = run.Buy(it);
             if (notes == null) return;
             AudioKit.Sfx("coin");
