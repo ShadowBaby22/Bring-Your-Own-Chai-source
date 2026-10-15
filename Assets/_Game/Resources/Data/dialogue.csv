@@ -4,7 +4,7 @@ id,text,choice_a,effect_a,result_a,choice_b,effect_b,result_b
 # Event pools: any row whose id starts with a day's "pool" (e.g. ev_dilli_) can appear on that day. Add rows to add variety.
 #
 # --- Run start ---
-intro,"*Bablu*, 21, from Kanpur. B.Tech third year, four backlogs. His Gurugram internship starts in *11 days*, but every society in NCR says *No Bachelors*. The RWAs (residents' committees) want *police verification*, stamped at the *Sarkari Daftar* (the government office). One flat. One stamp. 11 days. If he faints, Amma's Nursing Home patches him up, one day back.",,,,,,
+intro,"*Bablu* has *11 days* to get *police verification* stamped at the *Sarkari Daftar* (government office). Without it, every society says *No Bachelors*. If he faints, Amma's Nursing Home patches him up, one day back.",,,,,,
 astro_intro,"An *Astrologer Baba* outside the metro station grabs your hand. ""Your stars are aligned, beta. Temporarily.""",,,,,,
 #
 # --- Fight intros (fight_<enemy id>, picked by the enemy group rolled that day) ---
@@ -30,11 +30,11 @@ fight_rwa_aunty_win,"Pinky Aunty retreats to draft a 47-paragraph WhatsApp forwa
 # --- Fixed day cards ---
 d2,"*Pinky Aunty* from the RWA WhatsApp group corners you at the gate. ""Beta, I will help you. But first forward this to 10 people.""",Forward it,flag:aunty,"*Pinky Aunty* joins you! You are now in 14 new WhatsApp groups.",Leave her on read,flag:aunty;hp:-10%,"She joins anyway, and tells the whole society you are ""very rude"". *Pinky Aunty* joins you!"
 d4,"The *Broker* appears. ""Sir, small matter only. One month brokerage, one month deposit, one month *documentation charges*.""",,,,,,
-d4_win,"The Broker drops his phone. He was on a call with another tenant the whole time. He hands you a *temporary address proof*.",,,,,,
+d4_win,"The Broker drops his phone. He was on a call with another tenant *the whole time*.",,,,,,
 d8,"*Lalaji*, CEO of *Lalaji & Sons Pvt. Ltd.* (a startup since 1972), blocks your path with his bahi-khata. ""Intern! Culture-fit round. Now.""",,,,,,
-d8_win,"Lalaji shuts the bahi-khata. ""Profit is temporary, beta. Family is forever."" Bunty writes you down as a loss.",,,,,,
+d8_win,"Lalaji shuts the bahi-khata. ""*Profit* is temporary, beta. Family is forever.""",,,,,,
 ev_daftar_chai,"A *chai tapri* outside the Daftar. *Delivery Wale Bhaiya* calls: ""Sir, 2 minute mein pahunch raha hoon."" He said that on Day 1.",Sip it slowly,heal:100%,"Kadak chai. Full HP. For one moment, everything is fine.",Gulp it down,heal:50%;atk:+4,"You burn your tongue. Now you are furious, which helps."
-d11,"The *Babu*, Keeper of the Stamp, looks up. ""Original + 3 photocopies + self-attested + attested by gazetted officer + your soul.""",,,,,,
+d11,"The *Babu*, Keeper of the Stamp, looks up. Then at the clock. It is almost *lunch*.",,,,,,
 d11_win,"THUNK. The *stamp* lands: *POLICE VERIFICATION, VALID FOR 11 MONTHS*. Bablu is officially a person. For 11 months.",,,,,,
 #
 # --- Dilli event pool (day 3) ---
@@ -65,14 +65,14 @@ win_3,"Victory! Somewhere, a pressure horn plays in your honour.",,,,,,
 win_4,"Victory! The crowd disperses the way Delhi crowds do: slowly, and towards you.",,,,,,
 lose_1,"*Bablu* collapses on the footpath. A passing auto refuses to take him. Not even to AIIMS.",,,,,,
 lose_2,"*Bablu* goes down. Somewhere, Mummy's phone rings three times and stops.",,,,,,
-lose_3,"*Bablu* is defeated. The society WhatsApp group posts "Om Shanti" and moves on to the parking dispute.",,,,,,
+lose_3,"*Bablu* is defeated. The society WhatsApp group posts 'Om Shanti' and moves on to the parking dispute.",,,,,,
 revive,"*Health Insurance* claimed. *Bablu* wakes up in AIIMS at 50% HP. The policy has now expired. Everything is temporary.",,,,,,
 gameover_1,"The landlord has given your room to a ""family"".",,,,,,
 gameover_2,"Your broker has already listed the flat again. Brokerage: one month, non-refundable.",,,,,,
 gameover_3,"Mummy says come back to Kanpur. Papa says nothing, which is worse.",,,,,,
 gameover_4,"The RWA notice board now reads: NO BACHELORS. ESPECIALLY BABLU.",,,,,,
 expire_1,"Your *{skill}* lease has ended. The landlord kept the deposit.",,,,,,
-expire_2,"*{skill}* was only temporary. Like everything here.",,,,,,
+expire_2,"*{skill}* was only temporary. Renew at *Window 7*. Closed since 2009.",,,,,,
 expire_3,"*{skill}* has expired. Renewal requires 3 photocopies and a visit on a weekday.",,,,,,
 baba_1,"*Astrologer Baba* reappears. ""Your stars are aligned... for a few days. Choose.""",,,,,,
 baba_2,"*Astrologer Baba*: ""Mercury is in retrograde, beta. Pick quickly.""",,,,,,
@@ -90,7 +90,7 @@ news_10,"BREAKING: RWA WhatsApp group reaches 1,000 'Good Morning' images before
 #
 # --- Ending ---
 jhatpat_intro,"*JhatPat* is installed on your phone: weapons, chai and a *Mystery Box*, delivered in 10 minutes (T&C apply). Mummy sent *₹200* pocket money. *Welcome offer: your first Mystery Box is FREE.* Tap the JhatPat app after any day.",,,,,,
-rent_day,"*Rent day.* The landlord takes *₹{rs}*. He does not care about the baraat.",,,,,,
+rent_day,"*Rent day.* The landlord takes *₹{rs}*. The agreement is temporary. The rent is *permanent*.",,,,,,
 border_dilli_gurugram,"*Sirhaul toll plaza.* Welcome to Gurugram. The toll is 30 seconds long and 40 minutes deep. *Toll Tax: all stats -15% for 2 days.*",,,,,,
 border_gurugram_noida,"*DND Flyway.* It has been toll-free for years. The *Toll Tax* still applies, out of respect. *All stats -15% for 2 days.*",,,,,,
 border_noida_daftar,"*Delhi border.* An MCD man with a receipt book appears from nowhere. *Toll Tax: all stats -15% for 2 days.*",,,,,,
@@ -101,7 +101,7 @@ join_rival_student,"*Kush* from the rival uni has joined you. Tier-1. He will sh
 leave_pinky_aunty,"*Pinky Aunty* stays back in Dilli for a kitty party. ""Beta, call me."" You will not.",,,,,,
 leave_daaru_uncle,"*Daaru Uncle* stays at the toll plaza. He has made friends with the boom barrier.",,,,,,
 leave_sheru,"*Sheru* stops at the Delhi border. Noida dogs do not cross borders. He watches you go. You are not crying, it is the smog.",,,,,,
-delivery_end,"*Delivery Wale Bhaiya* finally arrives. ""Sir, your order."" You placed it 11 months ago.",,,,,,
+delivery_end,"*Delivery Wale Bhaiya* finally arrives with your Day 1 order. ""Sorry sir, *2 minute* late.""",,,,,,
 credits,"e-CHALLAN No. 2026/TEMP/11
 Vehicle: KADAK Chai (a game)
 Offence: Making a whole game in one weekend

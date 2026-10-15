@@ -341,7 +341,7 @@ namespace KadakChai
                     log.Add(CardText("expire_", s.name), CardStyle.Bad);
                 }
                 if (expired.Count > 0)
-                    battle.Banner(string.Join(", ", expired.ConvertAll(s => s.shortName)) + (expired.Count > 1 ? " have" : " has") + " *expired*. Everything is temporary.");
+                    battle.Banner(string.Join(", ", expired.ConvertAll(s => s.shortName)) + (expired.Count > 1 ? " have" : " has") + " *expired*.");
                 if (run.LeftCompanion != null) { log.Add(CardText("leave_" + run.LeftCompanion), CardStyle.Note); battle.ShowParty(run.S); }
                 if (run.Border is { } border)
                 {
@@ -410,7 +410,7 @@ namespace KadakChai
                     battle.HeroHp = null;
                     battle.HideRound();
                     foreach (var c in result.inflicted)
-                        log.Add($"*{GameData.HeroName}* is now *{Conditions.Name(c)}*: {Conditions.All[c].desc} It lasts until you drink *Pudin Hara* (JhatPat).", CardStyle.Bad);
+                        log.Add($"*{GameData.HeroName}*'s new status: *{Conditions.Name(c)}*. {Conditions.All[c].desc} Cure: *Pudin Hara* (JhatPat).", CardStyle.Bad);
                     if (result.inflicted.Count > 0)
                     {
                         var c0 = result.inflicted[0];
@@ -429,7 +429,7 @@ namespace KadakChai
                         {
                             AudioKit.Sfx("expire");
                             log.Add(it.breakText, CardStyle.Bad);
-                            battle.Banner($"*{it.name}* broke. Everything is temporary.");
+                            battle.Banner($"*{it.name}* broke!");
                         }
                         if (result.broken.Count > 0) battle.SetHeld(run.S);
                         if (run.DayNumber < run.TotalDays) yield return vn.Play(GameData.Scene(run.Day.outro));
