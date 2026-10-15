@@ -75,7 +75,8 @@
       })();
 
       var canvas = document.getElementById("game");
-      var buildUrl = "Build";
+      // Absolute URLs: hosts like IndieConnect load this page as an iframe srcdoc (document.URL is about:srcdoc) with a <base> tag.
+      var buildUrl = new URL("Build", document.baseURI).href;
       var config = {
         arguments: [],
         dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
@@ -86,7 +87,7 @@
 #if SYMBOLS_FILENAME
         symbolsUrl: buildUrl + "/{{{ SYMBOLS_FILENAME }}}",
 #endif
-        streamingAssetsUrl: "StreamingAssets",
+        streamingAssetsUrl: new URL("StreamingAssets", document.baseURI).href,
         companyName: {{{ JSON.stringify(COMPANY_NAME) }}},
         productName: {{{ JSON.stringify(PRODUCT_NAME) }}},
         productVersion: {{{ JSON.stringify(PRODUCT_VERSION) }}},
