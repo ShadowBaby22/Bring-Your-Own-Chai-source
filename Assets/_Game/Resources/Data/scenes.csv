@@ -42,15 +42,15 @@ aunty_betrayal,rwa_aunty,right,"And for disrespecting the society notice board..
 nursing_home,narrator,,"*Amma's Nursing Home*. The ceiling fan is doing its best. So is Amma."
 nursing_home,sadhu,right,"Beta, you were dead for four minutes. I have seen worse. Drink this."
 nursing_home,new_kid,left,"What is in it?"
-nursing_home,sadhu,right,"Ashwagandha. Triphala. One secret ingredient. And a little bit of the Yamuna. *Jadi-booti.*"
+nursing_home,sadhu,right,"*Jadi-booti.* Ashwagandha, triphala, and a little bit of the Yamuna."
 nursing_home,narrator,,"Bablu feels strong. Bablu feels green. Bablu feels like going back to *yesterday*."
 #
 broker_intro,broker,right,"Sir! Sir! Welcome welcome. Very nice flat, sir. East-facing. Vastu-compliant. Metro walking distance."
-broker_intro,new_kid,left,"The metro is 4 km away. Also, I am a bachelor."
-broker_intro,broker,right,"No problem, sir! For bachelors, rent is double and brokerage is triple. Walking distance for a fit person."
+broker_intro,new_kid,left,"The metro is 4 km away."
+broker_intro,broker,right,"No problem, sir! Walking distance. For a fit person."
 broker_intro,broker,right,"One month brokerage. One month deposit. One month ""documentation"". One month ""my cousin's wedding""."
 broker_intro,new_kid,left,"That's four months! I get ₹8,000 a month!"
-broker_intro,broker,right,"Sir, the owner is *very nice*. Very nice. Let's settle this the Delhi way."
+broker_intro,broker,right,"Sir, the owner is *very nice*. Very nice. I am not."
 #
 broker_outro,broker,right,"Okay okay! Sir, half brokerage. Final. Okay, quarter. Okay, I'll throw in a free... *temporary address proof*."
 broker_outro,new_kid,left,"Is it valid?"
@@ -71,7 +71,7 @@ babu_intro,new_kid,left,"Sir, *police verification*. For a rent agreement. Just 
 babu_intro,babu,right,"Bachelor?"
 babu_intro,new_kid,left,"...Yes."
 babu_intro,babu,right,"Bachelor verification is a different window. *Window 7*. Window 7 is closed since 2009."
-babu_intro,babu,right,"Original, three photocopies, self-attested, attested by gazetted officer... and your *soul*. Come. Let us begin the procedure."
+babu_intro,babu,right,"Let us begin the procedure. Original, three photocopies, self-attested, attested by gazetted officer... and your *soul*."
 #
 ending,babu,right,"...Fine. Stamped. Now go."
 ending,new_kid,left,"*POLICE VERIFICATION: VALID FOR 11 MONTHS*. Pinky Aunty! I got it!"
